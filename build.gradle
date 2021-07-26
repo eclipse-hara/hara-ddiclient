@@ -23,6 +23,7 @@ repositories {
 final def deps = gradle.settings.app_dependencies
 final def tdeps = gradle.settings.test_dependencies
 final def app_version = '1.0.0'
+ext.keep_test_container_alive = project.hasProperty('keep_test_container_alive') ? project.getProperty('keep_test_container_alive').toBoolean() : false
 
 subprojects {
     apply plugin: 'org.jetbrains.kotlin.jvm'
@@ -245,6 +246,18 @@ task buildImage(){
     }
 }
 
+task stopHawkbitServer() {
+    group 'testing'
+    doFirst {
+        if (!keep_test_container_alive) {
+            exec {
+                workingDir 'docker/test/'
+                commandLine 'docker-compose', 'down'
+            }
+        }
+    }
+}
+
 task restartHawkbitServer() {
     group 'testing'
     doLast {/**/
@@ -281,6 +294,7 @@ task waitingHawkbitServer(){
 
 test.dependsOn waitingHawkbitServer
 test.dependsOn cleanTest
+test.finalizedBy stopHawkbitServer
 
 dependencies{
     testImplementation tdeps.testng
