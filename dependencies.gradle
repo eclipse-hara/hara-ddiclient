@@ -1,0 +1,30 @@
+/*
+* Copyright © 2017-2021  Kynetics  LLC
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+*/
+ext {
+    javaSourceCompatibility = '1.8'
+    retrofitVersion = '2.9.0'
+    okhttpVersion = '4.9.1'
+    slf4jVersion = '1.7.30'
+
+    app_dependencies = [
+            slf4j_api:"org.slf4j:slf4j-api:$slf4jVersion",
+            slf4j_simple:"org.slf4j:slf4j-simple:$slf4jVersion",
+            kotlin_stdlib: 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.10',
+            kotlin_x: 'org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.5.0',
+            gson: 'com.google.code.gson:gson:2.8.7',
+            retrofit: "com.squareup.retrofit2:retrofit:$retrofitVersion",
+            retrofit_converter: "com.squareup.retrofit2:converter-gson:$retrofitVersion",
+            okhttp: "com.squareup.okhttp3:okhttp:${okhttpVersion}",
+            joda:'joda-time:joda-time:2.10.10'
+    ]
+    test_dependencies = [
+            testng: 'org.testng:testng:7.4.0'
+    ]
+}

@@ -1,0 +1,32 @@
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    ktlint
+}
+
+dependencies {
+    ktlint "com.pinterest:ktlint:0.34.2"}
+
+task checkStyle(type: JavaExec, group: "klint") {
+    description = "Check Kotlin code style."
+    classpath = configurations.ktlint
+    mainClass = "com.pinterest.ktlint.Main"
+    args "src/**/*.kt"
+}
+
+task fixStyle(type: JavaExec, group: "klint") {
+    description = "Fix Kotlin code style deviations."
+    classpath = configurations.ktlint
+    mainClass = "com.pinterest.ktlint.Main"
+    args "-F", "src/**/*.kt"
+}
+
+task configureIntellij(type: JavaExec, group: "klint"){
+    description = "Configure intellij"
+    classpath = configurations.ktlint
+    workingDir = project.rootDir
+    mainClass = "com.pinterest.ktlint.Main"
+    args "--apply-to-idea-project", "--android", "-y"
+}

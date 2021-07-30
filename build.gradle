@@ -1,0 +1,297 @@
+/*
+* Copyright © 2017-2021  Kynetics  LLC
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+*/
+
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.5.10'
+    id 'io.gitlab.arturbosch.detekt' version '1.17.1'
+    id 'jacoco'
+    id 'java'
+    id 'com.github.jk1.dependency-license-report' version '1.16'
+}
+
+repositories {
+    mavenCentral()
+}
+
+final def deps = gradle.settings.app_dependencies
+final def tdeps = gradle.settings.test_dependencies
+final def app_version = '1.0.0'
+
+subprojects {
+    apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'maven-publish'
+    apply from: "$rootDir/ktlint.gradle"
+    apply plugin: 'java'
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+    dependencies {
+        implementation deps.kotlin_stdlib
+        implementation deps.kotlin_x
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+            }
+        }
+    }
+}
+
+project(':ddiapi-client') {
+    group 'org.eclipse.hara.hara-ddiclient'
+    version app_version
+
+    final def subprj = ':ddiapi-client:ddiapi-client-api'
+    dependencies {
+        implementation project(subprj)
+        implementation project(':core:core-api')
+        implementation deps.retrofit_converter
+    }
+    allprojects {
+        dependencies {
+            implementation deps.okhttp
+            implementation deps.retrofit
+            implementation deps.slf4j_api
+
+        }
+    }
+    project(subprj) {
+        dependencies {
+            implementation deps.gson
+            testImplementation tdeps.testng
+        }
+        test {
+            useTestNG()
+        }
+
+    }
+}
+
+project(':ddiapi-client:ddiapi-client-api') {
+    group 'org.eclipse.hara.hara-ddiclient.ddiapi-client'
+    version app_version
+
+    dependencies {
+        implementation deps.joda
+    }
+}
+
+project(':core') {
+    group 'org.eclipse.hara.hara-ddiclient'
+    version app_version
+
+    dependencies {
+        implementation project(':core:core-api')
+        implementation project(':ddiapi-client')
+        implementation project(':ddiapi-client:ddiapi-client-api')
+        implementation deps.slf4j_api
+        implementation deps.joda
+        implementation deps.gson
+        testImplementation tdeps.testng
+        testImplementation deps.okhttp
+        testImplementation deps.retrofit
+        testImplementation deps.retrofit_converter
+        implementation deps.retrofit_converter
+
+    }
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+        kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlin.Experimental"]
+    }
+
+    test {
+        useTestNG()
+
+        afterTest { desc, result ->
+            logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+        }
+    }
+
+}
+
+project(':core:core-api') {
+    group 'org.eclipse.hara.hara-ddiclient.core'
+    version app_version
+    dependencies {
+        implementation deps.okhttp
+    }
+}
+
+project(':virtual-device'){
+    group 'org.eclipse.hara.hara-virtual-device'
+    version app_version
+    apply plugin: 'application'
+
+    dependencies {
+        implementation project(':core')
+        implementation project(':core:core-api')
+        implementation project(':ddiapi-client')
+        implementation project(':ddiapi-client:ddiapi-client-api')
+        implementation deps.joda
+        implementation deps.slf4j_simple
+        implementation deps.okhttp
+    }
+
+    mainClassName = 'org.eclipse.hara.ddiclient.virtualdevice.MainKt'
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+        kotlinOptions.freeCompilerArgs += ["-Xopt-in=kotlin.RequiresOptIn"]
+    }
+}
+
+boolean doHead(url) {
+    def connection = new URL(url).openConnection()
+    connection.requestMethod = 'HEAD'
+    try {
+        connection.responseCode == 200
+    } catch (IOException error) {
+        false
+    }
+}
+
+task copyClientSideGitHooks(type:Copy, group: "git-hooks"){
+    description 'Copies the git hooks from git-hooks to the .git folder.'
+    doFirst{
+        project.fileTree("git-hooks").visit { FileVisitDetails details ->
+            if(details.name.endsWith(".sh")){
+                def name = details.name.substring(0, details.name.lastIndexOf(".sh"))
+                def file = file("${projectDir}/.git/hooks/${name}")
+                if(file.exists()){
+                    ant.fail("${file.path} file already exists")
+                }
+            }
+
+        }
+    }
+    from("${rootDir}/git-hooks/") {
+        include '**/*.sh'
+        rename '(.*).sh', '$1'
+    }
+    into "${rootDir}/.git/hooks"
+    outputs.upToDateWhen { false }
+}
+
+task installClientSideGitHooks(type: Exec, group: "git-hooks") {
+    description 'Installs the client-side git hooks'
+    commandLine 'chmod'
+    args '-R', '+x', '.git/hooks/'
+    dependsOn copyClientSideGitHooks
+    doLast {
+        println('Git hook installed successfully.')
+    }
+}
+
+detekt {
+    toolVersion = "1.17.1"
+    config = files("$rootDir/default-detekt-config.yml", "$rootDir/detekt-config.yml")
+    input = files("$projectDir")
+    buildUponDefaultConfig = true
+}
+
+test {
+    useTestNG()
+}
+
+task codeCoverage(type: JacocoReport, group: 'verification') {
+    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+    subprojects.each {
+        sourceSets it.sourceSets.main
+    }
+
+    reports {
+        xml.required.set(true)
+        xml.destination new File("${buildDir}/reports/jacoco/report.xml")
+        html.required.set(true)
+        csv.required.set(false)
+    }
+}
+
+codeCoverage.dependsOn {
+    subprojects*.test
+}
+
+def dockerClientDir = new File(project.buildDir, "docker-client")
+task makeDockerContex(type: Copy) {
+    group "Docker"
+    dependsOn ":virtual-device:installDist"
+
+    from new File(project.projectDir, "virtual-device/build/install").getAbsolutePath()
+    from new File(project.projectDir, "docker/client").getAbsolutePath()
+
+    into dockerClientDir.getAbsolutePath()
+
+}
+
+task buildImage(){
+    group "Docker"
+    dependsOn makeDockerContex
+    doLast{
+        exec {
+            workingDir dockerClientDir
+            commandLine "docker", "build", ".", "--tag", "hara-virtual-device:$app_version"
+        }
+    }
+}
+
+task restartHawkbitServer() {
+    group 'testing'
+    doLast {/**/
+        exec {
+            workingDir 'docker/test/'
+            commandLine 'docker-compose', 'down'
+        }
+
+        ext.process = new ProcessBuilder()
+                .directory(new File(projectDir,"docker${File.separator}test${File.separator}"))
+                .command("docker-compose", "up")
+                .start()
+
+    }
+
+}
+
+task waitingHawkbitServer(){
+    group 'testing'
+
+    dependsOn 'restartHawkbitServer'
+
+    doFirst {
+        def url = 'http://localhost:8081/UI/login'
+        println "Waiting for ${url} ..."
+        while (!doHead(url)) {
+            sleep(5000)
+            println "Waiting for ${url} ..."
+        }
+        println "${url} is up!"
+    }
+
+}
+
+test.dependsOn waitingHawkbitServer
+test.dependsOn cleanTest
+
+dependencies{
+    testImplementation tdeps.testng
+    testImplementation deps.kotlin_stdlib
+    testImplementation deps.kotlin_x
+    testImplementation deps.joda
+    testImplementation deps.okhttp
+    testImplementation deps.retrofit
+    testImplementation deps.retrofit_converter
+    testImplementation project(':core')
+    testImplementation project(':core:core-api')
+    testImplementation project(':ddiapi-client')
+    testImplementation project(':ddiapi-client:ddiapi-client-api')
+}

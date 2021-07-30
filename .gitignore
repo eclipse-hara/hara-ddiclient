@@ -1,0 +1,36 @@
+### Gradle template
+.gradle
+/build/
+# archives
+*.jar
+*.war
+
+
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+# IntelliJ project files
+.idea
+*.iml
+
+# Eclipse Core
+.project
+
+# External tool builders
+.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
+
+# STS (Spring Tool Suite)
+.springBeans
+
+# osx
+.DS_Store
+
+**/build/**
+**/out/**
