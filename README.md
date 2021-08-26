@@ -119,7 +119,7 @@ To contribute to this project please [open a GitHub pull request](https://docs.g
 ## Contact us
 
 - Having questions about hara-ddiclient? Subscribe to the [hara-dev mailing list](https://accounts.eclipse.org/mailing-list/hara-dev) and post a question!
-- Having issues with hara-ddiclient? Please open a GitHub issue.
+- Having issues with hara-ddiclient? Please [open a GitHub issue](https://github.com/eclipse/hara-ddiclient/issues).
 
 ## Third-Party Libraries
 
@@ -129,7 +129,7 @@ For information on the libraries used by this project see [NOTICE](NOTICE.md).
 
 * **Daniele Sergio** - *Initial work* - [danielesergio](https://github.com/danielesergio).
 
-See also the list of [contributors](https://github.com/Kynetics/hara-ddiclient/graphs/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/eclipse/hara-ddiclient/graphs/contributors) who participated in this project.
 
 ## License
 
