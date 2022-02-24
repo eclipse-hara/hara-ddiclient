@@ -13,6 +13,18 @@ package org.eclipse.hara.ddiclient.core.api
 import java.net.MalformedURLException
 import java.net.URL
 
+/**
+ * Configuration data of hara client.
+ * @param tenant it is the device owner and provides
+ * the updates to the client through the update server.
+ * @param controllerId the id used by the client to register on
+ * the update server.
+ * @param serverUrl the url of the update server.
+ * @param gatewayToken used by the client to authenticate itself
+ * on the update server. It is different for each tenant.
+ * @param gatewayToken used by the client to authenticate itself
+ * on the update server. It is different for each device.
+ */
 data class HaraClientData constructor(
         val tenant: String,
         val controllerId: String,

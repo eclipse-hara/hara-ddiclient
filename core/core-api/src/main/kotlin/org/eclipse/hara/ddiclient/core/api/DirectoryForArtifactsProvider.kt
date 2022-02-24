@@ -12,7 +12,16 @@ package org.eclipse.hara.ddiclient.core.api
 
 import java.io.File
 
+/**
+ * Provides the directory used by the client
+ * to store the artifacts downloaded during the
+ * updates.
+ */
 interface DirectoryForArtifactsProvider {
 
+    /**
+     * @return the base directory used to store
+     * the artifacts
+     */
     fun directoryForArtifacts(): File
 }
