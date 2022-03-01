@@ -23,7 +23,7 @@ interface DeploymentPermitProvider {
      * Provides the permit for the start download phase.
      * @return a [Deferred] that is completed when the user
      * allows (true) or denies (false) the client to
-     * download the artefacts.
+     * download the artifacts.
      */
     fun downloadAllowed(): Deferred<Boolean> = CompletableDeferred(true)
 
@@ -31,7 +31,7 @@ interface DeploymentPermitProvider {
      * Provides the permit for the start of the update phase.
      * @return a [Deferred] that is completed when the user
      * allows (true) or denies (false) the client to
-     * apply the downloaded artefacts.
+     * apply the downloaded artifacts.
      */
     fun updateAllowed(): Deferred<Boolean> = CompletableDeferred(true)
 }

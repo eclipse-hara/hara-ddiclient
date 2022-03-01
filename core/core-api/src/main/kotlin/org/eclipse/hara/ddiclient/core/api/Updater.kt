@@ -16,23 +16,23 @@ package org.eclipse.hara.ddiclient.core.api
 interface Updater {
 
     /**
-     * Messenger that sends messages to the update server
+     * Messenger that communicates with the Update Server
      */
     interface Messenger {
 
         /**
-         * Method that sends message to the update server
-         * @param msg message content to be sent to the update server
+         * Method that sends a message to the Update Server
+         * @param msg message content to send to the Update Server
          */
         fun sendMessageToServer(vararg msg: String)
     }
 
     /**
-     * Method that selects the software modules that the updater uses for the
+     * Method that selects the software modules that the [Updater] uses for the
      * update.
-     * SwModsApplications are applied in ascending order of priority.
+     * [SwModsApplication] are applied in ascending order of priority.
      *
-     * @param swModules list of available software module.
+     * @param swModules list of available software modules.
      * @return [SwModsApplication]
      *
      */
@@ -53,25 +53,26 @@ interface Updater {
 
     /**
      * Method that applies the software modules.
-     * @param modules a set of software module to apply
-     * @param messenger to send info to the update server
-     * @return  an [UpdateResult] the result of the update.
+     * @param modules the set of software module to apply
+     * @param messenger the messenger to send info to the Update Server
+     * @return the result of the update
      */
     fun apply(modules: Set<SwModuleWithPath>, messenger: Messenger): UpdateResult
 
     /**
-     * Class that represents the result of an update
-     * @param success true if the update is successfully installed, false otherwise
-     * @param details additional info about the update result.
+     * Class that represents the result of an update.
+     * @property success true if the update is successfully installed, false otherwise
+     * @property details additional info about the update result
      */
     data class UpdateResult(val success: Boolean, val details: List<String> = emptyList())
 
     /**
-     * Class that represents a software module
-     * @param type of software module
-     * @param metadata set of additional info about the software module
-     * @param name of the software module
-     * @param artifacts set of software module of the artifact
+     * Class that represents a software module.
+     * @property type
+     * @property metadata set of additional info
+     * @property name
+     * @property version
+     * @property artifacts set of artifacts
      */
     data class SwModule(
             val metadata: Set<Metadata>?,
@@ -82,7 +83,7 @@ interface Updater {
     ) {
 
         /**
-         * Metadata of software module as [key] [value] value pair
+         * Class that represents the metadata of a software module as [key] [value] value pair.
          */
         data class Metadata(
             val key: String,
@@ -90,10 +91,10 @@ interface Updater {
         )
 
         /**
-         * Artifact of software module
-         * @param filename of artifact
-         * @param hashes of artifact
-         * @param size of artifact in bytes
+         * Class that represents an artifact of a software module.
+         * @property filename
+         * @property hashes
+         * @property size in bytes
          */
         data class Artifact(
                 val filename: String,
@@ -105,10 +106,11 @@ interface Updater {
     /**
      * Class that represents a software module where each artifact
      * is associated with a path
-     * @param type of software module
-     * @param metadata set of additional info about the software module
-     * @param name of the software module
-     * @param artifacts set of software module of the artifact
+     * @property type
+     * @property metadata set of additional info
+     * @property name
+     * @property version
+     * @property artifacts set of artifacts
      */
     data class SwModuleWithPath(
             val metadata: Set<Metadata>?,
@@ -118,7 +120,7 @@ interface Updater {
             val artifacts: Set<Artifact>
     ) {
         /**
-         * Metadata of software module as [key] [value] value pair
+         * Class that represents the metadata of a software module as [key] [value] value pair.
          */
         data class Metadata(
             val key: String,
@@ -126,11 +128,11 @@ interface Updater {
         )
 
         /**
-         * Artifact of software module
-         * @param filename of artifact
-         * @param hashes of artifact
-         * @param size of artifact in bytes
-         * @param path of the artifact
+         * Class that represents an artifact of a software module.
+         * @property filename
+         * @property hashes
+         * @property size in bytes
+         * @property path
          */
         data class Artifact(
                 val filename: String,
@@ -141,11 +143,11 @@ interface Updater {
     }
 
     /**
-     *  A prioritize software module set.
+     *  Class that represents a prioritized software module set.
      *  SwModApplications are applied in ascending order of
      *  the [priority] field
-     *  @param priority defines the apply order of the SwModsApplication.
-     *  @param swModules software modules that will be installed
+     *  @property priority defines the order of application of the SwModsApplication.
+     *  @property swModules set of software modules that will be installed
      *
      */
     data class SwModsApplication(
@@ -154,10 +156,10 @@ interface Updater {
     ) {
         /**
          * Class that represents a software module
-         * @param type of software module
-         * @param name of the software module
-         * @param version of the software module
-         * @param hashes set of artifact hashes, one for each software module artifact
+         * @property type
+         * @property name
+         * @property version
+         * @property hashes set of artifact hashes, one for each software module artifact
          */
         data class SwModule(
             val type: String,
@@ -169,8 +171,8 @@ interface Updater {
 
     /**
      * Artifact hashes
-     * @param sha1 artifact hash
-     * @param md5 artifact hash
+     * @property sha1 SHA1 hash
+     * @property md5 MD5 hash
      */
     data class Hashes(
         val sha1: String,

@@ -14,16 +14,16 @@ import java.net.MalformedURLException
 import java.net.URL
 
 /**
- * Configuration data of hara client.
- * @param tenant it is the device owner and provides
- * the updates to the client through the update server.
- * @param controllerId the id used by the client to register on
- * the update server.
- * @param serverUrl the url of the update server.
- * @param gatewayToken used by the client to authenticate itself
- * on the update server. It is different for each tenant.
- * @param gatewayToken used by the client to authenticate itself
- * on the update server. It is different for each device.
+ * Configuration data of Hara client.
+ * @property tenant name of the tenant (targets group)
+ * on the Update Server to connect to.
+ * @property controllerId id used by the client to register on
+ * the Update Server.
+ * @property serverUrl URL of the Update Server.
+ * @property gatewayToken used by the client to authenticate itself
+ * on the Update Server. It is different for each tenant.
+ * @property targetToken used by the client to authenticate itself
+ * on the Update Server. It is different for each device.
  */
 data class HaraClientData constructor(
         val tenant: String,

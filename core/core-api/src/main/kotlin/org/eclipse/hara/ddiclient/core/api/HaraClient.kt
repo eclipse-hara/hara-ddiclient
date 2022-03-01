@@ -13,7 +13,7 @@ package org.eclipse.hara.ddiclient.core.api
 import okhttp3.OkHttpClient
 
 /**
- * Client that executes actions requested by the Hawkbit server. The
+ * Client that executes actions requested by the Update Server. The
  * actions are provided as response of the ping request.
  * The allowed actions are:
  * - execute an update
@@ -29,7 +29,7 @@ interface HaraClient {
      * @param configDataProvider config data provider
      * @param deploymentPermitProvider deployment permit provider
      * @param messageListeners message listeners
-     * @param updaters list of updaters, different updaters are responsible to install
+     * @param updaters list of updaters. Different updaters are responsible to install
      * different types of software module. See [Updater]
      * @param httpBuilder http builder
      */
@@ -44,18 +44,19 @@ interface HaraClient {
     )
 
     /**
-     * The client starts ping the Hawkbit server
-     * until the stop method is invoked
+     * Start polling the Update Server.
+     * See [stop] to stop polling
      */
     fun startAsync()
 
     /**
-     * The hara client stops ping the Hawkbit server
+     * Stop polling the Update Server.
+     * See [startAsync] to start polling
      */
     fun stop()
 
     /**
-     * Force the client to execute a ping request.
+     * Force the client to execute a ping request (poll immediately).
      */
     fun forcePing()
 }
