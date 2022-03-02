@@ -12,8 +12,27 @@ package org.eclipse.hara.ddiclient.core.api
 
 import okhttp3.OkHttpClient
 
+/**
+ * Client that executes actions requested by the Update Server. The
+ * actions are provided as response of the ping request.
+ * The allowed actions are:
+ * - execute an update
+ * - cancel an update
+ * - send config data
+ */
 interface HaraClient {
 
+    /**
+     * Initialization function
+     * @param haraClientData client configuration data
+     * @param directoryForArtifactsProvider directory provider
+     * @param configDataProvider config data provider
+     * @param deploymentPermitProvider deployment permit provider
+     * @param messageListeners message listeners
+     * @param updaters list of updaters. Different updaters are responsible to install
+     * different types of software module. See [Updater]
+     * @param httpBuilder http builder
+     */
     fun init(
             haraClientData: HaraClientData,
             directoryForArtifactsProvider: DirectoryForArtifactsProvider,
@@ -24,9 +43,20 @@ interface HaraClient {
             httpBuilder: OkHttpClient.Builder = OkHttpClient.Builder()
     )
 
+    /**
+     * Start polling the Update Server.
+     * See [stop] to stop polling
+     */
     fun startAsync()
 
+    /**
+     * Stop polling the Update Server.
+     * See [startAsync] to start polling
+     */
     fun stop()
 
+    /**
+     * Force the client to execute a ping request (poll immediately).
+     */
     fun forcePing()
 }
