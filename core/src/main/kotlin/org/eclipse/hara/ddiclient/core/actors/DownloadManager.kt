@@ -104,9 +104,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         val newDownload = download.copy(state = download.state.copy(status = status, messages = newErrMessages))
         val newState = state.copy(downloads = state.downloads + (md5 to newDownload))
         val downloads = newState.downloads.values
-        val progress = Progress(
-                downloads.size,
-                downloads.count { it.state.status == Status.SUCCESS })
+        val progress = newState.getProgress()
         when {
             downloads.any { it.state.status == Status.RUNNING } -> {
                 feedback(state.deplBaseResp.id, proceeding, progress, none, message)
@@ -127,6 +125,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 channel.close()
             }
         }
+    }
+
+    private fun State.getProgress():Progress {
+        return Progress( downloads.values.size,  downloads.values.count { it.state.status == Status.SUCCESS })
     }
 
     private suspend fun feedback(id: String, execution: Execution, progress: Progress, finished: Finished, vararg messages: String) {
