@@ -87,7 +87,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 processMessage(state, msg.md5, Status.SUCCESS, "${msg.md5} already downloaded")
             }
 
-            is FileDownloader.Companion.Message.Info -> LOG.info(msg.toString())
+            is FileDownloader.Companion.Message.Info -> {
+                feedback(state.deplBaseResp.id, proceeding, state.getProgress(), none, msg.message)
+                LOG.info(msg.toString())
+            }
 
             is FileDownloader.Companion.Message.Error -> {
                 processMessage(state, msg.md5,
