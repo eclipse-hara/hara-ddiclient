@@ -34,13 +34,14 @@ interface HaraClient {
      * @param httpBuilder http builder
      */
     fun init(
-            haraClientData: HaraClientData,
-            directoryForArtifactsProvider: DirectoryForArtifactsProvider,
-            configDataProvider: ConfigDataProvider,
-            deploymentPermitProvider: DeploymentPermitProvider,
-            messageListeners: List<MessageListener>,
-            updaters: List<Updater>,
-            httpBuilder: OkHttpClient.Builder = OkHttpClient.Builder()
+        haraClientData: HaraClientData,
+        directoryForArtifactsProvider: DirectoryForArtifactsProvider,
+        configDataProvider: ConfigDataProvider,
+        deploymentPermitProvider: DeploymentPermitProvider,
+        messageListeners: List<MessageListener>,
+        updaters: List<Updater>,
+        downloadBehavior: DownloadBehavior,
+        httpBuilder: OkHttpClient.Builder = OkHttpClient.Builder()
     )
 
     /**

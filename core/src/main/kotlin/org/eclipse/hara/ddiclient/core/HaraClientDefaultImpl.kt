@@ -25,13 +25,14 @@ class HaraClientDefaultImpl : HaraClient {
     var rootActor: ActorRef? = null
 
     override fun init(
-            haraClientData: HaraClientData,
-            directoryForArtifactsProvider: DirectoryForArtifactsProvider,
-            configDataProvider: ConfigDataProvider,
-            deploymentPermitProvider: DeploymentPermitProvider,
-            messageListeners: List<MessageListener>,
-            updaters: List<Updater>,
-            httpBuilder: OkHttpClient.Builder
+        haraClientData: HaraClientData,
+        directoryForArtifactsProvider: DirectoryForArtifactsProvider,
+        configDataProvider: ConfigDataProvider,
+        deploymentPermitProvider: DeploymentPermitProvider,
+        messageListeners: List<MessageListener>,
+        updaters: List<Updater>,
+        downloadBehavior: DownloadBehavior,
+        httpBuilder: OkHttpClient.Builder
             ) {
         rootActor = AbstractActor.actorOf("rootActor", HaraClientContext(
                 DdiClientDefaultImpl.of(haraClientData, httpBuilder),
@@ -39,8 +40,9 @@ class HaraClientDefaultImpl : HaraClient {
                 configDataProvider,
                 PathResolver(directoryForArtifactsProvider),
                 deploymentPermitProvider,
-                messageListeners
-        )) { RootActor.of(it) }
+                messageListeners,
+                downloadBehavior
+            )) { RootActor.of(it) }
     }
 
     override fun startAsync() = runBlocking { rootActor!!.send(ConnectionManager.Companion.Message.In.Start) }
