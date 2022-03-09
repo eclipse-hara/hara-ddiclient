@@ -10,6 +10,7 @@
 
 package org.eclipse.hara.ddiclient.core.actors
 
+import kotlinx.coroutines.*
 import org.eclipse.hara.ddiapiclient.api.DdiClient
 import org.eclipse.hara.ddiapiclient.api.model.DeploymentFeedbackRequest
 import org.eclipse.hara.ddiclient.core.api.MessageListener
@@ -20,19 +21,21 @@ import java.text.NumberFormat
 import java.util.Timer
 import java.util.concurrent.ArrayBlockingQueue
 import kotlin.concurrent.fixedRateTimer
-import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.launch
+import org.eclipse.hara.ddiclient.core.api.DownloadBehavior
+import java.util.concurrent.TimeUnit
+import kotlin.time.ExperimentalTime
+import kotlin.time.toDuration
 
 @OptIn(ObsoleteCoroutinesApi::class)
 class FileDownloader
 private constructor(
         scope: ActorScope,
         private val fileToDownload: FileToDownload,
-        attempts: Int,
         actionId: String
 ) : AbstractActor(scope) {
 
     private val client: DdiClient = coroutineContext[HaraClientContext]!!.ddiClient
+    private val downloadBehavior:DownloadBehavior = coroutineContext[HaraClientContext]!!.downloadBehavior
     private val notificationManager = coroutineContext[NMActor]!!.ref
     private val connectionManager = coroutineContext[CMActor]!!.ref
 
@@ -74,12 +77,9 @@ private constructor(
             }
 
             is Message.RetryDownload -> {
-                val errorMessage = "retry download due to: ${msg.cause}"
-                parent!!.send(Message.Info(channel, fileToDownload.md5, errorMessage))
-                notificationManager.send(MessageListener.Message.Event.Error(listOf(errorMessage, "Remaining attempts: ${state.remainingAttempts}")))
-                val newState = state.copy(remainingAttempts = state.remainingAttempts - 1, errors = state.errors + msg.cause)
+                val newState = state.copy(currentAttempt = state.currentAttempt + 1, errors = state.errors + msg.message)
                 become(downloading(newState))
-                tryDownload(newState)
+                tryDownload(newState, msg.cause)
             }
 
             is Message.Stop -> this.cancel()
@@ -88,17 +88,28 @@ private constructor(
         }
     }
 
-    private suspend fun tryDownload(state: State) {
-        if (state.remainingAttempts <= 0) {
-            channel.send(Message.TrialExhausted)
-        } else {
-            launch {
-                try {
-                    download(state.actionId)
-                    channel.send(Message.FileDownloaded)
-                } catch (t: Throwable) {
-                    channel.send(Message.RetryDownload("exception: ${t.javaClass.simpleName}. message: ${t.message}"))
-                    LOG.warn("Failed to download file ${fileToDownload.fileName}", t)
+    @OptIn(ExperimentalTime::class)
+    private suspend fun tryDownload(state: State, error:Throwable? = null) = withContext(Dispatchers.IO){
+
+        when(val tryDownload = downloadBehavior.onAttempt(state.currentAttempt, "${state.actionId}-${fileToDownload.md5}", error)){
+
+            is DownloadBehavior.Try.Stop ->  channel.send(Message.TrialExhausted)
+
+            is DownloadBehavior.Try.After -> {
+                launch {
+                    if(error != null){
+                        val errorMessage = "Retry download of ${fileToDownload.fileName} due to: $error. The download will start in ${tryDownload.seconds.toDuration(TimeUnit.SECONDS)}."
+                        parent!!.send(Message.Info(channel, fileToDownload.md5, errorMessage))
+                        notificationManager.send(MessageListener.Message.Event.Error(listOf(errorMessage)))
+                    }
+                    delay(tryDownload.seconds * 1000)
+                    try {
+                        download(state.actionId)
+                        channel.send(Message.FileDownloaded)
+                    } catch (t: Throwable) {
+                        channel.send(Message.RetryDownload("exception: ${t.javaClass.simpleName}. message: ${t.message}", t))
+                        LOG.warn("Failed to download file ${fileToDownload.fileName}", t)
+                    }
                 }
             }
         }
@@ -192,17 +203,16 @@ private constructor(
     }
 
     init {
-        become(beforeStart(State(attempts, actionId)))
+        become(beforeStart(State(1, actionId)))
     }
 
     companion object {
         const val DOWNLOADING_EXTENSION = "downloading"
         fun of(
                 scope: ActorScope,
-                attempts: Int,
                 fileToDownload: FileToDownload,
                 actionId: String
-        ) = FileDownloader(scope, fileToDownload, attempts, actionId)
+        ) = FileDownloader(scope, fileToDownload, actionId)
 
         data class FileToDownload(
                 val fileName: String,
@@ -217,9 +227,9 @@ private constructor(
         }
 
         private data class State(
-                val remainingAttempts: Int,
-                val actionId: String,
-                val errors: List<String> = emptyList()
+            val currentAttempt: Int,
+            val actionId: String,
+            val errors: List<String> = emptyList()
         )
 
         sealed class Message {
@@ -229,7 +239,7 @@ private constructor(
 
             object FileDownloaded : Message()
             object FileChecked : Message()
-            data class RetryDownload(val cause: String) : Message()
+            data class RetryDownload(val message: String, val cause: Throwable? = null) : Message()
             object TrialExhausted : Message()
 
             data class Success(val sender: ActorRef, val md5: String) : Message()

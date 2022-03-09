@@ -19,6 +19,7 @@ import org.eclipse.hara.ddiclient.core.PathResolver
 import org.eclipse.hara.ddiclient.core.UpdaterRegistry
 import org.eclipse.hara.ddiclient.core.api.ConfigDataProvider
 import org.eclipse.hara.ddiclient.core.api.DeploymentPermitProvider
+import org.eclipse.hara.ddiclient.core.api.DownloadBehavior
 import org.eclipse.hara.ddiclient.core.api.MessageListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -144,7 +145,8 @@ data class HaraClientContext(
         val configDataProvider: ConfigDataProvider,
         val pathResolver: PathResolver,
         val deploymentPermitProvider: DeploymentPermitProvider,
-        val messageListeners: List<MessageListener>
+        val messageListeners: List<MessageListener>,
+        val downloadBehavior: DownloadBehavior
 ) : AbstractCoroutineContextElement(HaraClientContext) {
     companion object Key : CoroutineContext.Key<HaraClientContext>
     override fun toString(): String = "HaraClientContext($this)"

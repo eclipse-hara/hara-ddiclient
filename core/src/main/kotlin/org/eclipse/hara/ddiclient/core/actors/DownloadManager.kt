@@ -153,7 +153,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             val md5 = at.hashes.md5
             val ftd = FileToDownload(at.filename, md5, at._links.download_http?.href ?: "" , wd, at.size)
             val dm = actorOf(childName(md5)) {
-                FileDownloader.of(it, 3, ftd, dbr.id)
+                FileDownloader.of(it, ftd, dbr.id)
             }
             Pair(md5, Download(dm))
         }.toMap()

@@ -12,11 +12,7 @@ package org.eclipse.hara.ddiclient.virtualdevice
 import kotlinx.coroutines.*
 import org.eclipse.hara.ddiclient.core.HaraClientDefaultImpl
 import org.eclipse.hara.ddiclient.core.api.HaraClientData
-import org.eclipse.hara.ddiclient.virtualdevice.entrypoint.ConfigDataProviderImpl
-import org.eclipse.hara.ddiclient.virtualdevice.entrypoint.DeploymentPermitProviderImpl
-import org.eclipse.hara.ddiclient.virtualdevice.entrypoint.DirectoryForArtifactsProviderImpl
-import org.eclipse.hara.ddiclient.virtualdevice.entrypoint.MessageListenerImpl
-import org.eclipse.hara.ddiclient.virtualdevice.entrypoint.UpdaterImpl
+import org.eclipse.hara.ddiclient.virtualdevice.entrypoint.*
 import kotlin.random.Random.Default.nextLong
 
 @OptIn(DelicateCoroutinesApi::class)
@@ -52,7 +48,8 @@ private fun getClient(clientData: HaraClientData, virtualDeviceId: Int): HaraCli
         ConfigDataProviderImpl(virtualDeviceId, clientData),
         DeploymentPermitProviderImpl(),
         listOf(MessageListenerImpl(virtualDeviceId, clientData)),
-        listOf(UpdaterImpl(virtualDeviceId, clientData))
+        listOf(UpdaterImpl(virtualDeviceId, clientData)),
+        DownloadBehaviorImpl()
     )
     return client
 }
