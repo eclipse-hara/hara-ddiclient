@@ -98,6 +98,15 @@ Create a class that implements the [Updater](core/core-api/src/main/kotlin/org/e
         override fun apply(modules: Set<Updater.SwModuleWithPath>,messenger: Updater.Messenger){
             ...
         }
+    }
+
+Create a class that implements the [DownloadBehavior](core/core-api/src/main/kotlin/org/eclipse/hara/ddiclient/core/api/DownloadBehavior.kt) interface:
+
+    class DownloadBehaviorImpl(): DownloadBehavior {
+        override fun onAttempt(attempt: Int, artifactId:String, previousError: Throwable?): DownloadBehavior.Try {
+            ...
+        }
+    }
 
 Create the Client, add the provider and return the client:
 
