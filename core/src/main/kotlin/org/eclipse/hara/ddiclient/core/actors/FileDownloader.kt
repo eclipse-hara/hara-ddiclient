@@ -77,7 +77,7 @@ private constructor(
             }
 
             is Message.RetryDownload -> {
-                val newState = state.copy(currentAttempt = state.currentAttempt + 1, errors = state.errors + msg.message)
+                val newState = state.copy(currentAttempt = state.nextAttempt(), errors = state.errors + msg.message)
                 become(downloading(newState))
                 tryDownload(newState, msg.cause)
             }
@@ -201,6 +201,8 @@ private constructor(
             }
         }
     }
+
+    private fun State.nextAttempt():Int = if (currentAttempt == Int.MAX_VALUE) currentAttempt else currentAttempt + 1
 
     init {
         become(beforeStart(State(1, actionId)))
