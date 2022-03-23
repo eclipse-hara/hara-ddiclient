@@ -19,7 +19,7 @@ The hara-ddiclient project provides several software modules:
 
 ## Install
 
-To import this project use [jitpack](https://jitpack.io/) plugin.
+To import this project use [jitpack](https://jitpack.io/#eclipse/hara-ddiclient) plugin.
 
 ## Build from source
 
