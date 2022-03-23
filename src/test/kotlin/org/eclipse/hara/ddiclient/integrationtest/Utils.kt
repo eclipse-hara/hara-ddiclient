@@ -16,6 +16,7 @@ import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import org.eclipse.hara.ddiclient.core.api.ConfigDataProvider
 import org.eclipse.hara.ddiclient.core.api.DirectoryForArtifactsProvider
+import org.eclipse.hara.ddiclient.core.api.DownloadBehavior
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.DELETE
@@ -124,6 +125,19 @@ object TestUtils {
     ) }
     val pathResolver = PathResolver(directoryDataProvider)
     val configDataProvider = object : ConfigDataProvider {}
+    val downloadBehavior = object : DownloadBehavior {
+        override fun onAttempt(
+            attempt: Int,
+            artifactId: String,
+            previousError: Throwable?
+        ): DownloadBehavior.Try {
+            return if (attempt == 1){
+                DownloadBehavior.Try.After(0)
+            } else {
+                DownloadBehavior.Try.Stop
+            }
+        }
+    }
     val updater = object : Updater {
         override fun apply(modules: Set<Updater.SwModuleWithPath>, messenger: Updater.Messenger): Updater.UpdateResult {
             println("APPLY UPDATE $modules")

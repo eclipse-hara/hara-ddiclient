@@ -37,7 +37,8 @@ abstract class AbstractClientTest {
             configDataProvider: ConfigDataProvider = TestUtils.configDataProvider,
             updater: Updater = TestUtils.updater,
             messageListeners: List<MessageListener> = emptyList(),
-            deploymentPermitProvider: DeploymentPermitProvider = object : DeploymentPermitProvider {}
+            deploymentPermitProvider: DeploymentPermitProvider = object : DeploymentPermitProvider {},
+            downloadBehavior: DownloadBehavior = TestUtils.downloadBehavior
     ): (String) -> HaraClient = { targetId ->
         val clientData = HaraClientData(
                 tenantName,
@@ -66,7 +67,8 @@ abstract class AbstractClientTest {
                 configDataProvider,
                 deploymentPermitProvider,
                 listOf(eventListener, *messageListeners.toTypedArray()),
-                listOf(updater)
+                listOf(updater),
+                downloadBehavior
         )
         client
     }
