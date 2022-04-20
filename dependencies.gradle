@@ -16,8 +16,8 @@ ext {
     app_dependencies = [
             slf4j_api:"org.slf4j:slf4j-api:$slf4jVersion",
             slf4j_simple:"org.slf4j:slf4j-simple:$slf4jVersion",
-            kotlin_stdlib: 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.32',
-            kotlin_x: 'org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.5.2',
+            kotlin_stdlib: 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10',
+            kotlin_x: 'org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.1',
             gson: 'com.google.code.gson:gson:2.8.9',
             retrofit: "com.squareup.retrofit2:retrofit:$retrofitVersion",
             retrofit_converter: "com.squareup.retrofit2:converter-gson:$retrofitVersion",
