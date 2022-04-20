@@ -129,7 +129,7 @@ private constructor(
 
         val inputStream = FilterInputStreamWithProgress(client.downloadArtifact(fileToDownload.url), fileToDownload.size)
 
-        val queue = ArrayBlockingQueue<Double>(10, true, (1..9).map { it.toDouble() / 10 })
+        val queue = ArrayBlockingQueue(10, true, (1..9).map { it.toDouble() / 10 })
 
         val timer = checkDownloadProgress(inputStream, queue, actionId)
 
