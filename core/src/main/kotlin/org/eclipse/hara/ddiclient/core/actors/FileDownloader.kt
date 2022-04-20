@@ -133,12 +133,17 @@ private constructor(
 
         val timer = checkDownloadProgress(inputStream, queue, actionId)
 
-        file.outputStream().use {
-            inputStream.copyTo(it)
+        runCatching {
+            file.outputStream().use {
+                inputStream.copyTo(it)
+            }
+        }.also {
+            timer.purge()
+            timer.cancel()
+        }.onFailure {
+            throw  it
         }
 
-        timer.purge()
-        timer.cancel()
     }
 
     private fun checkDownloadProgress(
