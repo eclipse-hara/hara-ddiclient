@@ -22,7 +22,7 @@ import java.util.Timer
 import java.util.concurrent.ArrayBlockingQueue
 import kotlin.concurrent.fixedRateTimer
 import org.eclipse.hara.ddiclient.core.api.DownloadBehavior
-import java.util.concurrent.TimeUnit
+import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
 
@@ -98,7 +98,7 @@ private constructor(
             is DownloadBehavior.Try.After -> {
                 launch {
                     if(error != null){
-                        val errorMessage = "Retry download of ${fileToDownload.fileName} due to: $error. The download will start in ${tryDownload.seconds.toDuration(TimeUnit.SECONDS)}."
+                        val errorMessage = "Retry download of ${fileToDownload.fileName} due to: $error. The download will start in ${tryDownload.seconds.toDuration(DurationUnit.SECONDS)}."
                         parent!!.send(Message.Info(channel, fileToDownload.md5, errorMessage))
                         notificationManager.send(MessageListener.Message.Event.Error(listOf(errorMessage)))
                     }
