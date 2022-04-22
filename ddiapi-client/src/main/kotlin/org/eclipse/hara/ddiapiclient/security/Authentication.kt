@@ -13,9 +13,13 @@ package org.eclipse.hara.ddiapiclient.security
 import org.eclipse.hara.ddiapiclient.security.Authentication.AuthenticationType.ANONYMOUS_AUTHENTICATION
 
 /**
- * @author Daniele Sergio
+ *
+ * @property type the authorization type
+ * @property token the authorization token
+ *
  */
-class Authentication private constructor(val type: AuthenticationType, token: String) {
+@Suppress("CanBeParameter", "MemberVisibilityCanBePrivate")
+class Authentication private constructor(val type: AuthenticationType, val token: String) {
 
     val headerValue: String = String.format(HEADER_VALUE_TEMPLATE, type.type, token)
     val header: String = type.header
