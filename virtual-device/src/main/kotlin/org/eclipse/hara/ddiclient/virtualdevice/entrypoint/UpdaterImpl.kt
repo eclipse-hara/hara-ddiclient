@@ -10,8 +10,8 @@
 
 package org.eclipse.hara.ddiclient.virtualdevice.entrypoint
 
-import org.eclipse.hara.ddiclient.core.api.HaraClientData
-import org.eclipse.hara.ddiclient.core.api.Updater
+import org.eclipse.hara.ddiclient.api.HaraClientData
+import org.eclipse.hara.ddiclient.api.Updater
 import org.eclipse.hara.ddiclient.virtualdevice.Configuration
 import java.text.MessageFormat
 
@@ -20,8 +20,8 @@ class UpdaterImpl(
     private val clientData: HaraClientData
 ): Updater {
     override fun apply(
-            modules: Set<Updater.SwModuleWithPath>,
-            messenger: Updater.Messenger
+        modules: Set<Updater.SwModuleWithPath>,
+        messenger: Updater.Messenger
     ): Updater.UpdateResult {
         println("APPLY UPDATE $modules")
         val regex = Regex("VIRTUAL_DEVICE_UPDATE_RESULT_(\\*|${clientData.controllerId})")

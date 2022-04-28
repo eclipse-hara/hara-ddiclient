@@ -10,7 +10,7 @@
 
 package org.eclipse.hara.ddiclient.virtualdevice.entrypoint
 
-import org.eclipse.hara.ddiclient.core.api.DirectoryForArtifactsProvider
+import org.eclipse.hara.ddiclient.api.DirectoryForArtifactsProvider
 import org.eclipse.hara.ddiclient.virtualdevice.Configuration
 import java.io.File
 

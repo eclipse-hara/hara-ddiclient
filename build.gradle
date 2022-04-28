@@ -17,8 +17,15 @@ plugins {
     id("org.jetbrains.dokka") version "1.6.10"
 }
 
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'maven-publish'
+apply from: "$rootDir/ktlint.gradle"
+apply plugin: 'java'
+apply plugin: "org.jetbrains.dokka"
+
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 final def deps = gradle.settings.app_dependencies
@@ -51,14 +58,14 @@ subprojects {
     }
 }
 
-project(':ddiapi-client') {
+project(':ddi-consumer') {
     group 'org.eclipse.hara.hara-ddiclient'
     version app_version
 
-    final def subprj = ':ddiapi-client:ddiapi-client-api'
+    final def subprj = ':ddi-consumer:ddi-api'
     dependencies {
         implementation project(subprj)
-        implementation project(':core:core-api')
+        implementation project(':hara-ddiclient-api')
         implementation deps.retrofit_converter
     }
     allprojects {
@@ -81,8 +88,8 @@ project(':ddiapi-client') {
     }
 }
 
-project(':ddiapi-client:ddiapi-client-api') {
-    group 'org.eclipse.hara.hara-ddiclient.ddiapi-client'
+project(':ddi-consumer:ddi-api') {
+    group 'org.eclipse.hara.hara-ddiclient.ddi-consumer'
     version app_version
 
     dependencies {
@@ -90,40 +97,7 @@ project(':ddiapi-client:ddiapi-client-api') {
     }
 }
 
-project(':core') {
-    group 'org.eclipse.hara.hara-ddiclient'
-    version app_version
-
-    dependencies {
-        implementation project(':core:core-api')
-        implementation project(':ddiapi-client')
-        implementation project(':ddiapi-client:ddiapi-client-api')
-        implementation deps.slf4j_api
-        implementation deps.joda
-        implementation deps.gson
-        testImplementation tdeps.testng
-        testImplementation deps.okhttp
-        testImplementation deps.retrofit
-        testImplementation deps.retrofit_converter
-        implementation deps.retrofit_converter
-
-    }
-
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-        kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlin.Experimental"]
-    }
-
-    test {
-        useTestNG()
-
-        afterTest { desc, result ->
-            logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
-        }
-    }
-
-}
-
-project(':core:core-api') {
+project(':hara-ddiclient-api') {
     group 'org.eclipse.hara.hara-ddiclient.core'
     version app_version
     dependencies {
@@ -137,10 +111,10 @@ project(':virtual-device'){
     apply plugin: 'application'
 
     dependencies {
-        implementation project(':core')
-        implementation project(':core:core-api')
-        implementation project(':ddiapi-client')
-        implementation project(':ddiapi-client:ddiapi-client-api')
+        implementation rootProject
+        implementation project(':hara-ddiclient-api')
+        implementation project(':ddi-consumer')
+        implementation project(':ddi-consumer:ddi-api')
         implementation deps.joda
         implementation deps.slf4j_simple
         implementation deps.okhttp
@@ -298,16 +272,42 @@ test.dependsOn waitingHawkbitServer
 test.dependsOn cleanTest
 test.finalizedBy stopHawkbitServer
 
+group 'org.eclipse.hara.hara-ddiclient'
+version app_version
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlin.Experimental"]
+}
+
+test {
+    useTestNG()
+
+    afterTest { desc, result ->
+        logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+    }
+}
+
+
 dependencies{
+    implementation project(':hara-ddiclient-api')
+    implementation project(':ddi-consumer')
+    implementation project(':ddi-consumer:ddi-api')
+    implementation deps.slf4j_api
+    implementation deps.joda
+    implementation deps.gson
+    implementation deps.retrofit_converter
+    implementation deps.kotlin_stdlib
+    implementation deps.kotlin_x
+
+    testImplementation tdeps.testng
+    testImplementation deps.okhttp
+    testImplementation deps.retrofit
+    testImplementation deps.retrofit_converter
+
     testImplementation tdeps.testng
     testImplementation deps.kotlin_stdlib
     testImplementation deps.kotlin_x
     testImplementation deps.joda
     testImplementation deps.okhttp
     testImplementation deps.retrofit
-    testImplementation deps.retrofit_converter
-    testImplementation project(':core')
-    testImplementation project(':core:core-api')
-    testImplementation project(':ddiapi-client')
-    testImplementation project(':ddiapi-client:ddiapi-client-api')
 }

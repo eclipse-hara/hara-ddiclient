@@ -9,10 +9,9 @@
 */
 
 rootProject.name = 'hara-ddiclient'
-include ':ddiapi-client'
-include ':ddiapi-client:ddiapi-client-api'
-include ':core'
-include ':core:core-api'
+include ':ddi-consumer'
+include ':ddi-consumer:ddi-api'
+include ':hara-ddiclient-api'
 include ':virtual-device'
 
 apply from: 'dependencies.gradle'

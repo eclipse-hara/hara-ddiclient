@@ -10,7 +10,7 @@
 
 package org.eclipse.hara.ddiclient.virtualdevice.entrypoint
 
-import org.eclipse.hara.ddiclient.core.api.DeploymentPermitProvider
+import org.eclipse.hara.ddiclient.api.DeploymentPermitProvider
 import org.eclipse.hara.ddiclient.virtualdevice.Configuration
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred

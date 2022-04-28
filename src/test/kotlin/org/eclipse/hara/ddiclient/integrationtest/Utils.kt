@@ -10,13 +10,13 @@
 
 package org.eclipse.hara.ddiclient.integrationtest
 
-import org.eclipse.hara.ddiclient.core.PathResolver
-import org.eclipse.hara.ddiclient.core.api.Updater
+import org.eclipse.hara.ddiclient.api.PathResolver
+import org.eclipse.hara.ddiclient.api.Updater
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
-import org.eclipse.hara.ddiclient.core.api.ConfigDataProvider
-import org.eclipse.hara.ddiclient.core.api.DirectoryForArtifactsProvider
-import org.eclipse.hara.ddiclient.core.api.DownloadBehavior
+import org.eclipse.hara.ddiclient.api.ConfigDataProvider
+import org.eclipse.hara.ddiclient.api.DirectoryForArtifactsProvider
+import org.eclipse.hara.ddiclient.api.DownloadBehavior
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.DELETE

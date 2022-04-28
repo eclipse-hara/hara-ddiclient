@@ -13,9 +13,9 @@ Hara-ddiclient is part of the [Eclipse Hara™ project](https://projects.eclipse
 ## Project structure
 
 The hara-ddiclient project provides several software modules:
-1. `ddiapi-client`: implementation of a REST client for hawkBit DDI API
-1. `core`: implementation of communication logic using actors (uses `ddiapi-client`)
-1. `virtual-device`: a simple application using the hara-ddiclient library (uses `core`). Its purpose is to provide a configurable "virtual device" and a reference example on how to use the library. Some features, like the [Updater](core/core-api/src/main/kotlin/org/eclipse/hara/ddiclient/core/api/Updater.kt), are not implemented in the virtual device and are just mocked.
+1. `hara-ddiclient`: implementation of communication logic using actors (uses `ddi-consumer`)
+1. `ddi-consumer`: implementation of a REST client for hawkBit DDI API
+1. `virtual-device`: a simple application using the hara-ddiclient library (uses `hara-ddiclient`). Its purpose is to provide a configurable "virtual device" and a reference example on how to use the library. Some features, like the [Updater](core/core-api/src/main/kotlin/org/eclipse/hara/ddiclient/core/api/Updater.kt), are not implemented in the virtual device and are just mocked.
 
 ## Install
 

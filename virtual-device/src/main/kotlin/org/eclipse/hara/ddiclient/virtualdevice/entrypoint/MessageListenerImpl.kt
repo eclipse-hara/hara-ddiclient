@@ -10,8 +10,8 @@
 
 package org.eclipse.hara.ddiclient.virtualdevice.entrypoint
 
-import org.eclipse.hara.ddiclient.core.api.HaraClientData
-import org.eclipse.hara.ddiclient.core.api.MessageListener
+import org.eclipse.hara.ddiclient.api.HaraClientData
+import org.eclipse.hara.ddiclient.api.MessageListener
 import org.eclipse.hara.ddiclient.virtualdevice.Configuration
 import java.text.MessageFormat
 

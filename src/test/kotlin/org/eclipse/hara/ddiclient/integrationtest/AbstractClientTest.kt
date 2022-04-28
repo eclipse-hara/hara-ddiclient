@@ -10,7 +10,6 @@
 
 package org.eclipse.hara.ddiclient.integrationtest
 
-import org.eclipse.hara.ddiclient.core.HaraClientDefaultImpl
 import org.eclipse.hara.ddiclient.integrationtest.TestUtils.basic
 import org.eclipse.hara.ddiclient.integrationtest.TestUtils.gatewayToken
 import org.eclipse.hara.ddiclient.integrationtest.TestUtils.getDownloadDirectoryFromActionId
@@ -20,7 +19,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import org.eclipse.hara.ddiclient.core.api.*
+import org.eclipse.hara.ddiclient.api.*
 import org.joda.time.Duration
 import org.testng.Assert
 import java.io.File
@@ -33,12 +32,12 @@ abstract class AbstractClientTest {
     private val queue = LinkedList<() -> Unit >()
 
     protected open fun defaultClientFromTargetId(
-            directoryDataProvider: DirectoryForArtifactsProvider = TestUtils.directoryDataProvider,
-            configDataProvider: ConfigDataProvider = TestUtils.configDataProvider,
-            updater: Updater = TestUtils.updater,
-            messageListeners: List<MessageListener> = emptyList(),
-            deploymentPermitProvider: DeploymentPermitProvider = object : DeploymentPermitProvider {},
-            downloadBehavior: DownloadBehavior = TestUtils.downloadBehavior
+        directoryDataProvider: DirectoryForArtifactsProvider = TestUtils.directoryDataProvider,
+        configDataProvider: ConfigDataProvider = TestUtils.configDataProvider,
+        updater: Updater = TestUtils.updater,
+        messageListeners: List<MessageListener> = emptyList(),
+        deploymentPermitProvider: DeploymentPermitProvider = object : DeploymentPermitProvider {},
+        downloadBehavior: DownloadBehavior = TestUtils.downloadBehavior
     ): (String) -> HaraClient = { targetId ->
         val clientData = HaraClientData(
                 tenantName,

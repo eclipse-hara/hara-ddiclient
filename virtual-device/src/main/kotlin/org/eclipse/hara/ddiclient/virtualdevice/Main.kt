@@ -10,8 +10,8 @@
 package org.eclipse.hara.ddiclient.virtualdevice
 
 import kotlinx.coroutines.*
-import org.eclipse.hara.ddiclient.core.HaraClientDefaultImpl
-import org.eclipse.hara.ddiclient.core.api.HaraClientData
+import org.eclipse.hara.ddiclient.api.HaraClientDefaultImpl
+import org.eclipse.hara.ddiclient.api.HaraClientData
 import org.eclipse.hara.ddiclient.virtualdevice.entrypoint.*
 import kotlin.random.Random.Default.nextLong
 
