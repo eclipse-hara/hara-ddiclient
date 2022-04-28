@@ -10,14 +10,15 @@
 
 package org.eclipse.hara.ddiclient.virtualdevice.entrypoint
 
-import org.eclipse.hara.ddiclient.core.api.ConfigDataProvider
-import org.eclipse.hara.ddiclient.core.api.HaraClientData
+import org.eclipse.hara.ddiclient.api.ConfigDataProvider
+import org.eclipse.hara.ddiclient.api.HaraClientData
 import org.eclipse.hara.ddiclient.virtualdevice.Configuration
 import java.text.MessageFormat
 
 class ConfigDataProviderImpl(
     private val virtualDeviceId:Int,
-    private val clientData: HaraClientData): ConfigDataProvider {
+    private val clientData: HaraClientData
+): ConfigDataProvider {
     override fun configData(): Map<String, String> {
         return Configuration.targetAttributes
             .split("|")
