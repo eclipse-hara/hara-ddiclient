@@ -17,12 +17,6 @@ plugins {
     id("org.jetbrains.dokka") version "1.6.10"
 }
 
-apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'maven-publish'
-apply from: "$rootDir/ktlint.gradle"
-apply plugin: 'java'
-apply plugin: "org.jetbrains.dokka"
-
 repositories {
     mavenCentral()
     mavenLocal()
@@ -33,7 +27,7 @@ final def tdeps = gradle.settings.test_dependencies
 final def app_version = '1.0.0'
 ext.keep_test_container_alive = project.hasProperty('keep_test_container_alive') ? project.getProperty('keep_test_container_alive').toBoolean() : false
 
-subprojects {
+allprojects {
     apply plugin: 'org.jetbrains.kotlin.jvm'
     apply plugin: 'maven-publish'
     apply from: "$rootDir/ktlint.gradle"
@@ -296,8 +290,6 @@ dependencies{
     implementation deps.joda
     implementation deps.gson
     implementation deps.retrofit_converter
-    implementation deps.kotlin_stdlib
-    implementation deps.kotlin_x
 
     testImplementation tdeps.testng
     testImplementation deps.okhttp
