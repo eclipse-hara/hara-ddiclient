@@ -92,7 +92,7 @@ project(':ddi-consumer:ddi-api') {
 }
 
 project(':hara-ddiclient-api') {
-    group 'org.eclipse.hara.hara-ddiclient.core'
+    group 'org.eclipse.hara.hara-ddiclient.api'
     version app_version
     dependencies {
         implementation deps.okhttp
