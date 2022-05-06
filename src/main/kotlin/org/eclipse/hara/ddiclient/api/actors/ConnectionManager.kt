@@ -67,7 +67,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             is In.SetPing -> become(runningReceive(startPing(state.copy(clientPingInterval = msg.duration, lastPing = Instant.EPOCH))))
 
             is In.ForcePing -> {
-                become(runningReceive(state.copy(controllerBaseEtag = "", deploymentEtag = "")))
+                become(runningReceive(state.clearEtags()))
                 channel.send(In.SetPing(null))
             }
 
@@ -146,7 +146,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             val errorDetails = "exception: ${t.javaClass} message: ${loopMsg(t)}"
             this.send(ErrMsg(errorDetails), state)
             LOG.warn(t.message, t)
-            become(runningReceive(startPing(s.nextBackoff())))
+            become(runningReceive(startPing(s.nextBackoff().clearEtags())))
             notificationManager.send(MessageListener.Message.Event.Error(listOf(errorDetails)))
         }
     }
@@ -209,6 +209,8 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             fun nextBackoff() = if (backoffPingInterval == null)
                 this.copy(backoffPingInterval = Duration.standardSeconds(1))
             else this.copy(backoffPingInterval = minOf(backoffPingInterval.multipliedBy(2), Duration.standardMinutes(1)))
+
+            fun clearEtags():State = copy(controllerBaseEtag = "", deploymentEtag = "")
 
             fun withoutBackoff() = if (backoffPingInterval != null) this.copy(backoffPingInterval = null) else this
 
