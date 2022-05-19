@@ -290,12 +290,7 @@ dependencies{
     implementation deps.joda
     implementation deps.gson
     implementation deps.retrofit_converter
-
     testImplementation tdeps.testng
-    testImplementation deps.okhttp
-    testImplementation deps.retrofit
-    testImplementation deps.retrofit_converter
-
     testImplementation tdeps.testng
     testImplementation deps.kotlin_stdlib
     testImplementation deps.kotlin_x
