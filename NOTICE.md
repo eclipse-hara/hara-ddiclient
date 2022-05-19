@@ -61,17 +61,17 @@ joda-time (2.10.13)
     * Project: https://www.joda.org/joda-time/
     * Source:  https://repo1.maven.org/maven2/joda-time/joda-time/2.10.13/joda-time-2.10.13-sources.jar
 
-kotlin-stdlib-jdk8 (1.5.32)
+kotlin-stdlib-jdk8 (1.6.10)
 
     * License: Apache 2.0
     * Project: https://kotlinlang.org/
-    * Source:  https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.5.32/kotlin-stdlib-jdk8-1.5.32-sources.jar
+    * Source:  https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.6.10/kotlin-stdlib-jdk8-1.6.10-sources.jar
 
-kotlinx-coroutines-jdk8 (1.5.2)
+kotlinx-coroutines-jdk8 (1.6.1)
 
     * License: Apache 2.0
     * Project: https://github.com/Kotlin/kotlinx.coroutines
-    * Source:  https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-jdk8/1.5.2/kotlinx-coroutines-jdk8-1.5.2-sources.jar
+    * Source:  https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-jdk8/1.6.1/kotlinx-coroutines-jdk8-1.6.1-sources.jar
 
 slf4j-api (1.7.33)
 
