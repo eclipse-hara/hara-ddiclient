@@ -15,7 +15,7 @@ Hara-ddiclient is part of the [Eclipse Hara™ project](https://projects.eclipse
 The hara-ddiclient project provides several software modules:
 1. `ddi-consumer`: implementation of a REST client for hawkBit DDI API
 1. `hara-ddiclient`: implementation of communication logic using actors (uses `ddi-consumer`)
-1. `virtual-device`: a simple application using the hara-ddiclient library (uses `hara-ddiclient`). Its purpose is to provide a configurable "virtual device" and a reference example on how to use the library. Some features, like the [Updater](core/core-api/src/main/kotlin/org/eclipse/hara/ddiclient/core/api/Updater.kt), are not implemented in the virtual device and are just mocked.
+1. `virtual-device`: a simple application using the hara-ddiclient library (uses `hara-ddiclient`). Its purpose is to provide a configurable "virtual device" and a reference example on how to use the library. Some features, like the [Updater](hara-ddiclient-api/src/main/kotlin/org/eclipse/hara/ddiclient/api/Updater.kt), are not implemented in the virtual device and are just mocked.
 
 ## Install
 
@@ -57,7 +57,7 @@ Make sure the authentication method provided in the parameters is enabled in the
 
 ## Example
 
-Create a class that implements the [DirectoryForArtifactsProvider](core/core-api/src/main/kotlin/org/eclipse/hara/ddiclient/core/api/DirectoryForArtifactsProvider.kt) interface:
+Create a class that implements the [DirectoryForArtifactsProvider](hara-ddiclient-api/src/main/kotlin/org/eclipse/hara/ddiclient/api/DirectoryForArtifactsProvider.kt) interface:
 
     class DirectoryForArtifactsProviderImpl(): DirectoryForArtifactsProvider {
         override fun directoryForArtifacts(): File {
@@ -65,7 +65,7 @@ Create a class that implements the [DirectoryForArtifactsProvider](core/core-api
         }
     }
 
-Create a class that implements the [ConfigDataProvider](core/core-api/src/main/kotlin/org/eclipse/hara/ddiclient/core/api/ConfigDataProvider.kt) interface:
+Create a class that implements the [ConfigDataProvider](hara-ddiclient-api/src/main/kotlin/org/eclipse/hara/ddiclient/api/ConfigDataProvider.kt) interface:
 
     class ConfigDataProviderImpl(): ConfigDataProvider {
         override fun configData(): Map<String, String> {
@@ -73,7 +73,7 @@ Create a class that implements the [ConfigDataProvider](core/core-api/src/main/k
         }
     }
 
-Create a class that implements the [DeploymentPermitProvider](core/core-api/src/main/kotlin/org/eclipse/hara/ddiclient/core/api/DeploymentPermitProvider.kt) interface:
+Create a class that implements the [DeploymentPermitProvider](hara-ddiclient-api/src/main/kotlin/org/eclipse/hara/ddiclient/api/DeploymentPermitProvider.kt) interface:
 
     class DeploymentPermitProviderImpl: DeploymentPermitProvider {
         override fun downloadAllowed(): Deferred<Boolean> {
@@ -84,7 +84,7 @@ Create a class that implements the [DeploymentPermitProvider](core/core-api/src/
         }
     }
 
-Create a class that implements the [MessageListener](core/core-api/src/main/kotlin/org/eclipse/hara/ddiclient/core/api/MessageListener.kt) interface:
+Create a class that implements the [MessageListener](hara-ddiclient-api/src/main/kotlin/org/eclipse/hara/ddiclient/api/MessageListener.kt) interface:
 
     class MessageListenerImpl(): MessageListener {
             override fun onMessage(message: MessageListener.Message) {
@@ -92,7 +92,7 @@ Create a class that implements the [MessageListener](core/core-api/src/main/kotl
         }
     }
 
-Create a class that implements the [Updater](core/core-api/src/main/kotlin/org/eclipse/hara/ddiclient/core/api/Updater.kt) interface:
+Create a class that implements the [Updater](hara-ddiclient-api/src/main/kotlin/org/eclipse/hara/ddiclient/api/Updater.kt) interface:
 
     class UpdaterImpl(): Updater {
         override fun apply(modules: Set<Updater.SwModuleWithPath>,messenger: Updater.Messenger){
@@ -100,7 +100,7 @@ Create a class that implements the [Updater](core/core-api/src/main/kotlin/org/e
         }
     }
 
-Create a class that implements the [DownloadBehavior](core/core-api/src/main/kotlin/org/eclipse/hara/ddiclient/core/api/DownloadBehavior.kt) interface:
+Create a class that implements the [DownloadBehavior](hara-ddiclient-api/src/main/kotlin/org/eclipse/hara/ddiclient/api/DownloadBehavior.kt) interface:
 
     class DownloadBehaviorImpl(): DownloadBehavior {
         override fun onAttempt(attempt: Int, artifactId:String, previousError: Throwable?): DownloadBehavior.Try {
@@ -123,7 +123,7 @@ Create the Client, add the provider and return the client:
 
 ## Contributing
 
-To contribute to this project please [open a GitHub pull request](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests).
+To contribute to this project please [open a GitHub pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests).
 
 ## Contact us
 
