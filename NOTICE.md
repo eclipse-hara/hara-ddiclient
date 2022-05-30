@@ -34,7 +34,7 @@ The project maintains the following source code repositories:
 gson (2.8.9)
 
     * License: Apache 2.0
-    * Project: https://github.com/google/gson/gson
+    * Project: https://github.com/google/gson
     * Source:  https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.9/gson-2.8.9-sources.jar
 
 okhttp (4.9.3)
