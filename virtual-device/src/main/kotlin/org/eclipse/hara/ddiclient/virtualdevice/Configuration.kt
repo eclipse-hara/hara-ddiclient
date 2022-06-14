@@ -48,7 +48,7 @@ object Configuration {
      * {3} is replaced with the gatewayToken
      *
      * Example:
-     *  the string "virtual_device_id,{0}|virtual_device_controller_id,{1}|client:kotlin" represents
+     *  the string "virtual_device_id,{0}|virtual_device_controller_id,{1}|client,kotlin" represents
      *  three target attributes:
      *  1- virtual_device_id = 7
      *  2- virtual_device_controller_id = a18b68b4-4c9b-4c8f-91af-a26d3a2d1008
