@@ -1,0 +1,22 @@
+name: build-action
+on:
+    push
+
+jobs:
+    build:
+        strategy:
+            matrix:
+                os: [ubuntu-latest, macos-latest]
+        runs-on: ${{matrix.os}}
+        steps:
+        - name: Check repository
+          uses: actions/checkout@v3
+
+        - name: Setup Gradle
+          uses: gradle/gradle-build-action@v2
+
+        - name: Setup Docker
+          uses: docker-practice/actions-setup-docker@master
+
+        - name: Gradle build
+          run: ./gradlew build
