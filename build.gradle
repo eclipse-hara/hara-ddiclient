@@ -230,19 +230,19 @@ task stopHawkbitServer() {
 
 task restartHawkbitServer() {
     group 'testing'
-    doLast {/**/
+    doFirst {
         exec {
             workingDir 'docker/test/'
             commandLine 'docker-compose', 'down'
         }
-
-        ext.process = new ProcessBuilder()
-                .directory(new File(projectDir,"docker${File.separator}test${File.separator}"))
-                .command("docker-compose", "up")
-                .start()
-
     }
 
+    doLast{
+        exec {
+            workingDir 'docker/test/'
+            commandLine 'docker-compose', 'up', '--detach'
+        }
+    }
 }
 
 task waitingHawkbitServer(){
