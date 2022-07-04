@@ -15,16 +15,17 @@ jobs:
         - name: Setup Gradle
           uses: gradle/gradle-build-action@v2
 
-        #Executed on Linux & macOS
+        #Run only on macOS
         - name: Setup Docker
-          if: matrix.os != 'windows-latest'
+          if: matrix.os == 'macos-latest'
           uses: docker-practice/actions-setup-docker@master
 
+        #Run on Linux & macOS
         - name: Gradle build
           if: matrix.os != 'windows-latest'
           run: ./gradlew build
 
-        #Executed only on Windows
+        #Run only on Windows
         - name: Gradle build (without Test)
           if: matrix.os == 'windows-latest'
           run: ./gradlew build -x test
