@@ -1,0 +1,41 @@
+name: kdoc-action
+
+#Triggered when a new tag is pushed
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  generate-doc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check repository
+        uses: actions/checkout@v3
+
+      - name: Generate Html documentation
+        run: ./gradlew dokkaHtml
+
+      - name: Override index.html
+        run: |
+          echo '<html xmlns="http://www.w3.org/1999/xhtml">
+          <head>
+              <meta http-equiv="refresh" content="0;URL='${{ github.ref_name }}'" />
+          </head>
+          <body>
+          </body>
+          </html>' > 'index.html'
+
+      #Directory with index.html and documentation (only one commit)
+      - name: Setup publish directory
+        run: |
+          mkdir -p latest_doc/${{ github.ref_name }}
+          mv ./hara-ddiclient-api/build/dokka/html/* latest_doc/${{ github.ref_name }}
+          mv index.html latest_doc
+
+      - name: Setup branch gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./latest_doc
+          keep_files: true
