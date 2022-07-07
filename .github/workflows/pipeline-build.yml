@@ -1,6 +1,12 @@
 name: build-action
 on:
-    push
+    push:
+      branches-ignore:
+        - 'gh-pages'
+    pull_request:
+      branches-ignore:
+        - 'gh-pages'
+
 
 jobs:
     build:
