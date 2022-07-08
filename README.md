@@ -1,6 +1,7 @@
 <p align="center"><img src="hara_logo.png" width=20% height=20% ></p>
 <h1 align="center">Eclipse Hara™ - hara-ddiclient</h1>
 <p align="center">
+<a href="https://github.com/eclipse/hara-ddiclient/actions/workflows/pipeline-build.yml"><img alt="Build Status" src="https://github.com/eclipse/hara-ddiclient/actions/workflows/pipeline-build.yml/badge.svg"></a>
 <a href="https://www.eclipse.org/legal/epl-2.0"><img alt="License" src="https://img.shields.io/badge/License-EPL%202.0-red.svg"></a>
 </p>
 
