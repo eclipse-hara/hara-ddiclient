@@ -22,13 +22,13 @@ jobs:
 
         #Run only on macOS
         - name: Setup Docker
-          if: matrix.os == 'macos-latest'
+          if: ${{ matrix.os == 'macos-latest' && github.event_name == 'pull_request' }}
           uses: docker-practice/actions-setup-docker@master
 
-        #Build without test only on Windows
+        #Build without test on Windows or macOS (when not a PR)
         - name: Gradle build
           run: |
-              if [ "$RUNNER_OS" == "Windows" ]; then
+              if [[ "$RUNNER_OS" == "Windows" || ( "$RUNNER_OS" == "macOS" && ${{ github.event_name }} != 'pull_request' ) ]]; then
                   ./gradlew build -x test
               else
                   ./gradlew build
