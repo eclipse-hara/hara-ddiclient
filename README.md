@@ -146,11 +146,14 @@ For information on the libraries used by this project see [NOTICE](NOTICE.md).
 ## Authors
 
 * **Daniele Sergio** - *Initial work* - [danielesergio](https://github.com/danielesergio).
+* **Andrea Zoleo**
+* **Diego Rondini**
+* **Alberto Battiston**
 
 See also the list of [contributors](https://github.com/eclipse/hara-ddiclient/graphs/contributors) who participated in this project.
 
 ## License
 
-Copyright © 2017-2021, [Kynetics LLC](https://www.kynetics.com).
+Copyright © 2017-2022, [Kynetics LLC](https://www.kynetics.com).
 
 Released under the [EPLv2 License](https://www.eclipse.org/legal/epl-2.0).
