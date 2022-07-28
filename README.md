@@ -57,7 +57,14 @@ docker run -e HAWKBIT_GATEWAY_TOKEN=50f600c6e7e517b98b008311b0a325eb -e HAWKBIT_
 
 Make sure the authentication method provided in the parameters is enabled in the ["System Config"](https://www.eclipse.org/hawkbit/concepts/authentication/#ddi-api-authentication-modes) page. Available virtual device parameters can be found in the [Configuration class](virtual-device/src/main/kotlin/org/eclipse/hara/ddiclient/virtualdevice/Configuration.kt).
 
-## Example
+## API usage
+
+To learn how to use the hara-ddiclient library:
+1. read the [APIs documentation](https://eclipse.github.io/hara-ddiclient/)
+1. follow the [API usage example instructions](#api-usage-example)
+1. poke around the [virtual-device source code](virtual-device/src/main/kotlin/org/eclipse/hara/ddiclient/virtualdevice/)
+
+## API usage example
 
 Create a class that implements the [DirectoryForArtifactsProvider](hara-ddiclient-api/src/main/kotlin/org/eclipse/hara/ddiclient/api/DirectoryForArtifactsProvider.kt) interface:
 
