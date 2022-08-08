@@ -18,8 +18,9 @@ import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest.Status.Execution
 import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest.Status.Execution.closed
 import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest.Status.Execution.proceeding
 import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest.Status.Result.Finished
-import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest.Status.Result.Finished.failure
 import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest.Status.Result.Finished.none
+import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest.Status.Result.Finished.success
+import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest.Status.Result.Finished.failure
 import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest.Status.Result.Progress
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.In.DeploymentFeedback
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.Out.DeploymentInfo
@@ -70,6 +71,8 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                     dms.values.forEach {
                         it.downloader.send(FileDownloader.Companion.Message.Start)
                     }
+                } else {
+                    onDownloadSucceeded(msg.info.id, Progress(0,0), success, "No file downloaded", null)
                 }
             }
             else -> unhandled(msg)
@@ -122,13 +125,17 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             }
             else -> {
                 feedback(state.deplBaseResp.id, proceeding, progress, none, message)
-                feedback(state.deplBaseResp.id, proceeding, progress, none, "successfully downloaded all files")
-                newState.downloads.values.forEach { it.downloader.close() }
-                notificationManager.send(MessageListener.Message.Event.AllFilesDownloaded)
-                parent!!.send(DownloadFinished)
-                channel.close()
+                onDownloadSucceeded(state.deplBaseResp.id, progress, none, "successfully downloaded all files", newState)
             }
         }
+    }
+
+    private suspend fun onDownloadSucceeded(id: String, progress: Progress, finished: Finished, message: String, newState: State?){
+        feedback(id, proceeding, progress, finished, message)
+        newState?.downloads?.values?.forEach { it.downloader.close() }
+        notificationManager.send(MessageListener.Message.Event.AllFilesDownloaded)
+        parent!!.send(DownloadFinished)
+        channel.close()
     }
 
     private fun State.getProgress():Progress {
