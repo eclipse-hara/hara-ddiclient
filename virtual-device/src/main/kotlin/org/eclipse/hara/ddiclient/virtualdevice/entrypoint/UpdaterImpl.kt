@@ -29,7 +29,16 @@ class UpdaterImpl(
         val regex = Regex("VIRTUAL_DEVICE_UPDATE_RESULT_(\\*|${clientData.controllerId})")
         val result = modules.fold (Pair(true, listOf<String>())) { acc, module->
 
-            val command = (module.metadata?.firstOrNull{md -> md.key.contains(regex)}?.value ?: "OK|1|").split("|")
+            val command = (module.metadata?.firstOrNull { md -> md.key.contains(regex) }?.value ?: "OK|1|")
+                .split("|")
+                .filter { it.isNotEmpty() }
+                .run {
+                    if (serverInstructionIsValid(this)) {
+                        this
+                    } else {
+                        listOf("OK", "1", "Invalid configuration from server ${this.joinToString("|")}")
+                    }
+                }
 
             messenger.sendMessageToServer(
                 MessageFormat.format(
@@ -57,5 +66,15 @@ class UpdaterImpl(
         }
 
         Updater.UpdateResult(result.first, result.second)
+    }
+
+
+    private fun serverInstructionIsValid(instruction: List<String>):Boolean{
+        return when{
+            instruction.size < 2 -> false
+            instruction[0] != "OK" && instruction[0] != "KO" -> false
+            instruction[1].runCatching { toLong() }.isFailure -> false
+            else -> true
+        }
     }
 }
