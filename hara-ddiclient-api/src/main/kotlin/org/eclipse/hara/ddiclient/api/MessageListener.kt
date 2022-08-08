@@ -117,6 +117,8 @@ interface MessageListener {
              */
             data class UpdateFinished(val successApply: Boolean, val details: List<String>) : Event("The update has finished")
 
+            object NoUpdate : Event("No update to apply")
+
             /**
              * An error occurred during the update.
              * @property details, contains additional info about the error

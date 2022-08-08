@@ -38,23 +38,38 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 val details = mutableListOf("Details:")
                 val updaterError = update(updaters, msg, details)
 
-                if (updaterError.isNotEmpty()) {
-                    LOG.warn("update ${updaterError[0].first} failed!")
-                    parent!!.send(DeploymentManager.Companion.Message.UpdateFailed)
-                    sendFeedback(msg.info.id,
+                when{
+                    updaters.all { it.softwareModules.isEmpty() } -> {
+                        parent!!.send(DeploymentManager.Companion.Message.UpdateFinished)
+                        sendFeedback(msg.info.id,
+                            DeploymentFeedbackRequest.Status.Execution.closed,
+                            DeploymentFeedbackRequest.Status.Result.Progress(0,0),
+                            DeploymentFeedbackRequest.Status.Result.Finished.success,
+                            "No update applied"
+                        )
+                        notificationManager.send(MessageListener.Message.Event.NoUpdate)
+                    }
+
+                    updaterError.isNotEmpty() -> {
+                        LOG.warn("update ${updaterError[0].first} failed!")
+                        parent!!.send(DeploymentManager.Companion.Message.UpdateFailed)
+                        sendFeedback(msg.info.id,
                             DeploymentFeedbackRequest.Status.Execution.closed,
                             DeploymentFeedbackRequest.Status.Result.Progress(updaters.size, updaterError[0].first),
                             DeploymentFeedbackRequest.Status.Result.Finished.failure,
                             *details.toTypedArray())
-                    notificationManager.send(MessageListener.Message.Event.UpdateFinished(successApply = false, details = details))
-                } else {
-                    parent!!.send(DeploymentManager.Companion.Message.UpdateFinished)
-                    sendFeedback(msg.info.id,
+                        notificationManager.send(MessageListener.Message.Event.UpdateFinished(successApply = false, details = details))
+                    }
+
+                    else -> {
+                        parent!!.send(DeploymentManager.Companion.Message.UpdateFinished)
+                        sendFeedback(msg.info.id,
                             DeploymentFeedbackRequest.Status.Execution.closed,
                             DeploymentFeedbackRequest.Status.Result.Progress(updaters.size, updaters.size),
                             DeploymentFeedbackRequest.Status.Result.Finished.success,
                             *details.toTypedArray())
-                    notificationManager.send(MessageListener.Message.Event.UpdateFinished(successApply = true, details = details))
+                        notificationManager.send(MessageListener.Message.Event.UpdateFinished(successApply = true, details = details))
+                    }
                 }
             }
 
