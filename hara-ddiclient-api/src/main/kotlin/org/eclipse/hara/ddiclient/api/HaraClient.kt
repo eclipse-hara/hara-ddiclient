@@ -27,7 +27,7 @@ interface HaraClient {
      * @param haraClientData client configuration data
      * @param directoryForArtifactsProvider directory provider
      * @param configDataProvider config data provider
-     * @param deploymentPermitProvider deployment permit provider
+     * @param softDeploymentPermitProvider deployment permit provider
      * @param messageListeners message listeners
      * @param updaters list of updaters. Different updaters are responsible to install
      * different types of software module. See [Updater]
@@ -37,10 +37,11 @@ interface HaraClient {
         haraClientData: HaraClientData,
         directoryForArtifactsProvider: DirectoryForArtifactsProvider,
         configDataProvider: ConfigDataProvider,
-        deploymentPermitProvider: DeploymentPermitProvider,
+        softDeploymentPermitProvider: DeploymentPermitProvider,
         messageListeners: List<MessageListener>,
         updaters: List<Updater>,
         downloadBehavior: DownloadBehavior,
+        forceDeploymentPermitProvider: DeploymentPermitProvider = object : DeploymentPermitProvider{},
         httpBuilder: OkHttpClient.Builder = OkHttpClient.Builder()
     )
 

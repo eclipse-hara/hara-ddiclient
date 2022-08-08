@@ -144,9 +144,10 @@ data class HaraClientContext(
     val registry: UpdaterRegistry,
     val configDataProvider: ConfigDataProvider,
     val pathResolver: PathResolver,
-    val deploymentPermitProvider: DeploymentPermitProvider,
+    val softDeploymentPermitProvider: DeploymentPermitProvider,
     val messageListeners: List<MessageListener>,
-    val downloadBehavior: DownloadBehavior
+    val downloadBehavior: DownloadBehavior,
+    val forceDeploymentPermitProvider: DeploymentPermitProvider
 ) : AbstractCoroutineContextElement(HaraClientContext) {
     companion object Key : CoroutineContext.Key<HaraClientContext>
     override fun toString(): String = "HaraClientContext($this)"

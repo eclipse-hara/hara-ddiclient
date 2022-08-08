@@ -27,10 +27,11 @@ class HaraClientDefaultImpl : HaraClient {
         haraClientData: HaraClientData,
         directoryForArtifactsProvider: DirectoryForArtifactsProvider,
         configDataProvider: ConfigDataProvider,
-        deploymentPermitProvider: DeploymentPermitProvider,
+        softDeploymentPermitProvider: DeploymentPermitProvider,
         messageListeners: List<MessageListener>,
         updaters: List<Updater>,
         downloadBehavior: DownloadBehavior,
+        forceDeploymentPermitProvider: DeploymentPermitProvider,
         httpBuilder: OkHttpClient.Builder
             ) {
         rootActor = AbstractActor.actorOf("rootActor", HaraClientContext(
@@ -38,9 +39,10 @@ class HaraClientDefaultImpl : HaraClient {
                 UpdaterRegistry(*updaters.toTypedArray()),
                 configDataProvider,
                 PathResolver(directoryForArtifactsProvider),
-                deploymentPermitProvider,
+                softDeploymentPermitProvider,
                 messageListeners,
-                downloadBehavior
+                downloadBehavior,
+                forceDeploymentPermitProvider
             )) { RootActor.of(it) }
     }
 
