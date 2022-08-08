@@ -83,7 +83,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         when (msg) {
 
             is FileDownloader.Companion.Message.Success -> {
-                processMessage(state, msg.md5, Status.SUCCESS, "successfully downloaded file with md5 ${msg.md5}")
+                processMessage(state, msg.md5, Status.SUCCESS, "Successfully downloaded file with md5 ${msg.md5}")
             }
 
             is FileDownloader.Companion.Message.AlreadyDownloaded -> {
@@ -97,7 +97,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
 
             is FileDownloader.Companion.Message.Error -> {
                 processMessage(state, msg.md5,
-                    Status.ERROR, "failed to download file with md5 ${msg.md5} due to ${msg.message}", msg.message)
+                    Status.ERROR, "Failed to download file with md5 ${msg.md5} due to ${msg.message}", msg.message)
             }
 
             else -> unhandled(msg)
@@ -125,7 +125,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             }
             else -> {
                 feedback(state.deplBaseResp.id, proceeding, progress, none, message)
-                onDownloadSucceeded(state.deplBaseResp.id, progress, none, "successfully downloaded all files", newState)
+                onDownloadSucceeded(state.deplBaseResp.id, progress, none, "Successfully downloaded all files", newState)
             }
         }
     }

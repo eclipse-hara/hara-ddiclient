@@ -171,12 +171,12 @@ object TestUtils {
     fun messagesOnSuccessfullyDownloadOsWithAppDistribution(target: String) = arrayOf(
             ActionStatus.ContentEntry(
                     ActionStatus.ContentEntry.Type.running,
-                    listOf("successfully downloaded all files")
+                    listOf("Successfully downloaded all files")
             ),
             ActionStatus.ContentEntry(
                     ActionStatus.ContentEntry.Type.running,
                     listOf(
-                            "successfully downloaded file with md5 ${
+                            "Successfully downloaded file with md5 ${
                                 md5OfFileNamed(
                                         "test1"
                                 )
@@ -186,7 +186,7 @@ object TestUtils {
             ActionStatus.ContentEntry(
                     ActionStatus.ContentEntry.Type.running,
                     listOf(
-                            "successfully downloaded file with md5 ${
+                            "Successfully downloaded file with md5 ${
                                 md5OfFileNamed(
                                         "test2"
                                 )
@@ -196,7 +196,7 @@ object TestUtils {
             ActionStatus.ContentEntry(
                     ActionStatus.ContentEntry.Type.running,
                     listOf(
-                            "successfully downloaded file with md5 ${
+                            "Successfully downloaded file with md5 ${
                                 md5OfFileNamed(
                                         "test3"
                                 )
@@ -206,7 +206,7 @@ object TestUtils {
             ActionStatus.ContentEntry(
                     ActionStatus.ContentEntry.Type.running,
                     listOf(
-                            "successfully downloaded file with md5 ${
+                            "Successfully downloaded file with md5 ${
                                 md5OfFileNamed(
                                         "test4"
                                 )
@@ -238,12 +238,12 @@ object TestUtils {
     fun messagesOnSuccefullyDownloadOsDistribution(target: String) = arrayOf(
             ActionStatus.ContentEntry(
                     ActionStatus.ContentEntry.Type.running,
-                    listOf("successfully downloaded all files")
+                    listOf("Successfully downloaded all files")
             ),
             ActionStatus.ContentEntry(
                     ActionStatus.ContentEntry.Type.running,
                     listOf(
-                            "successfully downloaded file with md5 ${
+                            "Successfully downloaded file with md5 ${
                                 md5OfFileNamed(
                                         "test4"
                                 )
@@ -263,12 +263,12 @@ object TestUtils {
     fun messagesOnSuccefullyDownloadAppDistribution(target: String) = arrayOf(
             ActionStatus.ContentEntry(
                     ActionStatus.ContentEntry.Type.running,
-                    listOf("successfully downloaded all files")
+                    listOf("Successfully downloaded all files")
             ),
             ActionStatus.ContentEntry(
                     ActionStatus.ContentEntry.Type.running,
                     listOf(
-                            "successfully downloaded file with md5 ${
+                            "Successfully downloaded file with md5 ${
                                 md5OfFileNamed(
                                         "test1"
                                 )
