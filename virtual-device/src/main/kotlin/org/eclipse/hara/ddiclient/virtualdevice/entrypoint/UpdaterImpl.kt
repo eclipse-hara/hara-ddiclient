@@ -10,6 +10,8 @@
 
 package org.eclipse.hara.ddiclient.virtualdevice.entrypoint
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.eclipse.hara.ddiclient.api.HaraClientData
 import org.eclipse.hara.ddiclient.api.Updater
 import org.eclipse.hara.ddiclient.virtualdevice.Configuration
@@ -22,7 +24,7 @@ class UpdaterImpl(
     override fun apply(
         modules: Set<Updater.SwModuleWithPath>,
         messenger: Updater.Messenger
-    ): Updater.UpdateResult {
+    ): Updater.UpdateResult = runBlocking {
         println("APPLY UPDATE $modules")
         val regex = Regex("VIRTUAL_DEVICE_UPDATE_RESULT_(\\*|${clientData.controllerId})")
         val result = modules.fold (Pair(true, listOf<String>())) { acc, module->
@@ -38,7 +40,9 @@ class UpdaterImpl(
                     clientData.controllerId,
                     clientData.gatewayToken)
             )
-            Thread.sleep(command[1].toLong() * 1000)
+
+            delay(command[1].toLong() * 1000)
+
             messenger.sendMessageToServer(
                 MessageFormat.format(
                     Configuration.srvMsgTemplateAfterUpdate,
@@ -52,7 +56,6 @@ class UpdaterImpl(
             (acc.first && command[0] == "OK") to (acc.second + command.drop(2))
         }
 
-
-        return Updater.UpdateResult(result.first, result.second)
+        Updater.UpdateResult(result.first, result.second)
     }
 }
