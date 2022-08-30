@@ -37,12 +37,12 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     private var waitingAuthJob: Job? = null
     private fun beginningReceive(state: State): Receive = { msg ->
         // todo implement download skip option and move content of attempt function to 'msg is DeploymentInfo && msg.downloadIs(attempt)' when case
-        suspend fun attempt(msg: DeploymentInfo, deploymentPermitProvider: DeploymentPermitProvider) {
+        suspend fun attempt(msg: DeploymentInfo, deploymentPermitProvider: DeploymentPermitProvider, forcedDownload:Boolean) {
             val message = "Waiting authorization to download"
             LOG.info(message)
             sendFeedback(message)
             become(waitingDownloadAuthorization(state.copy(deplBaseResp = msg.info)))
-            notificationManager.send(MessageListener.Message.State.WaitingDownloadAuthorization)
+            notificationManager.send(MessageListener.Message.State.WaitingDownloadAuthorization(forcedDownload))
             waitingAuthJob?.cancel()
             waitingAuthJob = launch {
                 val result = deploymentPermitProvider.downloadAllowed().await()
@@ -58,16 +58,16 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         when {
 
             msg is DeploymentInfo && msg.downloadIs(ProvisioningType.forced)  -> {
-                attempt(msg, forceRequest)
+                attempt(msg, forceRequest, true)
             }
 
             msg is DeploymentInfo && msg.downloadIs(ProvisioningType.attempt) -> {
-                attempt(msg, softRequest)
+                attempt(msg, softRequest, false)
             }
 
             msg is DeploymentInfo && msg.downloadIs(ProvisioningType.skip) -> {
                 LOG.warn("skip download not yet implemented (used attempt)")
-                attempt(msg, softRequest)
+                attempt(msg, softRequest, false)
             }
 
             msg is DeploymentCancelInfo -> {
@@ -115,7 +115,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 LOG.info(message)
                 sendFeedback(message)
                 become(waitingUpdateAuthorization(state))
-                notificationManager.send(MessageListener.Message.State.WaitingUpdateAuthorization)
+                notificationManager.send(MessageListener.Message.State.WaitingUpdateAuthorization(state.updateIs(ProvisioningType.forced)))
                 waitingAuthJob = launch(Dispatchers.IO) {
                     when{
                         state.updateIs(ProvisioningType.attempt) -> onAuthorizationReceive(softRequest)

@@ -59,13 +59,15 @@ interface MessageListener {
 
             /**
              * Client is waiting for the authorization to start downloading
+             * @property forcedDownload: if true, immediate download is requested from server
              */
-            object WaitingDownloadAuthorization : State("Waiting authorization to start download")
+            class WaitingDownloadAuthorization(val forcedDownload:Boolean) : State("Waiting authorization to start download")
 
             /**
              * Client is waiting for the authorization to start updating
+             * @property forcedUpdate: if true, immediate update is requested from server
              */
-            object WaitingUpdateAuthorization : State("Waiting authorization to start update")
+            class WaitingUpdateAuthorization(val forcedUpdate:Boolean) : State("Waiting authorization to start update")
 
             /**
              * Client is waiting for new requests from server
