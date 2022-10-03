@@ -150,7 +150,6 @@ data class HaraClientContext(
     val forceDeploymentPermitProvider: DeploymentPermitProvider
 ) : AbstractCoroutineContextElement(HaraClientContext) {
     companion object Key : CoroutineContext.Key<HaraClientContext>
-    override fun toString(): String = "HaraClientContext($this)"
 }
 
 data class ParentActor(val ref: ActorRef) : AbstractCoroutineContextElement(ParentActor) {
