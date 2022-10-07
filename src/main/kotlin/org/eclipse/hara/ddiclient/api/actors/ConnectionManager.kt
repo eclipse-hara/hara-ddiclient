@@ -100,7 +100,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     }
 
     private suspend fun onControllerBaseChange(state: State, s: State, res: ControllerBaseResponse, newControllerBaseEtag: String) {
-        if (res.requireConfigData() || !configDataProvider.isUpdated()) {
+        if (res.requireConfigData()) {
             this.send(Out.ConfigDataRequired, state)
         }
 
@@ -137,6 +137,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         try {
 
             notificationManager.send(MessageListener.Message.Event.Polling)
+
+            if (!configDataProvider.isUpdated()) {
+                this.send(Out.ConfigDataRequired, state)
+            }
 
             client.onControllerActionsChange(state.controllerBaseEtag) { res, newEtag ->
                 onControllerBaseChange(state, s, res, newEtag)
