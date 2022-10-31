@@ -10,6 +10,8 @@
 
 package org.eclipse.hara.ddiclient.api
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import okhttp3.OkHttpClient
 
 /**
@@ -32,6 +34,7 @@ interface HaraClient {
      * @param updaters list of updaters. Different updaters are responsible to install
      * different types of software module. See [Updater]
      * @param httpBuilder http builder
+     * @param scope coroutine scope used for launching actors
      */
     fun init(
         haraClientData: HaraClientData,
@@ -42,7 +45,8 @@ interface HaraClient {
         updaters: List<Updater>,
         downloadBehavior: DownloadBehavior,
         forceDeploymentPermitProvider: DeploymentPermitProvider = object : DeploymentPermitProvider{},
-        httpBuilder: OkHttpClient.Builder = OkHttpClient.Builder()
+        httpBuilder: OkHttpClient.Builder = OkHttpClient.Builder(),
+        scope:CoroutineScope = CoroutineScope(Dispatchers.Default)
     )
 
     /**

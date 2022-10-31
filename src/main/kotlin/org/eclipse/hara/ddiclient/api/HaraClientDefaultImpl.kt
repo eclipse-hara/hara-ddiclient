@@ -10,6 +10,7 @@
 
 package org.eclipse.hara.ddiclient.api
 
+import kotlinx.coroutines.CoroutineScope
 import org.eclipse.hara.ddi.api.DdiClientDefaultImpl
 import org.eclipse.hara.ddiclient.api.actors.AbstractActor
 import org.eclipse.hara.ddiclient.api.actors.ActorRef
@@ -32,8 +33,8 @@ class HaraClientDefaultImpl : HaraClient {
         updaters: List<Updater>,
         downloadBehavior: DownloadBehavior,
         forceDeploymentPermitProvider: DeploymentPermitProvider,
-        httpBuilder: OkHttpClient.Builder
-            ) {
+        httpBuilder: OkHttpClient.Builder,
+        scope: CoroutineScope) {
         rootActor = AbstractActor.actorOf("rootActor", HaraClientContext(
                 DdiClientDefaultImpl.of(haraClientData, httpBuilder),
                 UpdaterRegistry(*updaters.toTypedArray()),
@@ -42,8 +43,10 @@ class HaraClientDefaultImpl : HaraClient {
                 softDeploymentPermitProvider,
                 messageListeners,
                 downloadBehavior,
-                forceDeploymentPermitProvider
-            )) { RootActor.of(it) }
+                forceDeploymentPermitProvider,
+            ),
+            scope = scope
+        ) { RootActor.of(it) }
     }
 
     override fun startAsync() = runBlocking { rootActor!!.send(ConnectionManager.Companion.Message.In.Start) }

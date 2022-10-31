@@ -131,9 +131,10 @@ abstract class AbstractActor protected constructor(private val actorScope: Actor
             capacity: Int = 3,
             start: CoroutineStart = CoroutineStart.DEFAULT,
             onCompletion: CompletionHandler? = null,
+            scope: CoroutineScope = CoroutineScope(Dispatchers.Default),
             block: suspend (ActorScope) -> T
         ): ActorRef =
-                GlobalScope.actor(Dispatchers.IO.plus(CoroutineName(name)).plus(context), capacity, start, onCompletion) {
+                scope.actor(Dispatchers.IO.plus(CoroutineName(name)).plus(context), capacity, start, onCompletion) {
                     __workflow__(LoggerFactory.getLogger(AbstractActor::class.java), block)()
                 }
     }
