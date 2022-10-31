@@ -15,7 +15,6 @@ import org.eclipse.hara.ddiclient.api.HaraClientData
 import org.eclipse.hara.ddiclient.virtualdevice.entrypoint.*
 import kotlin.random.Random.Default.nextLong
 
-@OptIn(DelicateCoroutinesApi::class)
 fun main() = runBlocking {
     Configuration.apply {
         System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, logLevel)
@@ -28,19 +27,18 @@ fun main() = runBlocking {
                 gatewayToken
             )
 
-            GlobalScope.launch {
+            launch(Dispatchers.IO) {
                 val delay = nextLong(0, virtualDeviceStartingDelay)
                 println("Virtual Device $it starts in $delay milliseconds")
                 delay(delay)
-                getClient(clientData, it).startAsync()
+                getClient(this, clientData, it).startAsync()
             }
         }
     }
-
-    while (true) {}
+    Unit
 }
 
-private fun getClient(clientData: HaraClientData, virtualDeviceId: Int): HaraClientDefaultImpl {
+private fun getClient(scope: CoroutineScope, clientData: HaraClientData, virtualDeviceId: Int): HaraClientDefaultImpl {
     val client = HaraClientDefaultImpl()
     client.init(
         clientData,
@@ -49,7 +47,8 @@ private fun getClient(clientData: HaraClientData, virtualDeviceId: Int): HaraCli
         DeploymentPermitProviderImpl(),
         listOf(MessageListenerImpl(virtualDeviceId, clientData)),
         listOf(UpdaterImpl(virtualDeviceId, clientData)),
-        DownloadBehaviorImpl()
+        DownloadBehaviorImpl(),
+        scope=scope
     )
     return client
 }
