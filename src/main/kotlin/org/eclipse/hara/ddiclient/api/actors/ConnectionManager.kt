@@ -168,6 +168,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         val now = Instant.now()
         val elapsed = Duration(state.lastPing, now)
         val timer = timer(name = "Polling",
+                daemon = true,
                 initialDelay = Math.max(state.pingInterval.minus(elapsed).millis, 0),
                 period = Math.max(state.pingInterval.millis, 5_000)) {
             launch {
