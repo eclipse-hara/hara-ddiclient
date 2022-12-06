@@ -6,12 +6,8 @@ This project implements the Eclipse Foundation Security Policy
 
 ## Supported Versions
 
-These versions of Eclipse Hara are currently being supported with security
+The latest stable version of hara-ddiclient library is supported with security
 updates.
-
-| Version | Released   | Supported          | 
-| ------- | ---------- | ------------------ | 
-| 1.0.0   | XXXX-XX-XX | :white_check_mark: | 
 
 ## Reporting a Vulnerability
 

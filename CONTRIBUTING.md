@@ -5,49 +5,10 @@ Thanks for your interest in this project.
 ## Project description
 
 Eclipse Hara™ provides a reference agent software implementation featuring the
-Eclipse hawkBit device API. Such reference implementations are initially driven
-by operating systems and application frameworks that today constitute the main
-platforms for the majority of IoT and embedded devices. These devices include
-but are not limited to: Open Embedded, Android, QT, etc. The scope of the
-project is to fill the gap that was intentionally left out by the hawkbit
-project. The purpose is to provide device update management and client
-solutions for handling software updates on the device. By providing a solid open
-source reference implementations of a hawkBit client, which is driven by the
-fundamental use cases for updating a remote device, the project can be
-beneficial toward the adoption of the hawkBit update server as a backend
-solution. Fundamental blocks of the client design are: hawBit DDI Client, which
-implements API towards the update server  the Service, which is the runtime
-execution context of the DDI Client. The service includes the DDI client as a
-library messaging systems (IPC) between the Service and the Service Consumer  
-The Service Consumer is implemented in the Application context and it
-communicates with the Service by using an interprocess communication mechanism
-provided by the Server. The proposed model is independent from the particular
-device operating system and all the blocks can be implemented in any language.
-In particular the DDI Client implementation is based on a straightforward states
-interaction which can serve as a reference for other implementations. The first
-implementation has been developed to serve Android OS based embedded devices. In
-fact, the lack of an OSS distribution model for Android OS and application
-updates, that could be used in other specific industries other than consumer
-context (smartphones), facilitates the adoption of existing OSS device
-management systems for embedded Android and IoT appliances. In this scenario we
-have seen the opportunity to use Eclipse hawkBit as the artifacts (Android apps
-and OS updates) content delivery platform and of course we needed to handle such
-artifacts on the device.  Because Android SDK is based on a JVM Runtime
-environment, we have decided to develop the DDI Client block neutral with
-respect to the operating system. In this way, the same code could be used in a
-Linux operating system. Of course the Service and the IPC towards the service
-consumer are Android specific, nevertheless a Linux based Service using DBUS as
-IPC can  fit perfectly the reference design.  There are important aspects that
-has to be considered in the update process which can be applied to any other
-Platform/OS  in particular related to the particular update strategy: Single
-copy update Dual copy update (A/B) Nowadays due to the larger size in MMC
-memories, we have an increased number of devices implementing the redundant A/B
-double copy update. Our current Android client implementation supports both.
-HawkBit is a device neutral platform and it can provision artifacts also to
-Microcotroller based embedded systems. Having identified a common artifacts
-management workflow it is possible to provide an implementation based on free
-RTOS by writing the just DDI Client block as a Task without the need of any
-other sophistication.
+Eclipse hawkBit device API.
+
+Hara-ddiclient is a Kotlin library that facilitates and speeds up the development of DDI API clients for devices
+connecting to hawkBit servers.
 
 * https://projects.eclipse.org/projects/iot.hawkbit.hara
 
@@ -138,7 +99,7 @@ So please don’t report your finding using GitHub issues and better head over t
 
 ## Further information
 
-* [Eclipse Project Page](http://projects.eclipse.org/projects/iot.hara)
+* [Eclipse Hara Project Page](http://projects.eclipse.org/projects/iot.hara)
 
 ## Contact
 
