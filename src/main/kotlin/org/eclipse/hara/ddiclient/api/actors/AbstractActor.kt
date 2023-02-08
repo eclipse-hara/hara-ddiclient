@@ -36,7 +36,7 @@ typealias ActorScope = kotlinx.coroutines.channels.ActorScope<Any>
 
 val EmptyReceive: Receive = {}
 
-@OptIn(ObsoleteCoroutinesApi::class)
+@OptIn(ObsoleteCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 abstract class AbstractActor protected constructor(private val actorScope: ActorScope) : ActorScope by actorScope {
 
     private var __receive__: Receive = EmptyReceive
@@ -69,8 +69,12 @@ abstract class AbstractActor protected constructor(private val actorScope: Actor
 
     override val channel: Channel<Any> = object : Channel<Any> by actorScope.channel {
         override suspend fun send(element: Any) {
-            LOG.debug("Send message {} to actor {}.", element.javaClass.simpleName, name)
-            actorScope.channel.send(element)
+            if(actorScope.channel.isClosedForSend){
+                LOG.debug("Channel is close for send. Message {} isn't sent to actor {}.", element.javaClass.simpleName, name)
+            } else {
+                LOG.debug("Send message {} to actor {}.", element.javaClass.simpleName, name)
+                actorScope.channel.send(element)
+            }
         }
 
         override fun close(cause: Throwable?): Boolean {
