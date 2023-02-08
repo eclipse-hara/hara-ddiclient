@@ -40,8 +40,9 @@ class HawkbitAuthenticationRequestInterceptor(authentications: Set<Authenticatio
         val builder = originalRequest.newBuilder()
         val size = authentications.size
         val exitValue = authenticationUse
-        var response: Response
+        var response: Response? = null
         do {
+            response?.close()
             val authentication = authentications[authenticationUse]
             builder.header(authentication.header, authentication.headerValue)
             response = chain.proceed(builder.build())
@@ -51,6 +52,6 @@ class HawkbitAuthenticationRequestInterceptor(authentications: Set<Authenticatio
             authenticationUse = ++authenticationUse % size
         } while (authenticationUse != exitValue)
 
-        return response
+        return response!!
     }
 }
