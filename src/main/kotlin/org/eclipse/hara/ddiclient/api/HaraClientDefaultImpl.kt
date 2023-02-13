@@ -53,9 +53,7 @@ class HaraClientDefaultImpl : HaraClient {
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     override fun stop() = runBlocking {
-        if (!rootActor!!.isClosedForSend) {
-            rootActor!!.send(ConnectionManager.Companion.Message.In.Stop)
-        }
+        rootActor!!.send(ConnectionManager.Companion.Message.In.Stop)
     }
 
     override fun forcePing() = runBlocking { rootActor!!.send(ConnectionManager.Companion.Message.In.ForcePing) }
