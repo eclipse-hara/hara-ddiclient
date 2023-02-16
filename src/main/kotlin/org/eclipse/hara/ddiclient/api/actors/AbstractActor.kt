@@ -104,7 +104,7 @@ abstract class AbstractActor protected constructor(private val actorScope: Actor
             for (message in actorScope.channel) { actor.__receive__(message) }
             actor.LOG.info("Actor {} exiting.", actor.name)
         }.onFailure { t ->
-            actor.LOG.error("Error processing message in actor {}. error: {} message: {}", actor.name, t.javaClass, t.message)
+            actor.LOG.error("Error processing message in actor {}, actor exiting. error: {} message: {}", actor.name, t.javaClass, t.message)
             actor.LOG.debug(t.message, t)
             if (actor.parent != null) {
                 actor.parent.send(ActorException(actor.name, actor.channel, t))
