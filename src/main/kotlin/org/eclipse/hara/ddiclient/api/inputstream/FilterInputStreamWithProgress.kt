@@ -13,38 +13,30 @@ package org.eclipse.hara.ddiclient.api.inputstream
 import java.io.FilterInputStream
 import java.io.IOException
 import java.io.InputStream
-import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.min
 
 class FilterInputStreamWithProgress(
     inputStream: InputStream,
     private val totalSize: Long
 ) : FilterInputStream(inputStream) {
 
-    private var alreadyRead: AtomicInteger = AtomicInteger(0)
+    private var alreadyRead: Int = 0
 
     @Throws(IOException::class)
     override fun read(): Int {
-        try {
-            val count = this.`in`.read()
-            alreadyRead.addAndGet(count)
-            return count
-        } catch (e: IOException) {
-            throw e
+        return `in`.read().also {
+            alreadyRead += it
         }
     }
 
     @Throws(IOException::class)
     override fun read(var1: ByteArray, var2: Int, var3: Int): Int {
-        try {
-            val count = this.`in`.read(var1, var2, var3)
-            alreadyRead.addAndGet(count)
-            return count
-        } catch (e: IOException) {
-            throw e
+        return `in`.read(var1, var2, var3).also {
+            alreadyRead += it
         }
     }
 
     fun getProgress(): Double {
-        return alreadyRead.get().toDouble() / totalSize
+        return min(alreadyRead.toDouble() / totalSize, 1.0)
     }
 }
