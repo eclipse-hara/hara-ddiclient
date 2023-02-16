@@ -134,7 +134,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     private suspend fun onPing(state: State) {
         LOG.info("Execute ping calls to the server...")
         val s = state.copy(lastPing = Instant.now())
-        try {
+        runCatching {
 
             notificationManager.send(MessageListener.Message.Event.Polling)
 
@@ -145,7 +145,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             client.onControllerActionsChange(state.controllerBaseEtag) { res, newEtag ->
                 onControllerBaseChange(state, s, res, newEtag)
             }
-        } catch (t: Throwable) {
+        }.onFailure { t ->
             fun loopMsg(t: Throwable): String = t.message + if (t.cause != null) " ${loopMsg(t.cause!!)}" else ""
             val errorDetails = "exception: ${t.javaClass} message: ${loopMsg(t)}"
             this.send(ErrMsg(errorDetails), state)
@@ -156,9 +156,9 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     }
 
     private suspend fun exceptionHandler(state: State, function: suspend () -> Unit) {
-        try {
+        runCatching {
             function.invoke()
-        } catch (t: Throwable) {
+        }.onFailure { t ->
             this.send(ErrMsg("exception: ${t.javaClass}" + if (t.message != null) " message: ${t.message}" else ""), state)
             LOG.warn(t.message, t)
         }

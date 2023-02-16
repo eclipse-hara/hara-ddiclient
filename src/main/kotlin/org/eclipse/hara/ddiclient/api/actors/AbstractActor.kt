@@ -100,23 +100,25 @@ abstract class AbstractActor protected constructor(private val actorScope: Actor
 
     companion object {
 
+        private suspend fun <T: AbstractActor>processMessages(actorScope: ActorScope, actor:T) = runCatching{
+            for (message in actorScope.channel) { actor.__receive__(message) }
+            actor.LOG.info("Actor {} exiting.", actor.name)
+        }.onFailure { t ->
+            actor.LOG.error("Error processing message in actor {}. error: {} message: {}", actor.name, t.javaClass, t.message)
+            actor.LOG.debug(t.message, t)
+            if (actor.parent != null) {
+                actor.parent.send(ActorException(actor.name, actor.channel, t))
+            } else {
+                throw t
+            }
+        }
+
         private fun <T : AbstractActor> __workflow__(logger: Logger, block: suspend (ActorScope) -> T): suspend ActorScope.() -> Unit = {
-            try {
-                val actor = block(this)
-                actor.LOG.info("Actor {} created.", actor.name)
-                try {
-                    for (message in channel) { actor.__receive__(message) }
-                    actor.LOG.info("Actor {} exiting.", actor.name)
-                } catch (t: Throwable) {
-                    actor.LOG.error("Error processing message in actor {}. error: {} message: {}", actor.name, t.javaClass, t.message)
-                    actor.LOG.debug(t.message, t)
-                    if (actor.parent != null) {
-                        actor.parent.send(ActorException(actor.name, actor.channel, t))
-                    } else {
-                        throw t
-                    }
-                }
-            } catch (t: Throwable) {
+            runCatching {
+                block(this).also { actor -> actor.LOG.info("Actor {} created.", actor.name)  }
+            }.onSuccess {
+                    actor -> processMessages(this, actor)
+            }.onFailure { t ->
                 val name = coroutineContext[CoroutineName]?.name
                 val parent = coroutineContext[ParentActor]?.ref
                 logger.error("Error creating actor ${name ?: "Unknown"}. error: ${t.javaClass} message: ${t.message}")

@@ -105,10 +105,10 @@ private constructor(
                         notificationManager.send(MessageListener.Message.Event.Error(listOf(errorMessage)))
                     }
                     delay(tryDownload.seconds * 1000)
-                    try {
+                    runCatching {
                         download(state.actionId)
                         channel.send(Message.FileDownloaded)
-                    } catch (t: Throwable) {
+                    }.onFailure {t ->
                         channel.send(Message.RetryDownload("exception: ${t.javaClass.simpleName}. message: ${t.message}", t))
                         LOG.warn("Failed to download file ${fileToDownload.fileName}", t)
                     }
