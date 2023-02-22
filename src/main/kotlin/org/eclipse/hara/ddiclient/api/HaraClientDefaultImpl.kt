@@ -10,20 +10,25 @@
 
 package org.eclipse.hara.ddiclient.api
 
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
 import org.eclipse.hara.ddi.api.DdiClientDefaultImpl
 import org.eclipse.hara.ddiclient.api.actors.AbstractActor
 import org.eclipse.hara.ddiclient.api.actors.ActorRef
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager
 import org.eclipse.hara.ddiclient.api.actors.RootActor
 import org.eclipse.hara.ddiclient.api.actors.HaraClientContext
-import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 
 class HaraClientDefaultImpl : HaraClient {
 
-    var rootActor: ActorRef? = null
+    private var rootActor: ActorRef? = null
 
+    private val debouncingForcePingChannel: Channel<ConnectionManager.Companion.Message.In.ForcePing> =
+        Channel(1, BufferOverflow.DROP_LATEST)
+
+    @OptIn(ObsoleteCoroutinesApi::class)
     override fun init(
         haraClientData: HaraClientData,
         directoryForArtifactsProvider: DirectoryForArtifactsProvider,
@@ -35,6 +40,14 @@ class HaraClientDefaultImpl : HaraClient {
         forceDeploymentPermitProvider: DeploymentPermitProvider,
         httpBuilder: OkHttpClient.Builder,
         scope: CoroutineScope) {
+        runBlocking {
+            scope.launch(Dispatchers.Default){
+                for(msg in debouncingForcePingChannel){
+                    rootActor?.send(msg)
+                    delay(FORCE_PING_DEBOUNCING_TIME)
+                }
+            }
+        }
         rootActor = AbstractActor.actorOf("rootActor", HaraClientContext(
                 DdiClientDefaultImpl.of(haraClientData, httpBuilder),
                 UpdaterRegistry(*updaters.toTypedArray()),
@@ -51,10 +64,17 @@ class HaraClientDefaultImpl : HaraClient {
 
     override fun startAsync() = runBlocking { rootActor!!.send(ConnectionManager.Companion.Message.In.Start) }
 
-    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun stop() = runBlocking {
         rootActor!!.send(ConnectionManager.Companion.Message.In.Stop)
+        if(!debouncingForcePingChannel.isClosedForSend){
+            debouncingForcePingChannel.close()
+        }
     }
 
-    override fun forcePing() = runBlocking { rootActor!!.send(ConnectionManager.Companion.Message.In.ForcePing) }
+    override fun forcePing() = runBlocking { debouncingForcePingChannel.send(ConnectionManager.Companion.Message.In.ForcePing) }
+
+    companion object{
+        const val FORCE_PING_DEBOUNCING_TIME = 30_000L
+    }
 }
