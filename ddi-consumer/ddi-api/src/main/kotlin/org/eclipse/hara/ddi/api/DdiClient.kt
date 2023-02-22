@@ -17,6 +17,7 @@ import org.eclipse.hara.ddi.api.model.CancelFeedbackRequest
 import org.eclipse.hara.ddi.api.model.ControllerBaseResponse
 import org.eclipse.hara.ddi.api.model.DeploymentBaseResponse
 import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest
+import retrofit2.Response
 import java.io.InputStream
 
 typealias OnResourceChange<T> = suspend (T, String) -> Unit
@@ -35,9 +36,9 @@ interface DdiClient {
 
     suspend fun getSoftwareModulesArtifacts(softwareModuleId: String): List<ArtifactResponse>
 
-    suspend fun postDeploymentActionFeedback(actionId: String, feedback: DeploymentFeedbackRequest)
+    suspend fun postDeploymentActionFeedback(actionId: String, feedback: DeploymentFeedbackRequest):Response<Unit>
 
-    suspend fun postCancelActionFeedback(actionId: String, feedback: CancelFeedbackRequest)
+    suspend fun postCancelActionFeedback(actionId: String, feedback: CancelFeedbackRequest): Response<Unit>
 
     suspend fun putConfigData(data: ConfigurationDataRequest, onSuccessConfigData: () -> Unit)
 

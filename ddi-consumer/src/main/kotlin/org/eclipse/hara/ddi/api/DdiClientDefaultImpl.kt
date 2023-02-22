@@ -83,14 +83,14 @@ class DdiClientDefaultImpl private constructor(private val ddiRestApi: DdiRestAp
         return response
     }
 
-    override suspend fun postDeploymentActionFeedback(actionId: String, feedback: DeploymentFeedbackRequest) {
+    override suspend fun postDeploymentActionFeedback(actionId: String, feedback: DeploymentFeedbackRequest):Response<Unit> {
         LOG.debug("postDeploymentActionFeedback({},{})", actionId, feedback)
-        ddiRestApi.postDeploymentActionFeedback(tenant, controllerId, actionId, feedback)
+        return ddiRestApi.postDeploymentActionFeedback(tenant, controllerId, actionId, feedback)
     }
 
-    override suspend fun postCancelActionFeedback(actionId: String, feedback: CancelFeedbackRequest) {
+    override suspend fun postCancelActionFeedback(actionId: String, feedback: CancelFeedbackRequest):Response<Unit> {
         LOG.debug("postCancelActionFeedback({},{})", actionId, feedback)
-        ddiRestApi.postCancelActionFeedback(tenant, controllerId, actionId, feedback)
+        return ddiRestApi.postCancelActionFeedback(tenant, controllerId, actionId, feedback)
     }
 
     override suspend fun downloadArtifact(url: String): InputStream {

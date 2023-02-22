@@ -10,23 +10,20 @@
 
 package org.eclipse.hara.ddiclient.api.actors
 
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import org.eclipse.hara.ddi.api.DdiClient
-import org.eclipse.hara.ddi.api.model.ConfigurationDataRequest
-import org.eclipse.hara.ddi.api.model.CancelActionResponse
-import org.eclipse.hara.ddi.api.model.CancelFeedbackRequest
-import org.eclipse.hara.ddi.api.model.ControllerBaseResponse
-import org.eclipse.hara.ddi.api.model.DeploymentBaseResponse
-import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest
+import org.eclipse.hara.ddi.api.model.*
+import org.eclipse.hara.ddiclient.api.MessageListener
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.In
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.Out
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.Out.Err.ErrMsg
-import org.eclipse.hara.ddiclient.api.MessageListener
-import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.launch
-import org.joda.time.Duration
-import org.joda.time.Instant
-import java.util.Timer
+import org.joda.time.*
+import retrofit2.Response
+import java.util.*
 import kotlin.concurrent.timer
+import kotlin.math.pow
 
 @OptIn(ObsoleteCoroutinesApi::class)
 class ConnectionManager
@@ -35,6 +32,69 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     private val client: DdiClient = coroutineContext[HaraClientContext]!!.ddiClient
     private val notificationManager = coroutineContext[NMActor]!!.ref
     private val configDataProvider = coroutineContext[HaraClientContext]!!.configDataProvider
+    private val feedbackChannel: Channel<Feedback> = Channel(UNLIMITED)
+
+    override fun beforeCloseChannel() {
+        feedbackChannel.close()
+        super.beforeCloseChannel()
+    }
+
+    init{
+        CoroutineScope(Dispatchers.IO).launch{
+
+            val shouldRetry: (Response<Unit>) -> Boolean = { response ->
+                when(response.code()){
+                    in 500 .. 599, 409, 429 -> true
+                    else -> false
+                }
+            }
+
+            for(msg in feedbackChannel){
+                var attempt = 0;
+                do{
+                    val retry = sendFeedback(msg.decorateMessage(attempt))
+                        .map(shouldRetry)
+                        .getOrDefault(true)
+                        .run { this && ++attempt < 168 }
+
+                    if(retry){
+                        delay(2.0.pow(attempt).toLong().coerceIn(60_000, 3_600_000))
+                    }
+                } while(retry)
+                if(msg.closeAction){
+                    channel.send(In.Ping)
+                }
+            }
+        }
+    }
+
+    private suspend fun sendFeedback(msg: Feedback): Result<Response<Unit>>  = runCatching {
+        when (msg) {
+            is In.DeploymentFeedback -> client.postDeploymentActionFeedback(msg.feedback.id, msg.feedback)
+            is In.CancelFeedback -> client.postCancelActionFeedback(msg.feedback.id, msg.feedback)
+        }
+    }
+
+    private fun Feedback.decorateMessage(attempt:Int):Feedback{
+        val detailsDecorator: (List<String>, String) -> List<String> = { list, time ->
+            list.toMutableList().apply {
+                if(attempt > 0){
+                    add("Re-sent at ${Instant.now()} (First try at $time")
+                }
+            }
+        }
+
+        return when(this){
+            is In.DeploymentFeedback -> copy(feedback = feedback.copy(
+                time = LocalDateTime(Instant.now(), DateTimeZone.UTC).toString(),
+                status = feedback.status.copy(details = detailsDecorator(feedback.status.details, feedback.time))
+            ))
+            is In.CancelFeedback -> copy(feedback = feedback.copy(
+                time = LocalDateTime(Instant.now(), DateTimeZone.UTC).toString(),
+                status = feedback.status.copy(details = detailsDecorator(feedback.status.details, feedback.time))
+            ))
+        }
+    }
 
     private fun stoppedReceive(state: State): Receive = { msg ->
         when (msg) {
@@ -73,16 +133,8 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
 
             is In.Ping -> onPing(state)
 
-            is In.DeploymentFeedback -> {
-                exceptionHandler(state) {
-                    client.postDeploymentActionFeedback(msg.feedback.id, msg.feedback)
-                }
-            }
-
-            is In.CancelFeedback -> {
-                exceptionHandler(state) {
-                    client.postCancelActionFeedback(msg.feedback.id, msg.feedback)
-                }
+            is Feedback -> {
+                feedbackChannel.send(msg)
             }
 
             is In.ConfigDataFeedback -> {
@@ -235,6 +287,11 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             fun withoutReceiver(receiver: ActorRef) = this.copy(receivers = receivers - receiver)
         }
 
+
+
+        sealed interface Feedback{
+            val closeAction:Boolean
+        }
         sealed class Message {
 
             sealed class In : Message() {
@@ -245,9 +302,13 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 data class Register(val listener: ActorRef) : In()
                 data class Unregister(val listener: ActorRef) : In()
                 data class SetPing(val duration: Duration?) : In()
-                data class DeploymentFeedback(val feedback: DeploymentFeedbackRequest)
-                data class CancelFeedback(val feedback: CancelFeedbackRequest)
-                data class ConfigDataFeedback(val cfgDataReq: ConfigurationDataRequest)
+                data class DeploymentFeedback(val feedback: DeploymentFeedbackRequest):In(), Feedback{
+                    override val closeAction: Boolean = feedback.status.execution == DeploymentFeedbackRequest.Status.Execution.closed
+                }
+                data class CancelFeedback(val feedback: CancelFeedbackRequest):In(), Feedback{
+                    override val closeAction: Boolean = feedback.status.execution == CancelFeedbackRequest.Status.Execution.closed
+                }
+                data class ConfigDataFeedback(val cfgDataReq: ConfigurationDataRequest):In()
             }
 
             open class Out : Message() {

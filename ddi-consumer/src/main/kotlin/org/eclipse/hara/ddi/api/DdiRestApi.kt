@@ -196,7 +196,7 @@ interface DdiRestApi {
      * @param actionId
      * of the action we have feedback for
      *
-     * @return the [DdiActionFeedback] response
+     * @return the status of the request
      */
 
     @Headers("Content-Type: application/json")
@@ -207,5 +207,5 @@ interface DdiRestApi {
         @Path("controllerId") controllerId: String,
         @Path("actionId") actionId: String?,
         @Body feedback: CancelFeedbackRequest
-    ): Unit
+    ):Response<Unit>
 }

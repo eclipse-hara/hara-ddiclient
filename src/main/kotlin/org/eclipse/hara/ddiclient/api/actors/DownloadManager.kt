@@ -181,10 +181,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         }
     }
 
+    //todo remove FileDownloader.Companion.Message.Stop message and use default implementation of beforeCloseChannel
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun beforeCloseChannel() {
         forEachActorNode { actorRef -> if(!actorRef.isClosedForSend) launch { actorRef.send(FileDownloader.Companion.Message.Stop) } }
-
     }
 
     init {
