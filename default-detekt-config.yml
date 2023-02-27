@@ -5,10 +5,9 @@ build:
   # LongParameterList: 1
   # style: 1
   # comments: 1
+  # first commit
 
-processors:
-  active: true
-  exclude:
+processors: active: true exclude:
   # - 'FunctionCountProcessor'
   # - 'PropertyCountProcessor'
   # - 'ClassCountProcessor'
