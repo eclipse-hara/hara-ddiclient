@@ -131,38 +131,6 @@ boolean doHead(url) {
     }
 }
 
-task copyClientSideGitHooks(type:Copy, group: "git-hooks"){
-    description 'Copies the git hooks from git-hooks to the .git folder.'
-    doFirst{
-        project.fileTree("git-hooks").visit { FileVisitDetails details ->
-            if(details.name.endsWith(".sh")){
-                def name = details.name.substring(0, details.name.lastIndexOf(".sh"))
-                def file = file("${projectDir}/.git/hooks/${name}")
-                if(file.exists()){
-                    ant.fail("${file.path} file already exists")
-                }
-            }
-
-        }
-    }
-    from("${rootDir}/git-hooks/") {
-        include '**/*.sh'
-        rename '(.*).sh', '$1'
-    }
-    into "${rootDir}/.git/hooks"
-    outputs.upToDateWhen { false }
-}
-
-task installClientSideGitHooks(type: Exec, group: "git-hooks") {
-    description 'Installs the client-side git hooks'
-    commandLine 'chmod'
-    args '-R', '+x', '.git/hooks/'
-    dependsOn copyClientSideGitHooks
-    doLast {
-        println('Git hook installed successfully.')
-    }
-}
-
 detekt {
     toolVersion = "1.17.1"
     config = files("$rootDir/default-detekt-config.yml", "$rootDir/detekt-config.yml")
