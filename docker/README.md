@@ -29,7 +29,7 @@ $docker-compose up
 - Target3 target token: 4a28d893bb841def706073c789c0f3a7
 
 ## Server request:
-- Target1 server request: 
+- Target1 server request:
   * put target metadata
   * cancel update osWithApps;
   * apply update app;

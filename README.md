@@ -7,7 +7,7 @@
 </p>
 
 Hara-ddiclient is a Kotlin library that facilitates and speeds up the development
-of [DDI API](https://www.eclipse.org/hawkbit/apis/ddi_api/) clients for devices 
+of [DDI API](https://www.eclipse.org/hawkbit/apis/ddi_api/) clients for devices
 connecting to [hawkBit](https://eclipse.org/hawkbit/) servers. It can be used from
 any JVM compatible language (Java, Kotlin, etc).
 Hara-ddiclient is part of the [Eclipse Hara™ project](https://projects.eclipse.org/projects/iot.hawkbit.hara)
