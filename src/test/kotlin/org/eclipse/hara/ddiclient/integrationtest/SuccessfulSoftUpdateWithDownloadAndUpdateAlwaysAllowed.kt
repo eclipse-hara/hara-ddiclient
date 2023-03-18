@@ -15,6 +15,7 @@ import org.eclipse.hara.ddiclient.integrationtest.TestUtils.endMessagesOnSuccess
 import org.eclipse.hara.ddiclient.integrationtest.TestUtils.filesDownloadedInOsWithAppsPairedToServerFile
 import org.eclipse.hara.ddiclient.integrationtest.TestUtils.messagesOnSuccessfullyDownloadOsWithAppDistribution
 import org.eclipse.hara.ddiclient.integrationtest.TestUtils.startMessagesOnUpdateFond
+import org.testng.Assert.*
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 
@@ -28,6 +29,24 @@ class SuccessfulSoftUpdateWithDownloadAndUpdateAlwaysAllowed : AbstractClientTes
     @Test(enabled = true, dataProvider = "targetUpdateProvider")
     fun test(targetDeployments: TestUtils.TargetDeployments) {
         testTemplate(targetDeployments)
+    }
+    // Test that the dataProvider method returns an array of TargetDeployments:
+    @Test
+    fun testDataProviderReturnsArrayOfTargetDeployments() {
+        val testObject = SuccessfulSoftUpdateWithDownloadAndUpdateAlwaysAllowed()
+        val dataProviderResult = testObject.dataProvider()
+        assertNotNull(dataProviderResult)
+        assertTrue(dataProviderResult.isNotEmpty())
+        assertTrue(dataProviderResult.all { it is TestUtils.TargetDeployments })
+    }
+    // Test that an exception is thrown if the TargetDeployments parameter in the test method has an empty deploymentInfo list:
+    @Test
+    fun testMethodThrowsExceptionIfDeploymentInfoIsEmpty() {
+        val testObject = SuccessfulSoftUpdateWithDownloadAndUpdateAlwaysAllowed()
+        val targetDeployments = TestUtils.TargetDeployments("testTarget", "testToken", emptyList())
+        assertThrows(IllegalArgumentException::class.java) {
+            testObject.test(targetDeployments)
+        }
     }
 
     private fun target4ApplyOsWithAppsUpdate(): TestUtils.TargetDeployments {
