@@ -20,8 +20,27 @@ The hara-ddiclient project provides several software modules:
 1. `virtual-device`: a simple application using the hara-ddiclient library (uses `hara-ddiclient`). Its purpose is to provide a configurable "virtual device" and a reference example on how to use the library. Some features, like the [Updater](hara-ddiclient-api/src/main/kotlin/org/eclipse/hara/ddiclient/api/Updater.kt), are not implemented in the virtual device and are just mocked.
 
 ## Install
+Here an example on how to import hara-ddiclient in a gradle project.
 
-To import this project use [jitpack](https://jitpack.io/#eclipse/hara-ddiclient) plugin.
+Add the JitPack repository to your build.gradle file at the end of repositories section:
+
+```gradle
+allprojects {
+	repositories {
+		...
+		maven { url 'https://jitpack.io' }
+	}
+}
+```
+Add the dependency
+
+```gradle
+dependencies {
+        implementation 'com.github.eclipse:hara-ddiclient:Tag'
+}
+```
+
+For additional information refer to [jitpack](https://jitpack.io/#eclipse/hara-ddiclient).
 
 ## Build from source
 
