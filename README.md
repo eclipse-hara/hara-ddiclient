@@ -173,6 +173,6 @@ See also the list of [contributors](https://github.com/eclipse/hara-ddiclient/gr
 
 ## License
 
-Copyright © 2017-2022, [Kynetics LLC](https://www.kynetics.com).
+Copyright © 2017-2023, [Kynetics LLC](https://www.kynetics.com).
 
 Released under the [EPLv2 License](https://www.eclipse.org/legal/epl-2.0).
