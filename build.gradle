@@ -50,6 +50,13 @@ allprojects {
             }
         }
     }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(11)
+            vendor = JvmVendorSpec.ADOPTOPENJDK
+        }
+    }
 }
 
 project(':ddi-consumer') {
@@ -116,7 +123,7 @@ project(':virtual-device'){
 
     mainClassName = 'org.eclipse.hara.ddiclient.virtualdevice.MainKt'
 
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
         kotlinOptions.freeCompilerArgs += ["-Xopt-in=kotlin.RequiresOptIn"]
     }
 }
@@ -237,7 +244,7 @@ test.finalizedBy stopHawkbitServer
 group 'org.eclipse.hara.hara-ddiclient'
 version app_version
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlin.Experimental"]
 }
 
