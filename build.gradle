@@ -80,6 +80,10 @@ project(':ddi-consumer') {
         }
 
     }
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions.jvmTarget = '17'
+    }
 }
 
 project(':ddi-consumer:ddi-api') {
@@ -89,6 +93,10 @@ project(':ddi-consumer:ddi-api') {
     dependencies {
         implementation deps.joda
     }
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions.jvmTarget = '17'
+    }
 }
 
 project(':hara-ddiclient-api') {
@@ -96,6 +104,10 @@ project(':hara-ddiclient-api') {
     version app_version
     dependencies {
         implementation deps.okhttp
+    }
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions.jvmTarget = '17'
     }
 }
 
@@ -116,8 +128,9 @@ project(':virtual-device'){
 
     mainClassName = 'org.eclipse.hara.ddiclient.virtualdevice.MainKt'
 
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
         kotlinOptions.freeCompilerArgs += ["-Xopt-in=kotlin.RequiresOptIn"]
+        kotlinOptions.jvmTarget = '17'
     }
 }
 
@@ -237,8 +250,9 @@ test.finalizedBy stopHawkbitServer
 group 'org.eclipse.hara.hara-ddiclient'
 version app_version
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlin.Experimental"]
+    kotlinOptions.jvmTarget = '17'
 }
 
 test {
