@@ -26,7 +26,7 @@ interface DdiClient {
 
     suspend fun getControllerActions(): ControllerBaseResponse
 
-    suspend fun onControllerActionsChange(etag: String = "", onChange: OnResourceChange<ControllerBaseResponse>)
+    suspend fun onControllerActionsChange(etag: String = "", onChange: OnResourceChange<ControllerBaseResponse>, onNothingChange: suspend () -> Unit = {})
 
     suspend fun getDeploymentActionDetails(actionId: String, historyCount: Int = -1): DeploymentBaseResponse
 

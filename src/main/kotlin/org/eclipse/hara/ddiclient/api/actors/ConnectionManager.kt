@@ -127,8 +127,8 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             is In.SetPing -> become(runningReceive(startPing(state.copy(clientPingInterval = msg.duration, lastPing = Instant.EPOCH))))
 
             is In.ForcePing -> {
-                become(runningReceive(state.clearEtags()))
-                channel.send(In.SetPing(null))
+                onPing(state.copy(clientPingInterval = null,
+                    requireUpdateNotification = true))
             }
 
             is In.Ping -> onPing(state)
@@ -194,9 +194,16 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 this.send(Out.ConfigDataRequired, state)
             }
 
-            client.onControllerActionsChange(state.controllerBaseEtag) { res, newEtag ->
-                onControllerBaseChange(state, s, res, newEtag)
-            }
+            client.onControllerActionsChange(state.controllerBaseEtag,
+                onChange = { res, newEtag ->
+                    onControllerBaseChange(state, s, res, newEtag)
+                },
+                onNothingChange = {
+                    if (state.requireUpdateNotification) {
+                        notificationManager.send(MessageListener.Message.Event.NoNewState)
+                    }
+                })
+
         }.onFailure { t ->
             fun loopMsg(t: Throwable): String = t.message + if (t.cause != null) " ${loopMsg(t.cause!!)}" else ""
             val errorDetails = "exception: ${t.javaClass} message: ${loopMsg(t)}"
@@ -256,7 +263,8 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             val deploymentEtag: String = "",
             val controllerBaseEtag: String = "",
             val timer: Timer? = null,
-            val receivers: Set<ActorRef> = emptySet()
+            val receivers: Set<ActorRef> = emptySet(),
+            val requireUpdateNotification: Boolean = false
         ) {
             val pingInterval = when {
                 backoffPingInterval != null -> backoffPingInterval

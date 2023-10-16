@@ -121,6 +121,8 @@ interface MessageListener {
 
             object NoUpdate : Event("No update to apply")
 
+            object NoNewState : Event("Server state is not changed")
+
             /**
              * An error occurred during the update.
              * @property details, contains additional info about the error

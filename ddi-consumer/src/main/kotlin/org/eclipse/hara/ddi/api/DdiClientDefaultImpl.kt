@@ -55,11 +55,13 @@ class DdiClientDefaultImpl private constructor(private val ddiRestApi: DdiRestAp
         return handleResponse(response)
     }
 
-    override suspend fun onControllerActionsChange(etag: String, onChange: OnResourceChange<ControllerBaseResponse>) {
+    override suspend fun onControllerActionsChange(etag: String,
+                                                   onChange: OnResourceChange<ControllerBaseResponse>,
+                                                   onNothingChange: suspend () -> Unit) {
         LOG.debug("onDeploymentActionDetailsChange({})", etag)
         val response = ddiRestApi.getControllerActions(tenant, controllerId, etag)
         LOG.debug("{}", response)
-        handleOnChangeResponse(response, etag, "BaseResource", onChange)
+        handleOnChangeResponse(response, etag, "BaseResource", onChange, onNothingChange)
     }
 
     override suspend fun getDeploymentActionDetails(actionId: String, historyCount: Int): DeploymentBaseResponse {
@@ -98,7 +100,9 @@ class DdiClientDefaultImpl private constructor(private val ddiRestApi: DdiRestAp
         return ddiRestApi.downloadArtifact(url).byteStream()
     }
 
-    private suspend fun <T> handleOnChangeResponse(response: Response<T>, etag: String, resourceName: String, onChange: OnResourceChange<T>) {
+    private suspend fun <T> handleOnChangeResponse(response: Response<T>, etag: String,
+                                                   resourceName: String, onChange: OnResourceChange<T>,
+                                                   onNothingChange: suspend () -> Unit = {}) {
         when (response.code()) {
             in 200..299 -> {
                 val newEtag = response.headers()[ETAG_HEADER] ?: ""
@@ -106,7 +110,10 @@ class DdiClientDefaultImpl private constructor(private val ddiRestApi: DdiRestAp
                 onChange.invoke(response.body()!!, newEtag)
             }
 
-            HttpURLConnection.HTTP_NOT_MODIFIED -> LOG.info("{} not changed", resourceName)
+            HttpURLConnection.HTTP_NOT_MODIFIED -> {
+                LOG.info("{} not changed", resourceName)
+                onNothingChange.invoke()
+            }
 
             else -> throw HttpException(response)
         }
