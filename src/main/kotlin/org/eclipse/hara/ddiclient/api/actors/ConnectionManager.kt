@@ -42,20 +42,21 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     init{
         CoroutineScope(Dispatchers.IO).launch{
 
-            val shouldRetry: (Response<Unit>) -> Boolean = { response ->
+            val isSuccessful: (Response<Unit>) -> Boolean = { response ->
                 when(response.code()){
-                    in 500 .. 599, 409, 429 -> true
-                    else -> false
+                    in 500 .. 599, 409, 429 -> false
+                    else -> true
                 }
             }
 
             for(msg in feedbackChannel){
-                var attempt = 0;
+                var attempt = 0
+                var success : Boolean
                 do{
-                    val retry = sendFeedback(msg.decorateMessage(attempt))
-                        .map(shouldRetry)
-                        .getOrDefault(true)
-                        .run { this && ++attempt < 168 }
+                    success = sendFeedback(msg.decorateMessage(attempt))
+                        .map(isSuccessful)
+                        .getOrDefault(false)
+                    val retry = ++attempt < 168 && !success
 
                     if(retry){
                         delay(2.0.pow(attempt).toLong().coerceIn(60_000, 3_600_000))
@@ -63,6 +64,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 } while(retry)
                 if(msg.closeAction){
                     channel.send(In.Ping)
+                }
+                if (msg is In.DeploymentFeedback) {
+                    notificationManager.send(MessageListener.Message.Event
+                        .DeployFeedbackRequestResult(success, msg.feedback.id, msg.closeAction))
                 }
             }
         }

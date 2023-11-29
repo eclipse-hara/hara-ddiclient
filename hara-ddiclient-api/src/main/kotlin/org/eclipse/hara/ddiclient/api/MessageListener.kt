@@ -124,6 +124,17 @@ interface MessageListener {
             object NoNewState : Event("Server state is not changed")
 
             /**
+             * The result of the deployment feedback request sent to the server
+             * @property success, true if the request has been successful, false otherwise
+             * @property id, action id of the update
+             * @property closeAction, true if the feedback request execution status is Execution.closed, false otherwise
+             */
+            data class DeployFeedbackRequestResult(val success: Boolean,
+                                                   val id: String,
+                                                   val closeAction: Boolean) :
+                Event("Result of the feedback request to the server")
+
+            /**
              * An error occurred during the update.
              * @property details, contains additional info about the error
              */
