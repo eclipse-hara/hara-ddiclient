@@ -182,7 +182,8 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             this.send(Out.NoAction, state)
         }
 
-        val newState = s.copy(controllerBaseEtag = newControllerBaseEtag, deploymentEtag = etag)
+        val newState = s.copy(controllerBaseEtag = newControllerBaseEtag, deploymentEtag = etag,
+            requireUpdateNotification = false)
                 .withServerSleep(res.config.polling.sleep)
                 .withoutBackoff()
         become(runningReceive(startPing(newState)))
