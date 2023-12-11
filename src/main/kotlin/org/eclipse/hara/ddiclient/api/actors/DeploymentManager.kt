@@ -36,38 +36,20 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     private val notificationManager = coroutineContext[NMActor]!!.ref
     private var waitingAuthJob: Job? = null
     private fun beginningReceive(state: State): Receive = { msg ->
-        // todo implement download skip option and move content of attempt function to 'msg is DeploymentInfo && msg.downloadIs(attempt)' when case
-        suspend fun attempt(msg: DeploymentInfo, deploymentPermitProvider: DeploymentPermitProvider, forcedDownload:Boolean) {
-            val message = "Waiting authorization to download"
-            LOG.info(message)
-            sendFeedback(message)
-            become(waitingDownloadAuthorization(state.copy(deplBaseResp = msg.info)))
-            notificationManager.send(MessageListener.Message.State.WaitingDownloadAuthorization(forcedDownload))
-            waitingAuthJob?.cancel()
-            waitingAuthJob = launch {
-                val result = deploymentPermitProvider.downloadAllowed().await()
-                if (result) {
-                    channel.send(Message.DownloadGranted)
-                } else {
-                    LOG.info("Authorization denied for download files")
-                }
-                waitingAuthJob = null
-            }
-        }
-
         when {
 
             msg is DeploymentInfo && msg.downloadIs(ProvisioningType.forced)  -> {
-                attempt(msg, forceRequest, true)
+                forceDownloadTheArtifact(state, msg, forceRequest)
             }
 
             msg is DeploymentInfo && msg.downloadIs(ProvisioningType.attempt) -> {
-                attempt(msg, softRequest, false)
+                attemptDownloadingTheArtifact(state, msg, softRequest)
             }
 
             msg is DeploymentInfo && msg.downloadIs(ProvisioningType.skip) -> {
+                // todo implement download skip option
                 LOG.warn("skip download not yet implemented (used attempt)")
-                attempt(msg, softRequest, false)
+                attemptDownloadingTheArtifact(state, msg, softRequest)
             }
 
             msg is DeploymentCancelInfo -> {
@@ -78,17 +60,57 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         }
     }
 
+    private suspend fun forceDownloadTheArtifact(state: State,
+                                                 msg: DeploymentInfo,
+                                                 deploymentPermitProvider: DeploymentPermitProvider) {
+        val message = "Start downloading artifacts"
+        LOG.info(message)
+        sendFeedback(message)
+        val result = deploymentPermitProvider.downloadAllowed().await()
+        if (result) {
+            become(downloadingReceive(state.copy(deplBaseResp = msg.info)))
+            child("downloadManager")!!.send(msg)
+        } else {
+            LOG.info("Authorization denied for download files")
+        }
+    }
+
+    private suspend fun attemptDownloadingTheArtifact(state: State,
+                                                      msg: DeploymentInfo,
+                                                      deploymentPermitProvider: DeploymentPermitProvider) {
+        val message = "Waiting authorization to download"
+        LOG.info(message)
+        sendFeedback(message)
+        become(waitingDownloadAuthorization(state.copy(deplBaseResp = msg.info)))
+        notificationManager.send(MessageListener.Message.State
+            .WaitingDownloadAuthorization(false))
+        waitingAuthJob?.cancel()
+        waitingAuthJob = launch {
+            val result = deploymentPermitProvider.downloadAllowed().await()
+            if (result) {
+                channel.send(Message.DownloadGranted)
+            } else {
+                LOG.info("Authorization denied for download files")
+            }
+            waitingAuthJob = null
+        }
+    }
+
     private fun waitingDownloadAuthorization(state: State): Receive = { msg ->
-        when {
+        when (msg) {
+            is DeploymentInfo -> {
+                when {
 
-            msg is DeploymentInfo && msg.downloadIs(ProvisioningType.attempt) && !msg.forceAuthRequest -> {}
+                    msg.downloadIs(ProvisioningType.attempt) && !msg.forceAuthRequest -> {}
 
-            msg is DeploymentInfo -> {
-                become(beginningReceive(state))
-                channel.send(msg)
+                    else -> {
+                        become(beginningReceive(state))
+                        channel.send(msg)
+                    }
+                }
             }
 
-            msg is Message.DownloadGranted -> {
+            is Message.DownloadGranted -> {
                 val message = "Authorization granted for downloading files"
                 LOG.info(message)
                 sendFeedback(message)
@@ -96,11 +118,11 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 child("downloadManager")!!.send(DeploymentInfo(state.deplBaseResp!!))
             }
 
-            msg is DeploymentCancelInfo -> {
+            is DeploymentCancelInfo -> {
                 stopUpdateAndNotify(msg)
             }
 
-            msg is CancelForced -> {
+            is CancelForced -> {
                 stopUpdate()
             }
 
@@ -111,18 +133,29 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     private fun downloadingReceive(state: State): Receive = { msg ->
         when (msg) {
             is Message.DownloadFinished -> {
-                val message = "Waiting authorization to update"
+                val message: String
+                if (state.updateIs(ProvisioningType.forced)) {
+                    message = "Start updating the device"
+                    waitingAuthJob = launch(Dispatchers.IO) {
+                        if(forceRequest.updateAllowed().await()){
+                            become(updatingReceive())
+                            child("updateManager")!!.send(DeploymentInfo(state.deplBaseResp!!))
+                        } else {
+                            LOG.info("Authorization denied for update")
+                        }
+                        waitingAuthJob = null
+                    }
+                } else {
+                    message = "Waiting authorization to update"
+                    become(waitingUpdateAuthorization(state))
+                    notificationManager.send(MessageListener.Message.State.WaitingUpdateAuthorization(state.updateIs(ProvisioningType.forced)))
+                    waitingAuthJob = launch(Dispatchers.IO) {
+                        onAuthorizationReceive(softRequest)
+                        waitingAuthJob = null
+                    }
+                }
                 LOG.info(message)
                 sendFeedback(message)
-                become(waitingUpdateAuthorization(state))
-                notificationManager.send(MessageListener.Message.State.WaitingUpdateAuthorization(state.updateIs(ProvisioningType.forced)))
-                waitingAuthJob = launch(Dispatchers.IO) {
-                    when{
-                        state.updateIs(ProvisioningType.attempt) -> onAuthorizationReceive(softRequest)
-                        else -> onAuthorizationReceive(forceRequest)
-                    }
-                    waitingAuthJob = null
-                }
             }
             is Message.DownloadFailed -> {
                 LOG.error("download failed")
