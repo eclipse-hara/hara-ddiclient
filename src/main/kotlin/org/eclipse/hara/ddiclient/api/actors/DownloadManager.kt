@@ -32,10 +32,14 @@ import org.eclipse.hara.ddiclient.api.actors.FileDownloader.Companion.FileToDown
 import org.eclipse.hara.ddiclient.api.MessageListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.eclipse.hara.ddi.api.model.CancelFeedbackRequest
+import org.eclipse.hara.ddiclient.api.DeploymentPermitProvider
+import org.eclipse.hara.ddiclient.api.actors.FileDownloader.Companion.md5
 
 @OptIn(ObsoleteCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 class DownloadManager
@@ -45,36 +49,159 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     private val pathResolver = coroutineContext[HaraClientContext]!!.pathResolver
     private val notificationManager = coroutineContext[NMActor]!!.ref
     private val connectionManager = coroutineContext[CMActor]!!.ref
+    private val softRequest: DeploymentPermitProvider = coroutineContext[HaraClientContext]!!.softDeploymentPermitProvider
+    private val forceRequest: DeploymentPermitProvider = coroutineContext[HaraClientContext]!!.forceDeploymentPermitProvider
+    private var waitingAuthJob: Job? = null
 
     @ExperimentalCoroutinesApi
     private fun beforeStartReceive(): Receive = { msg ->
         when (msg) {
 
             is DeploymentInfo -> {
-                clean(msg.info.id)
-                val md5s = md5OfFilesToBeDownloaded(msg.info)
+                checkAndHandleFilesAlreadyDownloaded(msg) {
 
-                if (md5s.isNotEmpty()) {
+                    when {
+                        msg.downloadIs(
+                            DeploymentBaseResponse.Deployment.ProvisioningType.forced) -> {
+                            forceDownloadTheArtifact(msg)
+                        }
 
-                    notificationManager.send(
-                            MessageListener.Message.State.Downloading(
-                                    msg.info.deployment.chunks.flatMap { it.artifacts }.filter { md5s.contains(it.hashes.md5) }.map { at ->
-                                        MessageListener.Message.State.Downloading.Artifact(at.filename, at.size, at.hashes.md5)
-                                    }.toList()
-                            )
-                    )
+                        msg.downloadIs(
+                            DeploymentBaseResponse.Deployment.ProvisioningType.attempt) -> {
+                            attemptDownloadingTheArtifact(State(msg.info), msg)
+                        }
 
-                    val dms = createDownloadsManagers(msg.info, md5s)
-                    become(downloadingReceive(State(msg.info, dms)))
-                    feedback(msg.info.id, proceeding, Progress(dms.size, 0), none,
-                            "Start downloading ${dms.size} files")
-                    dms.values.forEach {
-                        it.downloader.send(FileDownloader.Companion.Message.Start)
+                        msg.downloadIs(
+                            DeploymentBaseResponse.Deployment.ProvisioningType.skip) -> {
+                            // todo implement download skip option
+                            LOG.warn("skip download not yet implemented (used attempt)")
+                            attemptDownloadingTheArtifact(State(msg.info), msg)
+                        }
                     }
-                } else {
-                    onDownloadSucceeded(msg.info.id, Progress(0,0), success, "No file downloaded", null)
                 }
             }
+
+            else -> unhandled(msg)
+        }
+    }
+
+
+    private suspend fun forceDownloadTheArtifact(msg: DeploymentInfo) {
+        val message = "Start downloading artifacts"
+        LOG.info(message)
+        feedback(message, proceeding, Progress(0, 0), none)
+        forceRequest.onAuthorizationReceive {
+            startDownloadProcedure(msg)
+        }
+    }
+
+    private suspend fun attemptDownloadingTheArtifact(state: State, msg: DeploymentInfo) {
+        val message = "Waiting authorization to download"
+        LOG.info(message)
+        feedback(message, proceeding, Progress(0, 0), none)
+        become(waitingDownloadAuthorization(state.copy(deplBaseResp = msg.info)))
+        notificationManager.send(MessageListener.Message.State
+            .WaitingDownloadAuthorization(false))
+        waitingAuthJob?.cancel()
+        waitingAuthJob = launch {
+            softRequest.onAuthorizationReceive {
+                channel.send(Message.DownloadGranted)
+            }
+            waitingAuthJob = null
+        }
+    }
+
+    private suspend fun checkAndHandleFilesAlreadyDownloaded(msg: DeploymentInfo,
+                                                             block: suspend () -> Unit) {
+        val alreadyDownloaded = mutableMapOf<String, Boolean>()
+        val wd = pathResolver.updateDir(msg.info.id)
+        val md5s = md5OfFilesToBeDownloaded(msg.info)
+        val dms = createDownloadsManagers(msg.info, md5s)
+
+        msg.info.deployment.chunks.flatMap { it.artifacts }
+            .filter { md5s.contains(it.hashes.md5) }.forEach { at ->
+                val ftd = FileToDownload(at.filename, at.hashes.md5,
+                    at._links.download_http?.href ?: "" , wd, at.size)
+                alreadyDownloaded[ftd.md5] = ftd.destination.exists() && ftd.md5 == ftd.destination.md5()
+            }
+
+        if (alreadyDownloaded.isNotEmpty() && !alreadyDownloaded.values.contains(false)) {
+            become(downloadingReceive(State(msg.info, dms)))
+            alreadyDownloaded.forEach { (md5, _) ->
+                channel.send(
+                    FileDownloader.Companion.Message.AlreadyDownloaded(channel, md5))
+            }
+        } else {
+            block()
+        }
+    }
+
+    private suspend fun DeploymentPermitProvider.onAuthorizationReceive(
+        onGrantAuthorization: suspend ()-> Unit){
+        if(downloadAllowed().await()){
+            onGrantAuthorization.invoke()
+        } else {
+            LOG.info("Authorization denied for download files")
+        }
+    }
+
+    private suspend fun startDownloadProcedure(msg: DeploymentInfo) {
+
+        clean(msg.info.id)
+        val md5s = md5OfFilesToBeDownloaded(msg.info)
+
+        if (md5s.isNotEmpty()) {
+
+            notificationManager.send(
+                MessageListener.Message.State.Downloading(
+                    msg.info.deployment.chunks.flatMap { it.artifacts }.filter { md5s.contains(it.hashes.md5) }.map { at ->
+                        MessageListener.Message.State.Downloading.Artifact(at.filename, at.size, at.hashes.md5)
+                    }.toList()
+                )
+            )
+
+            val dms = createDownloadsManagers(msg.info, md5s)
+            become(downloadingReceive(State(msg.info, dms)))
+            feedback(msg.info.id, proceeding, Progress(dms.size, 0), none,
+                "Start downloading ${dms.size} files")
+            dms.values.forEach {
+                it.downloader.send(FileDownloader.Companion.Message.Start)
+            }
+        } else {
+            onDownloadSucceeded(msg.info.id, Progress(0,0), success, "No file downloaded", null)
+        }
+    }
+
+    private fun waitingDownloadAuthorization(state: State): Receive = { msg ->
+        when (msg) {
+            is DeploymentInfo -> {
+                when {
+
+                    msg.downloadIs(DeploymentBaseResponse.Deployment.ProvisioningType.attempt)
+                            && !msg.forceAuthRequest -> {}
+
+                    else -> {
+                        become(beforeStartReceive())
+                        channel.send(msg)
+                    }
+                }
+            }
+
+            is Message.DownloadGranted -> {
+                val message = "Authorization granted for downloading files"
+                LOG.info(message)
+                feedback(message, proceeding, Progress(0, 0), none)
+                startDownloadProcedure(DeploymentInfo(state.deplBaseResp))
+            }
+
+            is ConnectionManager.Companion.Message.Out.DeploymentCancelInfo -> {
+                stopUpdateAndNotify(msg)
+            }
+
+            is ActionManager.Companion.Message.CancelForced -> {
+                stopUpdate()
+            }
+
             else -> unhandled(msg)
         }
     }
@@ -167,6 +294,25 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         }.toMap()
     }
 
+    private suspend fun stopUpdateAndNotify(msg: ConnectionManager.Companion.Message.Out.DeploymentCancelInfo) {
+        connectionManager.send(ConnectionManager.Companion.Message.In.CancelFeedback(
+            CancelFeedbackRequest.newInstance(msg.info.cancelAction.stopId,
+                CancelFeedbackRequest.Status.Execution.closed,
+                CancelFeedbackRequest.Status.Result.Finished.success)))
+        stopUpdate()
+    }
+
+    private suspend fun stopUpdate() {
+        LOG.info("Stopping update")
+        channel.cancel()
+        notificationManager.send(MessageListener.Message.State.CancellingUpdate)
+        parent!!.send(ActionManager.Companion.Message.UpdateStopped)
+    }
+
+    private fun DeploymentInfo.downloadIs(level: DeploymentBaseResponse.Deployment.ProvisioningType): Boolean {
+        return this.info.deployment.download == level
+    }
+
     private fun childName(md5: String) = "fileDownloader_for_$md5"
 
     private fun clean(currentActionId: String) = runBlocking {
@@ -203,6 +349,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                     enum class Status { SUCCESS, ERROR, RUNNING }
                 }
             }
+        }
+
+        sealed class Message {
+            object DownloadGranted : Message()
         }
     }
 }
