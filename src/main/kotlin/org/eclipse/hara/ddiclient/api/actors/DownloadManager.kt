@@ -61,18 +61,15 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 checkAndHandleFilesAlreadyDownloaded(msg) {
 
                     when {
-                        msg.downloadIs(
-                            DeploymentBaseResponse.Deployment.ProvisioningType.forced) -> {
+                        msg.isDownloadForced -> {
                             forceDownloadTheArtifact(msg)
                         }
 
-                        msg.downloadIs(
-                            DeploymentBaseResponse.Deployment.ProvisioningType.attempt) -> {
+                        msg.isDownloadSoft -> {
                             attemptDownloadingTheArtifact(State(msg.info), msg)
                         }
 
-                        msg.downloadIs(
-                            DeploymentBaseResponse.Deployment.ProvisioningType.skip) -> {
+                        msg.isDownloadSkip -> {
                             // todo implement download skip option
                             LOG.warn("skip download not yet implemented (used attempt)")
                             attemptDownloadingTheArtifact(State(msg.info), msg)
@@ -176,9 +173,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         when (msg) {
             is DeploymentInfo -> {
                 when {
-
-                    msg.downloadIs(DeploymentBaseResponse.Deployment.ProvisioningType.attempt)
-                            && !msg.forceAuthRequest -> {}
+                    msg.isDownloadSoft && !msg.forceAuthRequest -> {}
 
                     else -> {
                         become(beforeStartReceive())
@@ -309,9 +304,14 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         parent!!.send(ActionManager.Companion.Message.UpdateStopped)
     }
 
-    private fun DeploymentInfo.downloadIs(level: DeploymentBaseResponse.Deployment.ProvisioningType): Boolean {
-        return this.info.deployment.download == level
-    }
+    private val DeploymentInfo.isDownloadForced: Boolean
+        get() = info.deployment.download == forced
+
+    private val DeploymentInfo.isDownloadSoft: Boolean
+        get() = info.deployment.download == attempt
+
+    private val DeploymentInfo.isDownloadSkip: Boolean
+        get() = info.deployment.download == attempt
 
     private fun childName(md5: String) = "fileDownloader_for_$md5"
 

@@ -12,14 +12,11 @@ package org.eclipse.hara.ddiclient.api.actors
 
 import org.eclipse.hara.ddi.api.model.CancelFeedbackRequest
 import org.eclipse.hara.ddi.api.model.DeploymentBaseResponse
-import org.eclipse.hara.ddi.api.model.DeploymentBaseResponse.Deployment.ProvisioningType
-import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest
 import org.eclipse.hara.ddiclient.api.actors.ActionManager.Companion.Message.CancelForced
 import org.eclipse.hara.ddiclient.api.actors.ActionManager.Companion.Message.UpdateStopped
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.Out.DeploymentCancelInfo
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.Out.DeploymentInfo
 import org.eclipse.hara.ddiclient.api.MessageListener
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 
 @OptIn(ObsoleteCoroutinesApi::class, kotlinx.coroutines.ExperimentalCoroutinesApi::class)
@@ -28,7 +25,6 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
 
     private val connectionManager = coroutineContext[CMActor]!!.ref
     private val notificationManager = coroutineContext[NMActor]!!.ref
-    private var waitingAuthJob: Job? = null
     private fun beginningReceive(state: State): Receive = { msg ->
         when(msg) {
             is DeploymentInfo -> {
@@ -108,38 +104,16 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         parent!!.send(UpdateStopped)
     }
 
-    private fun DeploymentInfo.downloadIs(level: ProvisioningType): Boolean {
-        return this.info.deployment.download == level
-    }
-
     init {
         actorOf("downloadManager") { DownloadManager.of(it) }
         actorOf("updateManager") { UpdateManager.of(it) }
         become(beginningReceive(State()))
-        channel.invokeOnClose {
-            waitingAuthJob?.cancel()
-        }
-    }
-
-    private suspend fun sendFeedback(id: String, vararg messages: String) {
-        connectionManager.send(
-                ConnectionManager.Companion.Message.In.DeploymentFeedback(
-                        DeploymentFeedbackRequest.newInstance(id,
-                                DeploymentFeedbackRequest.Status.Execution.proceeding,
-                                DeploymentFeedbackRequest.Status.Result.Progress(0, 0),
-                                DeploymentFeedbackRequest.Status.Result.Finished.none,
-                                *messages
-                        )
-                )
-        )
     }
 
     companion object {
         fun of(scope: ActorScope) = DeploymentManager(scope)
 
-        data class State(val deplBaseResp: DeploymentBaseResponse? = null) {
-            fun updateIs(level: ProvisioningType): Boolean = deplBaseResp!!.deployment.update == level
-        }
+        data class State(val deplBaseResp: DeploymentBaseResponse? = null)
 
         sealed class Message {
             object DownloadFinished : Message()

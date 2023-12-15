@@ -49,9 +49,9 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         when (msg) {
 
             is DeploymentInfo -> {
-                val state = DeploymentManager.Companion.State(deplBaseResp = msg.info)
+                val state = State(deplBaseResp = msg.info)
                 val message = when {
-                    state.updateIs(DeploymentBaseResponse.Deployment.ProvisioningType.forced) -> {
+                    state.isUpdateForced -> {
                         forceUpdateDevice(state)
                     }
                     else -> {
@@ -66,7 +66,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         }
     }
 
-    private fun waitingUpdateAuthorization(state: DeploymentManager.Companion.State): Receive = { msg ->
+    private fun waitingUpdateAuthorization(state: State): Receive = { msg ->
         when (msg) {
 
             is DeploymentInfo -> {
@@ -93,7 +93,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         }
     }
 
-    private fun forceUpdateDevice(state: DeploymentManager.Companion.State): String {
+    private fun forceUpdateDevice(state: State): String {
         waitingAuthJob = launch(Dispatchers.IO) {
             forceRequest.onAuthorizationReceive {
                 startUpdateProcedure(DeploymentInfo(state.deplBaseResp!!))
@@ -103,10 +103,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         return "Start updating the device"
     }
 
-    private suspend fun attemptUpdateDevice(state: DeploymentManager.Companion.State): String {
+    private suspend fun attemptUpdateDevice(state: State): String {
         become(waitingUpdateAuthorization(state))
-        notificationManager.send(MessageListener.Message.State.WaitingUpdateAuthorization(state.updateIs(
-            DeploymentBaseResponse.Deployment.ProvisioningType.forced)))
+        notificationManager.send(
+            MessageListener.Message.State.WaitingUpdateAuthorization(state.isUpdateForced))
         waitingAuthJob = launch(Dispatchers.IO) {
             softRequest.onAuthorizationReceive {
                 channel.send(Message.UpdateGranted)
@@ -228,6 +228,11 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     companion object {
         fun of(scope: ActorScope) = UpdateManager(scope)
 
+        data class State(val deplBaseResp: DeploymentBaseResponse? = null) {
+            val isUpdateForced: Boolean
+                get() = deplBaseResp!!.deployment.update ==
+                        DeploymentBaseResponse.Deployment.ProvisioningType.forced
+        }
         sealed class Message {
             object UpdateGranted : Message()
         }
