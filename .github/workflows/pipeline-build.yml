@@ -23,7 +23,7 @@ jobs:
         #Run only on macOS
         - name: Setup Docker
           if: ${{ matrix.os == 'macos-latest' && github.event_name == 'pull_request' }}
-          uses: docker-practice/actions-setup-docker@master
+          uses: better0fdead/actions-setup-docker@better0fdead/increase-timeout
 
         #Build without test on Windows or macOS (when not a PR)
         - name: Gradle build
