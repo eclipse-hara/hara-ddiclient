@@ -72,8 +72,8 @@ private constructor(
             }
 
             is Message.TrialExhausted -> {
-                val errors = state.errors.toMutableList()
-                errors.add(0, "trials exhausted due to errors (${fileToDownload.fileName})")
+                val errors = mutableListOf<String>()
+                errors.add(0, "Exhausted trials of downloading (${fileToDownload.fileName}) after ${state.currentAttempt} attempts!")
                 parent!!.send(Message.Error(channel, fileToDownload.md5, errors))
                 notificationManager.send(MessageListener.Message.Event.Error(errors))
             }
