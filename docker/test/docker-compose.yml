@@ -1,9 +1,9 @@
-version: "3.4"
+version: "3.7"
 
 services:
 
   update-server:
-    image: hawkbit/hawkbit-update-server:0.3.0M7-mysql
+    image: hawkbit/hawkbit-update-server:0.4.1-mysql
 
     environment:
     - JAVA_STD_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n
@@ -12,9 +12,10 @@ services:
     - JAVA_ADV_SERVICEABILITY_OPTIONS=-XX:+HeapDumpOnOutOfMemoryError
     - JAVA_ADV_GC_OPTIONS=-XX:MaxMetaspaceSize=250m -XX:MetaspaceSize=250m -XX:+UseG1GC -XX:+UseStringDeduplication
     - JAVA_ARGS=--spring.profiles.active=mockIam,withMariaDB
+    - SPRING_DATASOURCE_URL=jdbc:mariadb://maria-db:3306/hawkbit?useMysqlMetadata=true
 
     command: [
-      "--spring.datasource.url=jdbc:mysql://maria-db:3306/hawkbit?useMysqlMetadata=true",
+      "--spring.datasource.url=jdbc:mariadb://maria-db:3306/hawkbit?useMysqlMetadata=true",
       "--spring.datasource.username=hawkbit",
       "--spring.datasource.password=1234",
       "--spring.security.user.name=test",
@@ -35,7 +36,7 @@ services:
     - hara-network
 
     volumes:
-    - ./artifactrepo:/opt/hawkbit/artifactrepo:Z
+    - ./artifactrepo:/artifactrepo:Z
     depends_on:
       maria-db:
         condition: service_healthy
@@ -43,7 +44,7 @@ services:
   # ------------------------------------------------
 
   maria-db:
-    image: mariadb:10.3
+    image: mariadb:10.6
     networks:
       - hara-network
     environment:

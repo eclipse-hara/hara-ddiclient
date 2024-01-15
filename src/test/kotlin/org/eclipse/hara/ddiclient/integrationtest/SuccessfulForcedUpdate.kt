@@ -63,13 +63,13 @@ class SuccessfulForcedUpdate : AbstractClientTest() {
                 ActionStatus.ContentEntry(
                     ActionStatus.ContentEntry.Type.canceled,
                     listOf(
-                        "Update Server: Cancelation confirmed.",
+                        "Update Server: Cancellation confirmed.",
                         "Update Server: Cancellation completion is finished sucessfully."
                     )
                 ),
                 ActionStatus.ContentEntry(
                     ActionStatus.ContentEntry.Type.retrieved,
-                    listOf("Update Server: Target retrieved cancel action and should start now the cancelation.")
+                    listOf("Update Server: Target retrieved cancel action and should start now the cancellation.")
                 ),
                 ActionStatus.ContentEntry(
                     ActionStatus.ContentEntry.Type.canceling,
