@@ -15,6 +15,7 @@ plugins {
     id 'java'
     id 'com.github.jk1.dependency-license-report' version '1.16'
     id("org.jetbrains.dokka") version "1.6.10"
+    id "org.sonarqube" version "4.4.1.3373"
 }
 
 repositories {
@@ -27,12 +28,27 @@ final def tdeps = gradle.settings.test_dependencies
 final def app_version = '2.0.0'
 ext.keep_test_container_alive = project.hasProperty('keep_test_container_alive') ? project.getProperty('keep_test_container_alive').toBoolean() : false
 
+def sonarProjectKey = System.getenv("SONAR_CLOUD_PROJECT_KEY")
+def sonarProjectName = System.getenv("SONAR_CLOUD_PROJECT_NAME")
+def sonarProjectOrganization = System.getenv("SONAR_CLOUD_ORGANIZATION")
+
+sonar {
+    properties {
+        property "sonar.projectKey", sonarProjectKey
+        property "sonar.projectName", sonarProjectName
+        property "sonar.organization", sonarProjectOrganization
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.host.url", "https://sonarcloud.io"
+    }
+}
+
 allprojects {
     apply plugin: 'org.jetbrains.kotlin.jvm'
     apply plugin: 'maven-publish'
     apply from: "$rootDir/ktlint.gradle"
     apply plugin: 'java'
     apply plugin: "org.jetbrains.dokka"
+    apply plugin: "org.sonarqube"
 
     repositories {
         mavenCentral()
