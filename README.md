@@ -2,6 +2,7 @@
 <h1 align="center">Eclipse Hara™ - hara-ddiclient</h1>
 <p align="center">
 <a href="https://github.com/eclipse/hara-ddiclient/actions/workflows/pipeline-build.yml"><img alt="Build Status" src="https://github.com/eclipse/hara-ddiclient/actions/workflows/pipeline-build.yml/badge.svg"></a>
+<a href="https://sonarcloud.io/summary/new_code?id=eclipse_hara-ddiclient"><img alt="Quality Gate Status" src="https://sonarcloud.io/api/project_badges/measure?project=eclipse_hara-ddiclient&metric=alert_status"></a>
 <a href="https://www.eclipse.org/legal/epl-2.0"><img alt="EPL-2.0 License" src="https://img.shields.io/badge/License-EPL%202.0-red.svg"></a>
 <a href="#contributing"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg"></a>
 </p>
