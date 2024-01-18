@@ -168,11 +168,12 @@ For information on the libraries used by this project see [NOTICE](NOTICE.md).
 * **Andrea Zoleo**
 * **Diego Rondini**
 * **Alberto Battiston**
+* **Saeed Rezaee**
 
 See also the list of [contributors](https://github.com/eclipse/hara-ddiclient/graphs/contributors) who participated in this project.
 
 ## License
 
-Copyright © 2017-2023, [Kynetics LLC](https://www.kynetics.com).
+Copyright © 2017-2024, [Kynetics LLC](https://www.kynetics.com).
 
 Released under the [EPLv2 License](https://www.eclipse.org/legal/epl-2.0).

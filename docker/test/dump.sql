@@ -1,3 +1,12 @@
+--
+-- Copyright © 2017-2024  Kynetics  LLC
+--
+-- This program and the accompanying materials are made
+-- available under the terms of the Eclipse Public License 2.0
+-- which is available at https://www.eclipse.org/legal/epl-2.0/
+--
+-- SPDX-License-Identifier: EPL-2.0
+--
 -- MySQL dump 10.17  Distrib 10.3.13-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: hawkbit
