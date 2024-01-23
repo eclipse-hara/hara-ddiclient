@@ -8,6 +8,22 @@
 * SPDX-License-Identifier: EPL-2.0
 */
 
+plugins {
+    id "com.gradle.enterprise" version "3.16.1"
+}
+
+gradleEnterprise {
+    buildScan {
+        termsOfServiceUrl = "https://gradle.com/terms-of-service"
+        termsOfServiceAgree = "yes"
+        if (System.getenv("CI")) {
+            publishOnFailure()
+            tag "CI"
+            uploadInBackground = false
+        }
+    }
+}
+
 rootProject.name = 'hara-ddiclient'
 include ':ddi-consumer'
 include ':ddi-consumer:ddi-api'
@@ -15,4 +31,3 @@ include ':hara-ddiclient-api'
 include ':virtual-device'
 
 apply from: 'dependencies.gradle'
-

@@ -57,7 +57,7 @@ jobs:
               if [[ "$RUNNER_OS" == "Windows" || ( "$RUNNER_OS" == "macOS" && ${{ github.event_name }} != 'pull_request' ) ]]; then
                   ./gradlew build -x test
               else
-                  ./gradlew build --scan sonar --info
+                  ./gradlew --info build sonar
               fi
           shell: bash
 
