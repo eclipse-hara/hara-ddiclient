@@ -300,6 +300,28 @@ object TestUtils {
             )
     )
 
+    val messagesOnSoftDownloadAuthorization = arrayOf(
+        ActionStatus.ContentEntry(
+            ActionStatus.ContentEntry.Type.running,
+            listOf("Authorization granted for downloading files")
+        ),
+        ActionStatus.ContentEntry(
+            ActionStatus.ContentEntry.Type.running,
+            listOf("Waiting authorization to download")
+        )
+    )
+
+    val messagesOnSoftUpdateAuthorization = arrayOf(
+        ActionStatus.ContentEntry(
+            ActionStatus.ContentEntry.Type.running,
+            listOf("Authorization granted for update")
+        ),
+        ActionStatus.ContentEntry(
+            ActionStatus.ContentEntry.Type.running,
+            listOf("Waiting authorization to update")
+        )
+    )
+
     val firstActionEntry = ActionStatus.ContentEntry(
             ActionStatus.ContentEntry.Type.running,
             listOf(null)

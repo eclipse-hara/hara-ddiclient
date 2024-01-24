@@ -86,7 +86,6 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     private suspend fun forceDownloadTheArtifact(msg: DeploymentInfo) {
         val message = "Start downloading artifacts"
         LOG.info(message)
-        feedback(message, proceeding, Progress(0, 0), none)
         forceRequest.onAuthorizationReceive {
             startDownloadProcedure(msg)
         }
@@ -95,7 +94,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     private suspend fun attemptDownloadingTheArtifact(state: State, msg: DeploymentInfo) {
         val message = "Waiting authorization to download"
         LOG.info(message)
-        feedback(message, proceeding, Progress(0, 0), none)
+        feedback(msg.info.id, proceeding, Progress(0, 0), none, message)
         become(waitingDownloadAuthorization(state.copy(deplBaseResp = msg.info)))
         notificationManager.send(MessageListener.Message.State
             .WaitingDownloadAuthorization(false))
@@ -185,7 +184,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             is Message.DownloadGranted -> {
                 val message = "Authorization granted for downloading files"
                 LOG.info(message)
-                feedback(message, proceeding, Progress(0, 0), none)
+                feedback(state.deplBaseResp.id, proceeding, Progress(0, 0), none, message)
                 startDownloadProcedure(DeploymentInfo(state.deplBaseResp))
             }
 

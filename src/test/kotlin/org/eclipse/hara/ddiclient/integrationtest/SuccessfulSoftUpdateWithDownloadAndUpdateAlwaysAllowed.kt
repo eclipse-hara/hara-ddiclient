@@ -13,6 +13,8 @@ package org.eclipse.hara.ddiclient.integrationtest
 import org.eclipse.hara.ddiclient.integrationtest.TestUtils.defaultActionStatusOnStart
 import org.eclipse.hara.ddiclient.integrationtest.TestUtils.endMessagesOnSuccessUpdate
 import org.eclipse.hara.ddiclient.integrationtest.TestUtils.filesDownloadedInOsWithAppsPairedToServerFile
+import org.eclipse.hara.ddiclient.integrationtest.TestUtils.messagesOnSoftDownloadAuthorization
+import org.eclipse.hara.ddiclient.integrationtest.TestUtils.messagesOnSoftUpdateAuthorization
 import org.eclipse.hara.ddiclient.integrationtest.TestUtils.messagesOnSuccessfullyDownloadOsWithAppDistribution
 import org.eclipse.hara.ddiclient.integrationtest.TestUtils.startMessagesOnUpdateFond
 import org.testng.annotations.DataProvider
@@ -36,7 +38,9 @@ class SuccessfulSoftUpdateWithDownloadAndUpdateAlwaysAllowed : AbstractClientTes
         val contentEntriesOnFinish = ActionStatus(
             setOf(
                 *endMessagesOnSuccessUpdate,
+                *messagesOnSoftUpdateAuthorization,
                 *messagesOnSuccessfullyDownloadOsWithAppDistribution(targetId),
+                *messagesOnSoftDownloadAuthorization,
                 *startMessagesOnUpdateFond
             )
         )

@@ -55,11 +55,12 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                         forceUpdateDevice(state)
                     }
                     else -> {
-                        attemptUpdateDevice(state)
+                        val softMsg = attemptUpdateDevice(state)
+                        sendFeedback(msg.info.id, proceeding, Progress(0, 0), none, softMsg)
+                        softMsg
                     }
                 }
                 LOG.info(message)
-                sendFeedback(message, proceeding, Progress(0, 0), none)
             }
 
             else -> unhandled(msg)
@@ -77,8 +78,8 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             is Message.UpdateGranted -> {
                 val message = "Authorization granted for update"
                 LOG.info(message)
-                sendFeedback(message, proceeding, Progress(0, 0), none)
-                startUpdateProcedure(DeploymentInfo(state.deplBaseResp!!))
+                sendFeedback(state.deplBaseResp!!.id, proceeding, Progress(0, 0), none, message)
+                startUpdateProcedure(DeploymentInfo(state.deplBaseResp))
             }
 
             is ConnectionManager.Companion.Message.Out.DeploymentCancelInfo -> {
