@@ -11,7 +11,6 @@
 package org.eclipse.hara.ddi.security
 
 import java.io.IOException
-import java.util.ArrayList
 import java.util.Objects
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -19,14 +18,12 @@ import okhttp3.Response
 /**
  * @author Daniele Sergio
  */
-class HawkbitAuthenticationRequestInterceptor(authentications: Set<Authentication>) : Interceptor {
+class HawkbitAuthenticationRequestInterceptor(private val authentications: List<Authentication>) : Interceptor {
 
-    private val authentications: List<Authentication>
     private var authenticationUse = 0
 
     init {
         Objects.requireNonNull(authentications)
-        this.authentications = ArrayList(authentications)
     }
 
     @Throws(IOException::class)

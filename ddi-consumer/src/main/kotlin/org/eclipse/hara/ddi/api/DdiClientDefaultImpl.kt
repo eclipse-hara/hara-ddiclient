@@ -21,7 +21,6 @@ import org.eclipse.hara.ddi.security.Authentication
 import org.eclipse.hara.ddi.security.HawkbitAuthenticationRequestInterceptor
 import java.io.InputStream
 import java.net.HttpURLConnection
-import java.util.HashSet
 import java.util.concurrent.Executors
 import okhttp3.OkHttpClient
 import org.eclipse.hara.ddiclient.api.HaraClientData
@@ -132,13 +131,13 @@ class DdiClientDefaultImpl private constructor(private val ddiRestApi: DdiRestAp
         val LOG = LoggerFactory.getLogger(DdiClient::class.java)!!
 
         fun of(haraClientData: HaraClientData, httpBuilder:OkHttpClient.Builder): DdiClientDefaultImpl {
-            val authentications = HashSet<Authentication>()
+            val authentications = mutableListOf<Authentication>()
             with(haraClientData) {
-                if (gatewayToken != null) {
-                    authentications.add(Authentication.newInstance(Authentication.AuthenticationType.GATEWAY_TOKEN_AUTHENTICATION, gatewayToken!!))
-                }
-                if (targetToken != null) {
+                if (!targetToken.isNullOrBlank()) {
                     authentications.add(Authentication.newInstance(Authentication.AuthenticationType.TARGET_TOKEN_AUTHENTICATION, targetToken!!))
+                }
+                if (!gatewayToken.isNullOrBlank()) {
+                    authentications.add(Authentication.newInstance(Authentication.AuthenticationType.GATEWAY_TOKEN_AUTHENTICATION, gatewayToken!!))
                 }
                 httpBuilder.interceptors().add(0, HawkbitAuthenticationRequestInterceptor(authentications))
                 val ddiRestApi = Retrofit.Builder()

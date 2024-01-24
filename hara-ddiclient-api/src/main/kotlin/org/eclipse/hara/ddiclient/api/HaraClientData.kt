@@ -38,7 +38,7 @@ data class HaraClientData constructor(
         notEmpty(controllerId, "controllerId")
         notEmpty(serverUrl, "serverUrl")
         validUrl(serverUrl, "serverUrl")
-        if ((gatewayToken == null || gatewayToken.isBlank()) && (targetToken == null || targetToken.isBlank())) {
+        if (gatewayToken.isNullOrBlank() && targetToken.isNullOrBlank()) {
             throw IllegalStateException("gatewayToken and targetToken cannot both be empty")
         }
     }
