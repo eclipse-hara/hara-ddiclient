@@ -53,7 +53,35 @@ CREATE TABLE `schema_version` (
 
 LOCK TABLES `schema_version` WRITE;
 /*!40000 ALTER TABLE `schema_version` DISABLE KEYS */;
-INSERT INTO `schema_version` VALUES (1,'1.0.1','init   ','SQL','MYSQL/V1_0_1__init___MYSQL.sql',2116264868,'hawkbit','2021-07-19 16:01:24',1593,1),(2,'1.2.0','update target info for message   ','SQL','MYSQL/V1_2_0__update_target_info_for_message___MYSQL.sql',1880816186,'hawkbit','2021-07-19 16:01:25',50,1),(3,'1.4.0','cascade delete   ','SQL','MYSQL/V1_4_0__cascade_delete___MYSQL.sql',743697353,'hawkbit','2021-07-19 16:01:25',479,1),(4,'1.4.1','cascade delete   ','SQL','MYSQL/V1_4_1__cascade_delete___MYSQL.sql',1352873934,'hawkbit','2021-07-19 16:01:25',45,1),(5,'1.5.0','target filter query   ','SQL','MYSQL/V1_5_0__target_filter_query___MYSQL.sql',2030746385,'hawkbit','2021-07-19 16:01:25',17,1),(6,'1.6.0','rollout management   ','SQL','MYSQL/V1_6_0__rollout_management___MYSQL.sql',-497551745,'hawkbit','2021-07-19 16:01:26',398,1),(7,'1.7.0','swmType maxAssignment greater 0  ','SQL','MYSQL/V1_7_0__swmType_maxAssignment_greater_0__MYSQL.sql',-251836914,'hawkbit','2021-07-19 16:01:26',4,1),(8,'1.7.1','reduce length enums   ','SQL','MYSQL/V1_7_1__reduce_length_enums___MYSQL.sql',276933168,'hawkbit','2021-07-19 16:01:26',213,1),(9,'1.8.0','auto assign ds filter  ','SQL','MYSQL/V1_8_0__auto_assign_ds_filter__MYSQL.sql',688297978,'hawkbit','2021-07-19 16:01:26',43,1),(10,'1.8.1','cascade delete   ','SQL','MYSQL/V1_8_1__cascade_delete___MYSQL.sql',1576124560,'hawkbit','2021-07-19 16:01:26',161,1),(11,'1.8.2','remove external artifact   ','SQL','MYSQL/V1_8_2__remove_external_artifact___MYSQL.sql',857376948,'hawkbit','2021-07-19 16:01:26',19,1),(12,'1.9.0','add rollout groups created   ','SQL','MYSQL/V1_9_0__add_rollout_groups_created___MYSQL.sql',-549237691,'hawkbit','2021-07-19 16:01:26',3,1),(13,'1.10.0','advanced rolloutgroup  ','SQL','MYSQL/V1_10_0__advanced_rolloutgroup__MYSQL.sql',689878859,'hawkbit','2021-07-19 16:01:26',7,1),(14,'1.10.1','consolidate artifact sha1  ','SQL','MYSQL/V1_10_1__consolidate_artifact_sha1__MYSQL.sql',647264314,'hawkbit','2021-07-19 16:01:26',56,1),(15,'1.10.2','rollout auto start  ','SQL','MYSQL/V1_10_2__rollout_auto_start__MYSQL.sql',-480603158,'hawkbit','2021-07-19 16:01:26',2,1),(16,'1.10.3','add rollout deleted flag  ','SQL','MYSQL/V1_10_3__add_rollout_deleted_flag__MYSQL.sql',436847924,'hawkbit','2021-07-19 16:01:27',371,1),(17,'1.11.0','drop target info  ','SQL','MYSQL/V1_11_0__drop_target_info__MYSQL.sql',643753335,'hawkbit','2021-07-19 16:01:27',123,1),(18,'1.11.1','target filter query UQ   ','SQL','MYSQL/V1_11_1__target_filter_query_UQ___MYSQL.sql',-1889353429,'hawkbit','2021-07-19 16:01:27',14,1),(19,'1.11.2','remove unused idexes   ','SQL','MYSQL/V1_11_2__remove_unused_idexes___MYSQL.sql',1164559072,'hawkbit','2021-07-19 16:01:27',47,1),(20,'1.11.3','add module md targetvis  ','SQL','MYSQL/V1_11_3__add_module_md_targetvis__MYSQL.sql',185590925,'hawkbit','2021-07-19 16:01:27',2,1),(21,'1.12.0','action performance   ','SQL','MYSQL/V1_12_0__action_performance___MYSQL.sql',1063801017,'hawkbit','2021-07-19 16:01:27',228,1),(22,'1.12.1','missing non null   ','SQL','MYSQL/V1_12_1__missing_non_null___MYSQL.sql',329832998,'hawkbit','2021-07-19 16:01:27',101,1),(23,'1.12.2','missing non null enum   ','SQL','MYSQL/V1_12_2__missing_non_null_enum___MYSQL.sql',465042623,'hawkbit','2021-07-19 16:01:27',97,1),(24,'1.12.3','cascade delete   ','SQL','MYSQL/V1_12_3__cascade_delete___MYSQL.sql',2033261637,'hawkbit','2021-07-19 16:01:27',7,1),(25,'1.12.4','add maintenance window   ','SQL','MYSQL/V1_12_4__add_maintenance_window___MYSQL.sql',1427114432,'hawkbit','2021-07-19 16:01:27',15,1),(26,'1.12.6','add index   ','SQL','MYSQL/V1_12_6__add_index___MYSQL.sql',-1675890621,'hawkbit','2021-07-19 16:01:27',18,1),(27,'1.12.7','add rollout approval fields   ','SQL','MYSQL/V1_12_7__add_rollout_approval_fields___MYSQL.sql',373176898,'hawkbit','2021-07-19 16:01:27',5,1),(28,'1.12.8','change length of created last modified by   ','SQL','MYSQL/V1_12_8__change_length_of_created_last_modified_by___MYSQL.sql',-2112499612,'hawkbit','2021-07-19 16:01:27',35,1);
+INSERT INTO `schema_version` VALUES
+(1,'1.0.1','init   ','SQL','MYSQL/V1_0_1__init___MYSQL.sql',2116264868,'hawkbit','2021-07-19 16:01:24',1593,1),
+(2,'1.2.0','update target info for message   ','SQL','MYSQL/V1_2_0__update_target_info_for_message___MYSQL.sql',1880816186,'hawkbit','2021-07-19 16:01:25',50,1),
+(3,'1.4.0','cascade delete   ','SQL','MYSQL/V1_4_0__cascade_delete___MYSQL.sql',743697353,'hawkbit','2021-07-19 16:01:25',479,1),
+(4,'1.4.1','cascade delete   ','SQL','MYSQL/V1_4_1__cascade_delete___MYSQL.sql',1352873934,'hawkbit','2021-07-19 16:01:25',45,1),
+(5,'1.5.0','target filter query   ','SQL','MYSQL/V1_5_0__target_filter_query___MYSQL.sql',2030746385,'hawkbit','2021-07-19 16:01:25',17,1),
+(6,'1.6.0','rollout management   ','SQL','MYSQL/V1_6_0__rollout_management___MYSQL.sql',-497551745,'hawkbit','2021-07-19 16:01:26',398,1),
+(7,'1.7.0','swmType maxAssignment greater 0  ','SQL','MYSQL/V1_7_0__swmType_maxAssignment_greater_0__MYSQL.sql',-251836914,'hawkbit','2021-07-19 16:01:26',4,1),
+(8,'1.7.1','reduce length enums   ','SQL','MYSQL/V1_7_1__reduce_length_enums___MYSQL.sql',276933168,'hawkbit','2021-07-19 16:01:26',213,1),
+(9,'1.8.0','auto assign ds filter  ','SQL','MYSQL/V1_8_0__auto_assign_ds_filter__MYSQL.sql',688297978,'hawkbit','2021-07-19 16:01:26',43,1),
+(10,'1.8.1','cascade delete   ','SQL','MYSQL/V1_8_1__cascade_delete___MYSQL.sql',1576124560,'hawkbit','2021-07-19 16:01:26',161,1),
+(11,'1.8.2','remove external artifact   ','SQL','MYSQL/V1_8_2__remove_external_artifact___MYSQL.sql',857376948,'hawkbit','2021-07-19 16:01:26',19,1),
+(12,'1.9.0','add rollout groups created   ','SQL','MYSQL/V1_9_0__add_rollout_groups_created___MYSQL.sql',-549237691,'hawkbit','2021-07-19 16:01:26',3,1),
+(13,'1.10.0','advanced rolloutgroup  ','SQL','MYSQL/V1_10_0__advanced_rolloutgroup__MYSQL.sql',689878859,'hawkbit','2021-07-19 16:01:26',7,1),
+(14,'1.10.1','consolidate artifact sha1  ','SQL','MYSQL/V1_10_1__consolidate_artifact_sha1__MYSQL.sql',647264314,'hawkbit','2021-07-19 16:01:26',56,1),
+(15,'1.10.2','rollout auto start  ','SQL','MYSQL/V1_10_2__rollout_auto_start__MYSQL.sql',-480603158,'hawkbit','2021-07-19 16:01:26',2,1),
+(16,'1.10.3','add rollout deleted flag  ','SQL','MYSQL/V1_10_3__add_rollout_deleted_flag__MYSQL.sql',436847924,'hawkbit','2021-07-19 16:01:27',371,1),
+(17,'1.11.0','drop target info  ','SQL','MYSQL/V1_11_0__drop_target_info__MYSQL.sql',643753335,'hawkbit','2021-07-19 16:01:27',123,1),
+(18,'1.11.1','target filter query UQ   ','SQL','MYSQL/V1_11_1__target_filter_query_UQ___MYSQL.sql',-1889353429,'hawkbit','2021-07-19 16:01:27',14,1),
+(19,'1.11.2','remove unused idexes   ','SQL','MYSQL/V1_11_2__remove_unused_idexes___MYSQL.sql',1164559072,'hawkbit','2021-07-19 16:01:27',47,1),
+(20,'1.11.3','add module md targetvis  ','SQL','MYSQL/V1_11_3__add_module_md_targetvis__MYSQL.sql',185590925,'hawkbit','2021-07-19 16:01:27',2,1),
+(21,'1.12.0','action performance   ','SQL','MYSQL/V1_12_0__action_performance___MYSQL.sql',1063801017,'hawkbit','2021-07-19 16:01:27',228,1),
+(22,'1.12.1','missing non null   ','SQL','MYSQL/V1_12_1__missing_non_null___MYSQL.sql',329832998,'hawkbit','2021-07-19 16:01:27',101,1),
+(23,'1.12.2','missing non null enum   ','SQL','MYSQL/V1_12_2__missing_non_null_enum___MYSQL.sql',465042623,'hawkbit','2021-07-19 16:01:27',97,1),
+(24,'1.12.3','cascade delete   ','SQL','MYSQL/V1_12_3__cascade_delete___MYSQL.sql',2033261637,'hawkbit','2021-07-19 16:01:27',7,1),
+(25,'1.12.4','add maintenance window   ','SQL','MYSQL/V1_12_4__add_maintenance_window___MYSQL.sql',1427114432,'hawkbit','2021-07-19 16:01:27',15,1),
+(26,'1.12.6','add index   ','SQL','MYSQL/V1_12_6__add_index___MYSQL.sql',-1675890621,'hawkbit','2021-07-19 16:01:27',18,1),
+(27,'1.12.7','add rollout approval fields   ','SQL','MYSQL/V1_12_7__add_rollout_approval_fields___MYSQL.sql',373176898,'hawkbit','2021-07-19 16:01:27',5,1),
+(28,'1.12.8','change length of created last modified by   ','SQL','MYSQL/V1_12_8__change_length_of_created_last_modified_by___MYSQL.sql',-2112499612,'hawkbit','2021-07-19 16:01:27',35,1);
 /*!40000 ALTER TABLE `schema_version` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -104,7 +132,28 @@ CREATE TABLE `sp_action` (
 
 LOCK TABLES `sp_action` WRITE;
 /*!40000 ALTER TABLE `sp_action` DISABLE KEYS */;
-INSERT INTO `sp_action` VALUES (1,1551975366225,'test',1551975382340,'test',2,'DEFAULT','',0,5,1,1,NULL,NULL,0,NULL,NULL,NULL),(2,1551975382333,'test',1551975382333,'test',1,'DEFAULT','',0,3,3,1,NULL,NULL,0,NULL,NULL,NULL),(3,1551975391415,'test',1551975391415,'test',1,'DEFAULT','',0,3,2,2,NULL,NULL,0,NULL,NULL,NULL),(4,1551975395587,'test',1551975395587,'test',1,'DEFAULT','',0,3,1,3,NULL,NULL,0,NULL,NULL,NULL),(5,1553274863592,'test',1553274863592,'test',1,'DEFAULT','',0,3,1,4,NULL,NULL,1,NULL,NULL,NULL),(6,1553274868167,'test',1553274868167,'test',1,'DEFAULT','',0,3,1,5,NULL,NULL,1,NULL,NULL,NULL),(7,1553274872490,'test',1553274872490,'test',1,'DEFAULT','',0,3,1,6,NULL,NULL,1,NULL,NULL,NULL),(8,1553274877321,'test',1553274877321,'test',1,'DEFAULT','',0,3,1,7,NULL,NULL,1,NULL,NULL,NULL),(9,1553274881842,'test',1553274881842,'test',1,'DEFAULT','',0,3,1,8,NULL,NULL,1,NULL,NULL,NULL),(10,1553274885606,'test',1553274885606,'test',1,'DEFAULT','',0,3,1,9,NULL,NULL,1,NULL,NULL,NULL),(11,1553274890216,'test',1553274890216,'test',1,'DEFAULT','',0,3,1,10,NULL,NULL,1,NULL,NULL,NULL),(12,1553274895471,'test',1553274895471,'test',1,'DEFAULT','',0,3,1,11,NULL,NULL,1,NULL,NULL,NULL),(13,1553274899431,'test',1553274899431,'test',1,'DEFAULT','',0,3,1,12,NULL,NULL,1,NULL,NULL,NULL),(14,1553274903242,'test',1553274903242,'test',1,'DEFAULT','',0,3,1,13,NULL,NULL,1,NULL,NULL,NULL),(15,1553274908972,'test',1553274908972,'test',1,'DEFAULT','',0,3,1,14,NULL,NULL,1,NULL,NULL,NULL),(16,1553274914684,'test',1553274914684,'test',1,'DEFAULT','',0,3,1,15,NULL,NULL,1,NULL,NULL,NULL),(17,1553274924569,'test',1553274924569,'test',1,'DEFAULT','',0,3,1,16,NULL,NULL,1,NULL,NULL,NULL),(18,1553274929888,'test',1553274929888,'test',1,'DEFAULT','',0,3,1,17,NULL,NULL,1,NULL,NULL,NULL),(19,1553274939773,'test',1553274939773,'test',1,'DEFAULT','',0,3,2,18,NULL,NULL,0,NULL,NULL,NULL),(20,1553274944385,'test',1553274944385,'test',1,'DEFAULT','',0,3,3,19,NULL,NULL,0,NULL,NULL,NULL),(21,1553274947809,'test',1553274947809,'test',1,'DEFAULT','',0,3,3,20,NULL,NULL,0,NULL,NULL,NULL);
+INSERT INTO `sp_action` VALUES
+(1,1551975366225,'test',1551975382340,'test',2,'DEFAULT','',0,5,1,1,NULL,NULL,0,NULL,NULL,NULL),
+(2,1551975382333,'test',1551975382333,'test',1,'DEFAULT','',0,3,3,1,NULL,NULL,0,NULL,NULL,NULL),
+(3,1551975391415,'test',1551975391415,'test',1,'DEFAULT','',0,3,2,2,NULL,NULL,0,NULL,NULL,NULL),
+(4,1551975395587,'test',1551975395587,'test',1,'DEFAULT','',0,3,1,3,NULL,NULL,0,NULL,NULL,NULL),
+(5,1553274863592,'test',1553274863592,'test',1,'DEFAULT','',0,3,1,4,NULL,NULL,1,NULL,NULL,NULL),
+(6,1553274868167,'test',1553274868167,'test',1,'DEFAULT','',0,3,1,5,NULL,NULL,1,NULL,NULL,NULL),
+(7,1553274872490,'test',1553274872490,'test',1,'DEFAULT','',0,3,1,6,NULL,NULL,1,NULL,NULL,NULL),
+(8,1553274877321,'test',1553274877321,'test',1,'DEFAULT','',0,3,1,7,NULL,NULL,1,NULL,NULL,NULL),
+(9,1553274881842,'test',1553274881842,'test',1,'DEFAULT','',0,3,1,8,NULL,NULL,1,NULL,NULL,NULL),
+(10,1553274885606,'test',1553274885606,'test',1,'DEFAULT','',0,3,1,9,NULL,NULL,1,NULL,NULL,NULL),
+(11,1553274890216,'test',1553274890216,'test',1,'DEFAULT','',0,3,1,10,NULL,NULL,1,NULL,NULL,NULL),
+(12,1553274895471,'test',1553274895471,'test',1,'DEFAULT','',0,3,1,11,NULL,NULL,1,NULL,NULL,NULL),
+(13,1553274899431,'test',1553274899431,'test',1,'DEFAULT','',0,3,1,12,NULL,NULL,1,NULL,NULL,NULL),
+(14,1553274903242,'test',1553274903242,'test',1,'DEFAULT','',0,3,1,13,NULL,NULL,1,NULL,NULL,NULL),
+(15,1553274908972,'test',1553274908972,'test',1,'DEFAULT','',0,3,1,14,NULL,NULL,1,NULL,NULL,NULL),
+(16,1553274914684,'test',1553274914684,'test',1,'DEFAULT','',0,3,1,15,NULL,NULL,1,NULL,NULL,NULL),
+(17,1553274924569,'test',1553274924569,'test',1,'DEFAULT','',0,3,1,16,NULL,NULL,1,NULL,NULL,NULL),
+(18,1553274929888,'test',1553274929888,'test',1,'DEFAULT','',0,3,1,17,NULL,NULL,1,NULL,NULL,NULL),
+(19,1553274939773,'test',1553274939773,'test',1,'DEFAULT','',0,3,2,18,NULL,NULL,0,NULL,NULL,NULL),
+(20,1553274944385,'test',1553274944385,'test',1,'DEFAULT','',0,3,3,19,NULL,NULL,0,NULL,NULL,NULL),
+(21,1553274947809,'test',1553274947809,'test',1,'DEFAULT','',0,3,3,20,NULL,NULL,0,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `sp_action` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -140,7 +189,29 @@ CREATE TABLE `sp_action_status` (
 
 LOCK TABLES `sp_action_status` WRITE;
 /*!40000 ALTER TABLE `sp_action_status` DISABLE KEYS */;
-INSERT INTO `sp_action_status` VALUES (1,1551975366325,'test',1551975366325,'test',1,'DEFAULT',1551975366225,3,1),(2,1551975382335,'test',1551975382335,'test',1,'DEFAULT',1551975382333,3,2),(3,1551975382319,'test',1551975382319,'test',1,'DEFAULT',1551975382313,5,1),(4,1551975391416,'test',1551975391416,'test',1,'DEFAULT',1551975391415,3,3),(5,1551975395589,'test',1551975395589,'test',1,'DEFAULT',1551975395587,3,4),(6,1553274863687,'test',1553274863687,'test',1,'DEFAULT',1553274863592,3,5),(7,1553274868168,'test',1553274868168,'test',1,'DEFAULT',1553274868167,3,6),(8,1553274872491,'test',1553274872491,'test',1,'DEFAULT',1553274872490,3,7),(9,1553274877323,'test',1553274877323,'test',1,'DEFAULT',1553274877321,3,8),(10,1553274881842,'test',1553274881842,'test',1,'DEFAULT',1553274881842,3,9),(11,1553274885606,'test',1553274885606,'test',1,'DEFAULT',1553274885606,3,10),(12,1553274890218,'test',1553274890218,'test',1,'DEFAULT',1553274890216,3,11),(13,1553274895472,'test',1553274895472,'test',1,'DEFAULT',1553274895471,3,12),(14,1553274899431,'test',1553274899431,'test',1,'DEFAULT',1553274899431,3,13),(15,1553274903243,'test',1553274903243,'test',1,'DEFAULT',1553274903242,3,14),(16,1553274908972,'test',1553274908972,'test',1,'DEFAULT',1553274908972,3,15),(17,1553274914685,'test',1553274914685,'test',1,'DEFAULT',1553274914684,3,16),(18,1553274924571,'test',1553274924571,'test',1,'DEFAULT',1553274924569,3,17),(19,1553274929889,'test',1553274929889,'test',1,'DEFAULT',1553274929888,3,18),(20,1553274939773,'test',1553274939773,'test',1,'DEFAULT',1553274939773,3,19),(21,1553274944386,'test',1553274944386,'test',1,'DEFAULT',1553274944385,3,20),(22,1553274947810,'test',1553274947810,'test',1,'DEFAULT',1553274947809,3,21);
+INSERT INTO `sp_action_status` VALUES
+(1,1551975366325,'test',1551975366325,'test',1,'DEFAULT',1551975366225,3,1),
+(2,1551975382335,'test',1551975382335,'test',1,'DEFAULT',1551975382333,3,2),
+(3,1551975382319,'test',1551975382319,'test',1,'DEFAULT',1551975382313,5,1),
+(4,1551975391416,'test',1551975391416,'test',1,'DEFAULT',1551975391415,3,3),
+(5,1551975395589,'test',1551975395589,'test',1,'DEFAULT',1551975395587,3,4),
+(6,1553274863687,'test',1553274863687,'test',1,'DEFAULT',1553274863592,3,5),
+(7,1553274868168,'test',1553274868168,'test',1,'DEFAULT',1553274868167,3,6),
+(8,1553274872491,'test',1553274872491,'test',1,'DEFAULT',1553274872490,3,7),
+(9,1553274877323,'test',1553274877323,'test',1,'DEFAULT',1553274877321,3,8),
+(10,1553274881842,'test',1553274881842,'test',1,'DEFAULT',1553274881842,3,9),
+(11,1553274885606,'test',1553274885606,'test',1,'DEFAULT',1553274885606,3,10),
+(12,1553274890218,'test',1553274890218,'test',1,'DEFAULT',1553274890216,3,11),
+(13,1553274895472,'test',1553274895472,'test',1,'DEFAULT',1553274895471,3,12),
+(14,1553274899431,'test',1553274899431,'test',1,'DEFAULT',1553274899431,3,13),
+(15,1553274903243,'test',1553274903243,'test',1,'DEFAULT',1553274903242,3,14),
+(16,1553274908972,'test',1553274908972,'test',1,'DEFAULT',1553274908972,3,15),
+(17,1553274914685,'test',1553274914685,'test',1,'DEFAULT',1553274914684,3,16),
+(18,1553274924571,'test',1553274924571,'test',1,'DEFAULT',1553274924569,3,17),
+(19,1553274929889,'test',1553274929889,'test',1,'DEFAULT',1553274929888,3,18),
+(20,1553274939773,'test',1553274939773,'test',1,'DEFAULT',1553274939773,3,19),
+(21,1553274944386,'test',1553274944386,'test',1,'DEFAULT',1553274944385,3,20),
+(22,1553274947810,'test',1553274947810,'test',1,'DEFAULT',1553274947809,3,21);
 /*!40000 ALTER TABLE `sp_action_status` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -204,7 +275,11 @@ CREATE TABLE `sp_artifact` (
 
 LOCK TABLES `sp_artifact` WRITE;
 /*!40000 ALTER TABLE `sp_artifact` DISABLE KEYS */;
-INSERT INTO `sp_artifact` VALUES (1,1551975265210,'test',1551975265210,'test',1,'DEFAULT','94424c5ce3f8c57a5b26d02f37dc06fc',7,'test_4','07fa4d03ac54d0b2a52f23d8e878c96db7aadd0a',3),(2,1551975273780,'test',1551975273780,'test',1,'DEFAULT','b0b3b0dbf5330e3179c6ae3e0ac524c9',7,'test_2','a096a9d3cb96fa4cf6c63bd736a84cb7a7e4b61e',2),(3,1551975277575,'test',1551975277575,'test',1,'DEFAULT','2244fbd6bee5dcbe312e387c062ce6e6',7,'test_3','cde0c01b26634f869bb876326e4fbe969792bf94',2),(4,1551975287265,'test',1551975287265,'test',1,'DEFAULT','2490a3d39b0004e4afeb517ef0ddbe2d',7,'test_1','b54e43082887d1e7cdb10b7a21fe4a1e56b44b5a',1);
+INSERT INTO `sp_artifact` VALUES
+(1,1551975265210,'test',1551975265210,'test',1,'DEFAULT','94424c5ce3f8c57a5b26d02f37dc06fc',7,'test_4','07fa4d03ac54d0b2a52f23d8e878c96db7aadd0a',3),
+(2,1551975273780,'test',1551975273780,'test',1,'DEFAULT','b0b3b0dbf5330e3179c6ae3e0ac524c9',7,'test_2','a096a9d3cb96fa4cf6c63bd736a84cb7a7e4b61e',2),
+(3,1551975277575,'test',1551975277575,'test',1,'DEFAULT','2244fbd6bee5dcbe312e387c062ce6e6',7,'test_3','cde0c01b26634f869bb876326e4fbe969792bf94',2),
+(4,1551975287265,'test',1551975287265,'test',1,'DEFAULT','2490a3d39b0004e4afeb517ef0ddbe2d',7,'test_1','b54e43082887d1e7cdb10b7a21fe4a1e56b44b5a',1);
 /*!40000 ALTER TABLE `sp_artifact` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -244,7 +319,10 @@ CREATE TABLE `sp_base_software_module` (
 
 LOCK TABLES `sp_base_software_module` WRITE;
 /*!40000 ALTER TABLE `sp_base_software_module` DISABLE KEYS */;
-INSERT INTO `sp_base_software_module` VALUES (1,1551975246120,'test',1551975287270,'test',2,'DEFAULT','','app','1','\0','',1),(2,1551975253978,'test',1551975277579,'test',3,'DEFAULT','','apps','1','\0','',1),(3,1551975260304,'test',1551975265228,'test',2,'DEFAULT','','os','1','\0','',2);
+INSERT INTO `sp_base_software_module` VALUES
+(1,1551975246120,'test',1551975287270,'test',2,'DEFAULT','','app','1','\0','',1),
+(2,1551975253978,'test',1551975277579,'test',3,'DEFAULT','','apps','1','\0','',1),
+(3,1551975260304,'test',1551975265228,'test',2,'DEFAULT','','os','1','\0','',2);
 /*!40000 ALTER TABLE `sp_base_software_module` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -285,7 +363,10 @@ CREATE TABLE `sp_distribution_set` (
 
 LOCK TABLES `sp_distribution_set` WRITE;
 /*!40000 ALTER TABLE `sp_distribution_set` DISABLE KEYS */;
-INSERT INTO `sp_distribution_set` VALUES (1,1551975312567,'test',1551975318503,'test',2,'DEFAULT','','osWithApps','1','','\0','\0',1),(2,1551975326181,'test',1551975329294,'test',2,'DEFAULT','','os','1','','\0','\0',2),(3,1551975338674,'test',1551975342114,'test',2,'DEFAULT','','app','1','','\0','\0',3);
+INSERT INTO `sp_distribution_set` VALUES
+(1,1551975312567,'test',1551975318503,'test',2,'DEFAULT','','osWithApps','1','','\0','\0',1),
+(2,1551975326181,'test',1551975329294,'test',2,'DEFAULT','','os','1','','\0','\0',2),
+(3,1551975338674,'test',1551975342114,'test',2,'DEFAULT','','app','1','','\0','\0',3);
 /*!40000 ALTER TABLE `sp_distribution_set` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -323,7 +404,10 @@ CREATE TABLE `sp_distribution_set_type` (
 
 LOCK TABLES `sp_distribution_set_type` WRITE;
 /*!40000 ALTER TABLE `sp_distribution_set_type` DISABLE KEYS */;
-INSERT INTO `sp_distribution_set_type` VALUES (1,1551975231012,'system',1551975231012,'system',1,'DEFAULT','Default type with Firmware/OS and optional app(s).','OS with app(s)',NULL,'\0','os_app'),(2,1551975230999,'system',1551975230999,'system',1,'DEFAULT','Default type with Firmware/OS only.','OS only',NULL,'\0','os'),(3,1551975231009,'system',1551975231009,'system',1,'DEFAULT','Default type with app(s) only.','App(s) only',NULL,'\0','app');
+INSERT INTO `sp_distribution_set_type` VALUES
+(1,1551975231012,'system',1551975231012,'system',1,'DEFAULT','Default type with Firmware/OS and optional app(s).','OS with app(s)',NULL,'\0','os_app'),
+(2,1551975230999,'system',1551975230999,'system',1,'DEFAULT','Default type with Firmware/OS only.','OS only',NULL,'\0','os'),
+(3,1551975231009,'system',1551975231009,'system',1,'DEFAULT','Default type with app(s) only.','App(s) only',NULL,'\0','app');
 /*!40000 ALTER TABLE `sp_distribution_set_type` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -622,7 +706,9 @@ CREATE TABLE `sp_software_module_type` (
 
 LOCK TABLES `sp_software_module_type` WRITE;
 /*!40000 ALTER TABLE `sp_software_module_type` DISABLE KEYS */;
-INSERT INTO `sp_software_module_type` VALUES (1,1551975230809,'system',1551975230809,'system',1,'DEFAULT','Application Addons','Application',NULL,'\0','application',2147483647),(2,1551975230869,'system',1551975230869,'system',1,'DEFAULT','Core firmware or operationg system','OS',NULL,'\0','os',1);
+INSERT INTO `sp_software_module_type` VALUES
+(1,1551975230809,'system',1551975230809,'system',1,'DEFAULT','Application Addons','Application',NULL,'\0','application',2147483647),
+(2,1551975230869,'system',1551975230869,'system',1,'DEFAULT','Core firmware or operationg system','OS',NULL,'\0','os',1);
 /*!40000 ALTER TABLE `sp_software_module_type` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -698,7 +784,28 @@ CREATE TABLE `sp_target` (
 
 LOCK TABLES `sp_target` WRITE;
 /*!40000 ALTER TABLE `sp_target` DISABLE KEYS */;
-INSERT INTO `sp_target` VALUES (1,1551975352117,'test',1551975382326,'test',3,'DEFAULT','','target1','target1','447fb8b5b3ea156470e852b94166a673',3,NULL,NULL,NULL,'',NULL,2),(2,1551975356776,'test',1551975391405,'test',2,'DEFAULT','','target2','target2','0fe7b8c9de2102ec6bf305b6f66df5b2',2,NULL,NULL,NULL,'',NULL,2),(3,1551975361488,'test',1551975395581,'test',2,'DEFAULT','','target3','target3','4a28d893bb841def706073c789c0f3a7',1,NULL,NULL,NULL,'',NULL,2),(4,1553274851869,'test',1553274863492,'test',2,'DEFAULT','','Target4','Target4','b9843ee2a5f6583ad33527eb4f00846f',1,NULL,NULL,NULL,'',NULL,2),(5,1553274851969,'test',1553274868165,'test',2,'DEFAULT','','Target5','Target5','f849c2aaabdcc12e9b40471b8d0d40f1',1,NULL,NULL,NULL,'',NULL,2),(6,1553274851977,'test',1553274872488,'test',2,'DEFAULT','','Target6','Target6','ea9437dd318273f89062d6b8b254b5f0',1,NULL,NULL,NULL,'',NULL,2),(7,1553274851981,'test',1553274877307,'test',2,'DEFAULT','','Target7','Target7','3f8183f306da57c87f8167559e53c7ce',1,NULL,NULL,NULL,'',NULL,2),(8,1553274851986,'test',1553274881840,'test',2,'DEFAULT','','Target8','Target8','af5b01d037bd6007a5a2e1532fee3e76',1,NULL,NULL,NULL,'',NULL,2),(9,1553274851990,'test',1553274885603,'test',2,'DEFAULT','','Target9','Target9','3981312998794f82ba88d7a952777440',1,NULL,NULL,NULL,'',NULL,2),(10,1553274851995,'test',1553274890213,'test',2,'DEFAULT','','Target10','Target10','9fd7c0e37f2c5f1d8f447c82fc983881',1,NULL,NULL,NULL,'',NULL,2),(11,1553274852000,'test',1553274895455,'test',2,'DEFAULT','','Target11','Target11','65ab6caf83873903f1df2b2b87028467',1,NULL,NULL,NULL,'',NULL,2),(12,1553274852005,'test',1553274899428,'test',2,'DEFAULT','','Target12','Target12','f7c67ac5ca85f2fd31c9b097e88de72c',1,NULL,NULL,NULL,'',NULL,2),(13,1553274852009,'test',1553274903241,'test',2,'DEFAULT','','Target13','Target13','a108c1eefe50d34ec1cd6bedf11b5135',1,NULL,NULL,NULL,'',NULL,2),(14,1553274852013,'test',1553274908970,'test',2,'DEFAULT','','Target14','Target14','a549660a712dee6f44513521795e1479',1,NULL,NULL,NULL,'',NULL,2),(15,1553274852018,'test',1553274914681,'test',2,'DEFAULT','','Target15','Target15','3dedeb7145e46e8ddc5c41c746526b10',1,NULL,NULL,NULL,'',NULL,2),(16,1553274852023,'test',1553274924554,'test',2,'DEFAULT','','Target16','Target16','e13a162db9d9ca7e4ea8b1b7327e0560',1,NULL,NULL,NULL,'',NULL,2),(17,1553274852028,'test',1553274929884,'test',2,'DEFAULT','','Target17','Target17','23ad56be41bf9d6047ce987792e35ae0',1,NULL,NULL,NULL,'',NULL,2),(18,1553274852035,'test',1553274939771,'test',2,'DEFAULT','','Target18','Target18','aff3b2856594ab021d4d0425a3743d0e',2,NULL,NULL,NULL,'',NULL,2),(19,1553274852041,'test',1553274944382,'test',2,'DEFAULT','','Target19','Target19','51e371e6842e3eec43660bf39cb18582',3,NULL,NULL,NULL,'',NULL,2),(20,1553274852047,'test',1553274947804,'test',2,'DEFAULT','','Target20','Target20','c90ff3fc5276111c45c5b864bab61462',3,NULL,NULL,NULL,'',NULL,2);
+INSERT INTO `sp_target` VALUES
+(1,1551975352117,'test',1551975382326,'test',3,'DEFAULT','','target1','target1','447fb8b5b3ea156470e852b94166a673',3,NULL,NULL,NULL,'',NULL,2),
+(2,1551975356776,'test',1551975391405,'test',2,'DEFAULT','','target2','target2','0fe7b8c9de2102ec6bf305b6f66df5b2',2,NULL,NULL,NULL,'',NULL,2),
+(3,1551975361488,'test',1551975395581,'test',2,'DEFAULT','','target3','target3','4a28d893bb841def706073c789c0f3a7',1,NULL,NULL,NULL,'',NULL,2),
+(4,1553274851869,'test',1553274863492,'test',2,'DEFAULT','','Target4','Target4','b9843ee2a5f6583ad33527eb4f00846f',1,NULL,NULL,NULL,'',NULL,2),
+(5,1553274851969,'test',1553274868165,'test',2,'DEFAULT','','Target5','Target5','f849c2aaabdcc12e9b40471b8d0d40f1',1,NULL,NULL,NULL,'',NULL,2),
+(6,1553274851977,'test',1553274872488,'test',2,'DEFAULT','','Target6','Target6','ea9437dd318273f89062d6b8b254b5f0',1,NULL,NULL,NULL,'',NULL,2),
+(7,1553274851981,'test',1553274877307,'test',2,'DEFAULT','','Target7','Target7','3f8183f306da57c87f8167559e53c7ce',1,NULL,NULL,NULL,'',NULL,2),
+(8,1553274851986,'test',1553274881840,'test',2,'DEFAULT','','Target8','Target8','af5b01d037bd6007a5a2e1532fee3e76',1,NULL,NULL,NULL,'',NULL,2),
+(9,1553274851990,'test',1553274885603,'test',2,'DEFAULT','','Target9','Target9','3981312998794f82ba88d7a952777440',1,NULL,NULL,NULL,'',NULL,2),
+(10,1553274851995,'test',1553274890213,'test',2,'DEFAULT','','Target10','Target10','9fd7c0e37f2c5f1d8f447c82fc983881',1,NULL,NULL,NULL,'',NULL,2),
+(11,1553274852000,'test',1553274895455,'test',2,'DEFAULT','','Target11','Target11','65ab6caf83873903f1df2b2b87028467',1,NULL,NULL,NULL,'',NULL,2),
+(12,1553274852005,'test',1553274899428,'test',2,'DEFAULT','','Target12','Target12','f7c67ac5ca85f2fd31c9b097e88de72c',1,NULL,NULL,NULL,'',NULL,2),
+(13,1553274852009,'test',1553274903241,'test',2,'DEFAULT','','Target13','Target13','a108c1eefe50d34ec1cd6bedf11b5135',1,NULL,NULL,NULL,'',NULL,2),
+(14,1553274852013,'test',1553274908970,'test',2,'DEFAULT','','Target14','Target14','a549660a712dee6f44513521795e1479',1,NULL,NULL,NULL,'',NULL,2),
+(15,1553274852018,'test',1553274914681,'test',2,'DEFAULT','','Target15','Target15','3dedeb7145e46e8ddc5c41c746526b10',1,NULL,NULL,NULL,'',NULL,2),
+(16,1553274852023,'test',1553274924554,'test',2,'DEFAULT','','Target16','Target16','e13a162db9d9ca7e4ea8b1b7327e0560',1,NULL,NULL,NULL,'',NULL,2),
+(17,1553274852028,'test',1553274929884,'test',2,'DEFAULT','','Target17','Target17','23ad56be41bf9d6047ce987792e35ae0',1,NULL,NULL,NULL,'',NULL,2),
+(18,1553274852035,'test',1553274939771,'test',2,'DEFAULT','','Target18','Target18','aff3b2856594ab021d4d0425a3743d0e',2,NULL,NULL,NULL,'',NULL,2),
+(19,1553274852041,'test',1553274944382,'test',2,'DEFAULT','','Target19','Target19','51e371e6842e3eec43660bf39cb18582',3,NULL,NULL,NULL,'',NULL,2),
+(20,1553274852047,'test',1553274947804,'test',2,'DEFAULT','','Target20','Target20','c90ff3fc5276111c45c5b864bab61462',3,NULL,NULL,NULL,'',NULL,2),
+(21,1553274852064,'test',1553274948514,'test',2,'DEFAULT','','DoubleToken','DoubleToken','r2m3ixxc86a2v4q81wntpyhr78zy08we',NULL,NULL,NULL,NULL,'',NULL,2);
 /*!40000 ALTER TABLE `sp_target` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -883,7 +990,9 @@ CREATE TABLE `sp_tenant_configuration` (
 
 LOCK TABLES `sp_tenant_configuration` WRITE;
 /*!40000 ALTER TABLE `sp_tenant_configuration` DISABLE KEYS */;
-INSERT INTO `sp_tenant_configuration` VALUES (1,1551975294139,'test',1551975294139,'test',1,'DEFAULT','authentication.gatewaytoken.enabled','true'),(2,1551975294188,'test',1551975294188,'test',1,'DEFAULT','authentication.gatewaytoken.key','66076ab945a127dd80b15e9011995109');
+INSERT INTO `sp_tenant_configuration` VALUES
+(1,1551975294139,'test',1551975294139,'test',1,'DEFAULT','authentication.gatewaytoken.enabled','true'),
+(2,1551975294188,'test',1551975294188,'test',1,'DEFAULT','authentication.gatewaytoken.key','66076ab945a127dd80b15e9011995109');
 /*!40000 ALTER TABLE `sp_tenant_configuration` ENABLE KEYS */;
 UNLOCK TABLES;
 

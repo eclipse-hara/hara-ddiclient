@@ -34,7 +34,9 @@ services:
       "--hawkbit.artifact.url.protocols.download-http.protocol=http",
       "--hawkbit.artifact.url.protocols.download-http.port=8080",
       "--hawkbit.dmf.rabbitmq.enabled=false",
-      "--management.health.rabbit.enabled=false"]
+      "--management.health.rabbit.enabled=false",
+      "--hawkbit.controller.minPollingTime=00:00:01",
+    ]
 
     ports:
     - 8081:8080

@@ -10,16 +10,19 @@
 
 package org.eclipse.hara.ddiclient.integrationtest
 
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.basic
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.gatewayToken
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.getDownloadDirectoryFromActionId
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.tenantName
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.hawkbitUrl
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.basic
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.gatewayToken
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.getDownloadDirectoryFromActionId
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.tenantName
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.hawkbitUrl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.eclipse.hara.ddiclient.api.*
+import org.eclipse.hara.ddiclient.integrationtest.utils.Action
+import org.eclipse.hara.ddiclient.integrationtest.utils.ManagementClient
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils
 import org.joda.time.Duration
 import org.testng.Assert
 import java.io.File

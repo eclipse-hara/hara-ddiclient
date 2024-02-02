@@ -9,18 +9,20 @@
  */
 package org.eclipse.hara.ddiclient.integrationtest
 
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.defaultActionStatusOnStart
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.endMessagesOnSuccessUpdate
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.filesDownloadedInOsWithAppsPairedToServerFile
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.firstActionEntry
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.locationOfFileNamed
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.messagesOnSuccefullyDownloadAppDistribution
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.messagesOnSuccefullyDownloadOsDistribution
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.messagesOnSuccessfullyDownloadOsWithAppDistribution
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.pathResolver
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.startMessagesOnUpdateFond
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.test1Artifact
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.test4Artifact
+import org.eclipse.hara.ddiclient.integrationtest.utils.ActionStatus
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.defaultActionStatusOnStart
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.endMessagesOnSuccessUpdate
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.filesDownloadedInOsWithAppsPairedToServerFile
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.firstActionEntry
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.locationOfFileNamed
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.messagesOnSuccefullyDownloadAppDistribution
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.messagesOnSuccefullyDownloadOsDistribution
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.messagesOnSuccessfullyDownloadOsWithAppDistribution
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.pathResolver
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.startMessagesOnUpdateFond
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.test1Artifact
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.test4Artifact
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 

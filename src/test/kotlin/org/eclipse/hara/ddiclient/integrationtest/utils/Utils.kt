@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-package org.eclipse.hara.ddiclient.integrationtest
+package org.eclipse.hara.ddiclient.integrationtest.utils
 
 import org.eclipse.hara.ddiclient.api.PathResolver
 import org.eclipse.hara.ddiclient.api.Updater
@@ -19,9 +19,11 @@ import org.eclipse.hara.ddiclient.api.DirectoryForArtifactsProvider
 import org.eclipse.hara.ddiclient.api.DownloadBehavior
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import java.io.File
 import java.util.*
@@ -44,6 +46,8 @@ data class Action(val status: Status){
         finished, pending
     }
 }
+
+data class ServerSystemConfig(val value: Any)
 
 interface ManagementApi {
     companion object {
@@ -69,7 +73,25 @@ interface ManagementApi {
         @Header("Authorization") auth: String,
         @Path("targetId") targetId: String,
         @Path("actionId") actionId: Int
-    ): Unit
+    )
+
+    @PUT("$BASE_V1_REQUEST_MAPPING/system/configs/authentication.gatewaytoken.enabled")
+    suspend fun setGatewayTokenAuthorizationEnabled(
+        @Header("Authorization") auth: String,
+        @Body body: ServerSystemConfig
+    )
+
+    @PUT("$BASE_V1_REQUEST_MAPPING/system/configs/authentication.targettoken.enabled")
+    suspend fun setTargetTokenAuthorizationEnabled(
+        @Header("Authorization") auth: String,
+        @Body body: ServerSystemConfig
+    )
+
+    @PUT("$BASE_V1_REQUEST_MAPPING/system/configs/pollingTime")
+    suspend fun setPollingTime(
+        @Header("Authorization") auth: String,
+        @Body body: ServerSystemConfig
+    )
 }
 
 object ManagementClient {
@@ -93,6 +115,20 @@ object ManagementClient {
 
             override suspend fun deleteTargetActionAsync(auth: String, targetId: String, actionId: Int): Unit {
                 TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+            }
+
+            override suspend fun setGatewayTokenAuthorizationEnabled(auth: String,
+                                                                     body: ServerSystemConfig) {
+                delegate.setGatewayTokenAuthorizationEnabled(auth, body)
+            }
+
+            override suspend fun setTargetTokenAuthorizationEnabled(auth: String,
+                                                                    body: ServerSystemConfig) {
+                delegate.setTargetTokenAuthorizationEnabled(auth, body)
+            }
+
+            override suspend fun setPollingTime(auth: String, body: ServerSystemConfig) {
+                delegate.setPollingTime(auth, body)
             }
         }
     }

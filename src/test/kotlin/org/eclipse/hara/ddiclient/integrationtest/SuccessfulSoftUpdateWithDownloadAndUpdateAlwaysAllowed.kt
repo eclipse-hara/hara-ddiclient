@@ -10,13 +10,15 @@
 
 package org.eclipse.hara.ddiclient.integrationtest
 
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.defaultActionStatusOnStart
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.endMessagesOnSuccessUpdate
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.filesDownloadedInOsWithAppsPairedToServerFile
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.messagesOnSoftDownloadAuthorization
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.messagesOnSoftUpdateAuthorization
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.messagesOnSuccessfullyDownloadOsWithAppDistribution
-import org.eclipse.hara.ddiclient.integrationtest.TestUtils.startMessagesOnUpdateFond
+import org.eclipse.hara.ddiclient.integrationtest.utils.ActionStatus
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.defaultActionStatusOnStart
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.endMessagesOnSuccessUpdate
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.filesDownloadedInOsWithAppsPairedToServerFile
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.messagesOnSoftDownloadAuthorization
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.messagesOnSoftUpdateAuthorization
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.messagesOnSuccessfullyDownloadOsWithAppDistribution
+import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.startMessagesOnUpdateFond
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 

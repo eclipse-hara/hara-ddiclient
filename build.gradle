@@ -280,5 +280,6 @@ dependencies{
     testImplementation deps.kotlin_x
     testImplementation deps.joda
     testImplementation deps.okhttp
+    testImplementation deps.okhttp_logging
     testImplementation deps.retrofit
 }
