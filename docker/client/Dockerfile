@@ -7,7 +7,7 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 #
-FROM openjdk:8
+FROM eclipse-temurin:11
 
 COPY ./virtual-device /client
 
