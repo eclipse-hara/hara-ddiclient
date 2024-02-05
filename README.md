@@ -72,7 +72,7 @@ docker run -e HAWKBIT_GATEWAY_TOKEN=<gatewaytokenvalue> -e HAWKBIT_CONTROLLER_ID
 for example:
 
 ```shell
-docker run -e HAWKBIT_GATEWAY_TOKEN=50f600c6e7e517b98b008311b0a325eb -e HAWKBIT_CONTROLLER_ID=mydevice hara-virtual-device:1.0.0
+docker run -e HAWKBIT_GATEWAY_TOKEN=50f600c6e7e517b98b008311b0a325eb -e HAWKBIT_CONTROLLER_ID=mydevice hara-virtual-device:2.0.0
 ```
 
 Make sure the authentication method provided in the parameters is enabled in the ["System Config"](https://www.eclipse.org/hawkbit/concepts/authentication/#ddi-api-authentication-modes) page. Available virtual device parameters can be found in the [Configuration class](virtual-device/src/main/kotlin/org/eclipse/hara/ddiclient/virtualdevice/Configuration.kt).
