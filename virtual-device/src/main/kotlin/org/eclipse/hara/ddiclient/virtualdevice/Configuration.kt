@@ -10,7 +10,11 @@
 
 package org.eclipse.hara.ddiclient.virtualdevice
 
+import okhttp3.Response
+import okio.Sink
+import okio.Source
 import org.joda.time.Duration
+import java.net.Socket
 import java.util.UUID
 
 object Configuration {
@@ -23,7 +27,9 @@ object Configuration {
     val poolSize = env("HARA_CLIENT_POOL_SIZE", "1").toInt()
 
     val tenant = env("HAWKBIT_TENANT", "DEFAULT")
-    val controllerIdGenerator = { env("HAWKBIT_CONTROLLER_ID", UUID.randomUUID().toString()) }
+    val controllerIdGenerator = { id: Int ->
+        System.getenv("HAWKBIT_CONTROLLER_ID")?.let { "${it}_$id" } ?: UUID.randomUUID().toString()
+    }
     val url = env("HAWKBIT_URL", "https://hawkbit.eclipseprojects.io")
     val gatewayToken = env("HAWKBIT_GATEWAY_TOKEN", "")
 
@@ -96,6 +102,49 @@ object Configuration {
 
     val grantDownload = env("HARA_GRANT_DOWNLOAD", "true").toBoolean()
     val grantUpdate = env("HARA_GRANT_UPDATE", "true").toBoolean()
+
+    /**
+     * Sets the default connect timeout for new connections in seconds.
+     * A value of 0 means no timeout, otherwise values must bebetween 1 and Integer.MAX_VALUE when converted to
+     * milliseconds.
+     * The connect timeout is applied when connecting a TCP socket to the target host.
+     * The default value is 10 seconds.
+     */
+    val connectTimeout = env("HARA_CONNECT_TIMEOUT", "10").toLong()
+
+    /**
+     * Sets the default timeout for complete calls in seconds.
+     * A value of 0 means no timeout, otherwise values must be between 1 and Integer.MAX_VALUE when converted to
+     * milliseconds.
+     * The call timeout spans the entire call: resolving DNS, connecting, writing the request body, server processing,
+     * and reading the response body. If the call requires redirects or retries all must complete within one timeout
+     * period.
+     * The default value is 0 which imposes no timeout.
+     */
+    val callTimeout = env("HARA_CALL_TIMEOUT", "0").toLong()
+
+    /**
+     * Sets the default read timeout for new connections. A value of 0 means no timeout, otherwise
+     * values must be between 1 and [Integer.MAX_VALUE] when converted to milliseconds.
+     *
+     * The read timeout is applied to both the TCP socket and for individual read IO operations
+     * including on [Source] of the [Response]. The default value is 10 seconds.
+     *
+     * @see Socket.setSoTimeout
+     * @see Source.timeout
+     */
+    val readTimeout = env("HARA_READ_TIMEOUT", "10").toLong()
+
+    /**
+     * Sets the default write timeout for new connections. A value of 0 means no timeout, otherwise
+     * values must be between 1 and [Integer.MAX_VALUE] when converted to milliseconds.
+     *
+     * The write timeout is applied for individual write IO operations. The default value is 10
+     * seconds.
+     *
+     * @see Sink.timeout
+     */
+    val writeTimeout = env("HARA_WRITE_TIMEOUT", "10").toLong()
 
     private fun env(envVariable:String, defaultValue:String):String{
         return System.getenv(envVariable) ?: defaultValue

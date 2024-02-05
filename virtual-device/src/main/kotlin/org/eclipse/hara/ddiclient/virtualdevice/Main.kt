@@ -10,45 +10,62 @@
 package org.eclipse.hara.ddiclient.virtualdevice
 
 import kotlinx.coroutines.*
+import okhttp3.OkHttpClient
 import org.eclipse.hara.ddiclient.api.HaraClientDefaultImpl
 import org.eclipse.hara.ddiclient.api.HaraClientData
 import org.eclipse.hara.ddiclient.virtualdevice.entrypoint.*
+import java.time.Duration
 import kotlin.random.Random.Default.nextLong
 
 fun main() = runBlocking {
     Configuration.apply {
         System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, logLevel)
+        val connTimeoutDuration = Duration.ofSeconds(connectTimeout)
+        val callTimeoutDuration = Duration.ofSeconds(callTimeout)
+        val readTimeoutDuration = Duration.ofSeconds(readTimeout)
+        val writeTimeoutDuration = Duration.ofSeconds(writeTimeout)
 
         repeat(poolSize) {
             val clientData = HaraClientData(
                 tenant,
-                controllerIdGenerator.invoke(),
+                controllerIdGenerator.invoke(it),
                 url,
                 gatewayToken
             )
+
+            val httpBuilder = OkHttpClient.Builder()
+                .connectTimeout(connTimeoutDuration)
+                .callTimeout(callTimeoutDuration)
+                .readTimeout(readTimeoutDuration)
+                .writeTimeout(writeTimeoutDuration)
 
             launch(Dispatchers.IO) {
                 val delay = nextLong(0, virtualDeviceStartingDelay)
                 println("Virtual Device $it starts in $delay milliseconds")
                 delay(delay)
-                getClient(this, clientData, it).startAsync()
+                getClient(this, clientData, it, httpBuilder).startAsync()
             }
         }
     }
     Unit
 }
 
-private fun getClient(scope: CoroutineScope, clientData: HaraClientData, virtualDeviceId: Int): HaraClientDefaultImpl {
-    val client = HaraClientDefaultImpl()
-    client.init(
-        clientData,
-        DirectoryForArtifactsProviderImpl(clientData.controllerId),
-        ConfigDataProviderImpl(virtualDeviceId, clientData),
-        DeploymentPermitProviderImpl(),
-        listOf(MessageListenerImpl(virtualDeviceId, clientData)),
-        listOf(UpdaterImpl(virtualDeviceId, clientData)),
-        DownloadBehaviorImpl(),
-        scope=scope
-    )
-    return client
+private fun getClient(
+    scope: CoroutineScope,
+    clientData: HaraClientData,
+    virtualDeviceId: Int,
+    httpBuilder: OkHttpClient.Builder): HaraClientDefaultImpl {
+    return HaraClientDefaultImpl().apply {
+        init(
+            haraClientData = clientData,
+            directoryForArtifactsProvider = DirectoryForArtifactsProviderImpl(clientData.controllerId),
+            configDataProvider = ConfigDataProviderImpl(virtualDeviceId, clientData),
+            softDeploymentPermitProvider = DeploymentPermitProviderImpl(),
+            messageListeners = listOf(MessageListenerImpl(virtualDeviceId, clientData)),
+            updaters = listOf(UpdaterImpl(virtualDeviceId, clientData)),
+            downloadBehavior = DownloadBehaviorImpl(),
+            scope = scope,
+            httpBuilder = httpBuilder
+        )
+    }
 }
