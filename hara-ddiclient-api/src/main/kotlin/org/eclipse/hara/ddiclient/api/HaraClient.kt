@@ -25,7 +25,9 @@ import okhttp3.OkHttpClient
 interface HaraClient {
 
     /**
-     * Initialization function
+     * Initialize a HaraClient.
+     * Initialization should be performed after every [startAsync] and [stop] cycle.
+     *
      * @param haraClientData client configuration data
      * @param directoryForArtifactsProvider directory provider
      * @param configDataProvider config data provider
@@ -57,7 +59,8 @@ interface HaraClient {
 
     /**
      * Stop polling the Update Server.
-     * See [startAsync] to start polling
+     * After stopping, the client should be initialized again with [init] in order to start polling.
+     * Otherwise, a call to [startAsync] will fail.
      */
     fun stop()
 
