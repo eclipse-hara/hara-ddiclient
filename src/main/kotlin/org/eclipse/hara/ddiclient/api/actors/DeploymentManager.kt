@@ -42,10 +42,14 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
 
     private fun downloadingReceive(state: State): Receive = { msg ->
         when (msg) {
+            is DeploymentInfo -> {
+                //Send the new DeploymentInfo message to the download manager
+                become(downloadingReceive(state.copy(deplBaseResp = msg.info)))
+                child("downloadManager")!!.send(DeploymentInfo(msg.info))
+            }
             is Message.DownloadFinished -> {
                 become(updatingReceive())
                 child("updateManager")!!.send(DeploymentInfo(state.deplBaseResp!!))
-
             }
             is Message.DownloadFailed -> {
                 LOG.error("download failed")
@@ -63,6 +67,11 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
 
     private fun updatingReceive(): Receive = { msg ->
         when (msg) {
+
+            is DeploymentInfo -> {
+                //Send the new DeploymentInfo message to the update manager
+                child("updateManager")!!.send(DeploymentInfo(msg.info))
+            }
 
             is Message.UpdateFailed -> {
                 LOG.info("update failed")
@@ -86,6 +95,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             is CancelForced -> {
                 LOG.info("Force cancel ignored")
             }
+            else -> unhandled(msg)
         }
     }
 
