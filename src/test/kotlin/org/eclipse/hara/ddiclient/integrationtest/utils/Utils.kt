@@ -14,126 +14,20 @@ import org.eclipse.hara.ddiclient.api.PathResolver
 import org.eclipse.hara.ddiclient.api.Updater
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import org.eclipse.hara.ddiclient.api.ConfigDataProvider
 import org.eclipse.hara.ddiclient.api.DirectoryForArtifactsProvider
 import org.eclipse.hara.ddiclient.api.DownloadBehavior
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.DELETE
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.PUT
-import retrofit2.http.Path
+import org.eclipse.hara.ddiclient.integrationtest.api.management.ActionStatus
 import java.io.File
 import java.util.*
-import java.util.concurrent.Executors
+
+val LOG_HTTP: Boolean = System.getProperty("LOG_HTTP", "false").toBoolean()
+val LOG_INTERNAL: Boolean = System.getProperty("LOG_INTERNAL", "false").toBoolean()
 
 /**
  * @author Daniele Sergio
  */
-
-data class ActionStatus(val content: Set<ContentEntry>, val total: Int = content.size, val size: Int = content.size) {
-    data class ContentEntry(val type: Type, val messages: List<String?>) {
-        enum class Type {
-            finished, error, warning, pending, running, canceled, retrieved, canceling, download
-        }
-    }
-}
-
-data class Action(val status: Status){
-    enum class Status {
-        finished, pending
-    }
-}
-
-data class ServerSystemConfig(val value: Any)
-
-interface ManagementApi {
-    companion object {
-        const val BASE_V1_REQUEST_MAPPING = "/rest/v1"
-    }
-
-    @GET("$BASE_V1_REQUEST_MAPPING/targets/{targetId}/actions/{actionId}/status")
-    suspend fun getTargetActionStatusAsync(
-        @Header("Authorization") auth: String,
-        @Path("targetId") targetId: String,
-        @Path("actionId") actionId: Int
-    ): ActionStatus
-
-    @GET("$BASE_V1_REQUEST_MAPPING/targets/{targetId}/actions/{actionId}")
-    suspend fun getActionAsync(
-        @Header("Authorization") auth: String,
-        @Path("targetId") targetId: String,
-        @Path("actionId") actionId: Int
-    ): Action
-
-    @DELETE("$BASE_V1_REQUEST_MAPPING/targets/{targetId}/actions/{actionId}")
-    suspend fun deleteTargetActionAsync(
-        @Header("Authorization") auth: String,
-        @Path("targetId") targetId: String,
-        @Path("actionId") actionId: Int
-    )
-
-    @PUT("$BASE_V1_REQUEST_MAPPING/system/configs/authentication.gatewaytoken.enabled")
-    suspend fun setGatewayTokenAuthorizationEnabled(
-        @Header("Authorization") auth: String,
-        @Body body: ServerSystemConfig
-    )
-
-    @PUT("$BASE_V1_REQUEST_MAPPING/system/configs/authentication.targettoken.enabled")
-    suspend fun setTargetTokenAuthorizationEnabled(
-        @Header("Authorization") auth: String,
-        @Body body: ServerSystemConfig
-    )
-
-    @PUT("$BASE_V1_REQUEST_MAPPING/system/configs/pollingTime")
-    suspend fun setPollingTime(
-        @Header("Authorization") auth: String,
-        @Body body: ServerSystemConfig
-    )
-}
-
-object ManagementClient {
-
-    fun newInstance(url: String): ManagementApi {
-        return object : ManagementApi {
-            private val delegate: ManagementApi = Retrofit.Builder().baseUrl(url)
-                    .client(OkHttpClient.Builder().build())
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .callbackExecutor(Executors.newSingleThreadExecutor())
-                    .build()
-                    .create(ManagementApi::class.java)
-
-            override suspend fun getTargetActionStatusAsync(auth: String, targetId: String, actionId: Int): ActionStatus {
-                return delegate.getTargetActionStatusAsync(auth, targetId, actionId)
-            }
-
-            override suspend fun getActionAsync(auth: String, targetId: String, actionId: Int): Action {
-                return delegate.getActionAsync(auth, targetId, actionId)
-            }
-
-            override suspend fun deleteTargetActionAsync(auth: String, targetId: String, actionId: Int): Unit {
-                TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
-            }
-
-            override suspend fun setGatewayTokenAuthorizationEnabled(auth: String,
-                                                                     body: ServerSystemConfig) {
-                delegate.setGatewayTokenAuthorizationEnabled(auth, body)
-            }
-
-            override suspend fun setTargetTokenAuthorizationEnabled(auth: String,
-                                                                    body: ServerSystemConfig) {
-                delegate.setTargetTokenAuthorizationEnabled(auth, body)
-            }
-
-            override suspend fun setPollingTime(auth: String, body: ServerSystemConfig) {
-                delegate.setPollingTime(auth, body)
-            }
-        }
-    }
-}
-
 object TestUtils {
 
     data class TargetDeployments(
@@ -142,10 +36,10 @@ object TestUtils {
         val deploymentInfo: List<DeploymentInfo>
     ) {
         data class DeploymentInfo(
-                val actionId: Int,
-                val actionStatusOnStart: ActionStatus,
-                val actionStatusOnFinish: ActionStatus,
-                val filesDownloadedPairedWithServerFile: Set<Pair<String, String>>
+            val actionId: Int,
+            val actionStatusOnStart: ActionStatus,
+            val actionStatusOnFinish: ActionStatus,
+            val filesDownloadedPairedWithServerFile: Set<Pair<String, String>>
         )
     }
 
@@ -183,10 +77,20 @@ object TestUtils {
         }
     }
 
-    val serverFilesMappedToLocantionAndMd5 = mapOf("test1" to Pair("docker/test/artifactrepo/$tenantName/4b/5a/b54e43082887d1e7cdb10b7a21fe4a1e56b44b5a", "2490a3d39b0004e4afeb517ef0ddbe2d"),
-            "test2" to Pair("docker/test/artifactrepo/$tenantName/b6/1e/a096a9d3cb96fa4cf6c63bd736a84cb7a7e4b61e", "b0b3b0dbf5330e3179c6ae3e0ac524c9"),
-            "test3" to Pair("docker/test/artifactrepo/$tenantName/bf/94/cde0c01b26634f869bb876326e4fbe969792bf94", "2244fbd6bee5dcbe312e387c062ce6e6"),
-            "test4" to Pair("docker/test/artifactrepo/$tenantName/dd/0a/07fa4d03ac54d0b2a52f23d8e878c96db7aadd0a", "94424c5ce3f8c57a5b26d02f37dc06fc"))
+    val serverFilesMappedToLocantionAndMd5 = mapOf(
+        "test1" to Pair(
+            "docker/test/artifactrepo/$tenantName/4b/5a/b54e43082887d1e7cdb10b7a21fe4a1e56b44b5a",
+            "2490a3d39b0004e4afeb517ef0ddbe2d"),
+        "test2" to Pair(
+            "docker/test/artifactrepo/$tenantName/b6/1e/a096a9d3cb96fa4cf6c63bd736a84cb7a7e4b61e",
+            "b0b3b0dbf5330e3179c6ae3e0ac524c9"),
+        "test3" to Pair(
+            "docker/test/artifactrepo/$tenantName/bf/94/cde0c01b26634f869bb876326e4fbe969792bf94",
+            "2244fbd6bee5dcbe312e387c062ce6e6"),
+        "test4" to Pair(
+            "docker/test/artifactrepo/$tenantName/dd/0a/07fa4d03ac54d0b2a52f23d8e878c96db7aadd0a",
+            "94424c5ce3f8c57a5b26d02f37dc06fc"),
+    )
 
     val md5OfFileNamed: (String) -> String = { key -> serverFilesMappedToLocantionAndMd5.getValue(key).second }
     val locationOfFileNamed: (String) -> String = { key -> serverFilesMappedToLocantionAndMd5.getValue(key).first }
@@ -336,15 +240,22 @@ object TestUtils {
             )
     )
 
+    val waitingForDownloadAuthorizationMessage = ActionStatus.ContentEntry(
+        ActionStatus.ContentEntry.Type.running,
+        listOf("Waiting authorization to download")
+    )
+
+    val waitingForUpdateAuthorizationMessage = ActionStatus.ContentEntry(
+        ActionStatus.ContentEntry.Type.running,
+        listOf("Waiting authorization to update")
+    )
+
     val messagesOnSoftDownloadAuthorization = arrayOf(
         ActionStatus.ContentEntry(
             ActionStatus.ContentEntry.Type.running,
             listOf("Authorization granted for downloading files")
         ),
-        ActionStatus.ContentEntry(
-            ActionStatus.ContentEntry.Type.running,
-            listOf("Waiting authorization to download")
-        )
+        waitingForDownloadAuthorizationMessage
     )
 
     val messagesOnSoftUpdateAuthorization = arrayOf(
@@ -352,15 +263,17 @@ object TestUtils {
             ActionStatus.ContentEntry.Type.running,
             listOf("Authorization granted for update")
         ),
-        ActionStatus.ContentEntry(
-            ActionStatus.ContentEntry.Type.running,
-            listOf("Waiting authorization to update")
-        )
+        waitingForUpdateAuthorizationMessage
     )
 
     val firstActionEntry = ActionStatus.ContentEntry(
             ActionStatus.ContentEntry.Type.running,
             listOf(null)
+    )
+
+    val firstActionWithAssignmentEntry = ActionStatus.ContentEntry(
+            ActionStatus.ContentEntry.Type.running,
+            listOf("Assignment initiated by user 'test'")
     )
 
     val startMessagesOnUpdateFond = arrayOf(
@@ -375,17 +288,29 @@ object TestUtils {
         pathResolver.fromArtifact(action.toString()).invoke(
             test1Artifact
         ) to locationOfFileNamed("test1"),
-            pathResolver.fromArtifact(action.toString()).invoke(
-                test2Artifact
-            ) to locationOfFileNamed("test2"),
-            pathResolver.fromArtifact(action.toString()).invoke(
-                test3Artifact
-            ) to locationOfFileNamed("test3"),
-            pathResolver.fromArtifact(action.toString()).invoke(
-                test4Artifact
-            ) to locationOfFileNamed("test4")
+        pathResolver.fromArtifact(action.toString()).invoke(
+            test2Artifact
+        ) to locationOfFileNamed("test2"),
+        pathResolver.fromArtifact(action.toString()).invoke(
+            test3Artifact
+        ) to locationOfFileNamed("test3"),
+        pathResolver.fromArtifact(action.toString()).invoke(
+            test4Artifact
+        ) to locationOfFileNamed("test4"),
     )
 
     val defaultActionStatusOnStart =
         ActionStatus(setOf(firstActionEntry))
+}
+
+
+fun OkHttpClient.Builder.addOkhttpLogger(): OkHttpClient.Builder = apply {
+    val logger = HttpLoggingInterceptor.Logger { message ->
+        if (LOG_HTTP) {
+            "OkHttp: $message".log()
+        }
+    }
+    addInterceptor(HttpLoggingInterceptor(logger).apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    })
 }

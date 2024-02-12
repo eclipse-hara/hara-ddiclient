@@ -19,6 +19,11 @@ val currentTime: String
 fun String.log() {
     println("$currentTime: $this")
 }
+fun String.internalLog() {
+    if (LOG_INTERNAL) {
+        "INTERNAL: $this".log()
+    }
+}
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun logCurrentFunctionName() {

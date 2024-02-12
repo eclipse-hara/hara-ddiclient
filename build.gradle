@@ -254,6 +254,8 @@ group 'org.eclipse.hara.hara-ddiclient'
 version app_version
 
 test {
+    systemProperty("LOG_HTTP", project.findProperty("logHttp") ?: "false")
+    systemProperty("LOG_INTERNAL", project.findProperty("logInternal") ?: "false")
     useTestNG()
 
     afterTest { desc, result ->

@@ -10,7 +10,7 @@
 
 package org.eclipse.hara.ddiclient.integrationtest
 
-import org.eclipse.hara.ddiclient.integrationtest.utils.ActionStatus
+import org.eclipse.hara.ddiclient.integrationtest.api.management.ActionStatus
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.defaultActionStatusOnStart
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.endMessagesOnSuccessUpdate

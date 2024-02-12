@@ -19,10 +19,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import okhttp3.OkHttpClient
 import org.eclipse.hara.ddiclient.api.*
-import org.eclipse.hara.ddiclient.integrationtest.utils.Action
-import org.eclipse.hara.ddiclient.integrationtest.utils.ManagementClient
+import org.eclipse.hara.ddiclient.integrationtest.api.management.Action
+import org.eclipse.hara.ddiclient.integrationtest.api.management.ManagementClient
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils
+import org.eclipse.hara.ddiclient.integrationtest.utils.addOkhttpLogger
 import org.joda.time.Duration
 import org.testng.Assert
 import java.io.File
@@ -70,7 +72,8 @@ abstract class AbstractClientTest {
                 deploymentPermitProvider,
                 listOf(eventListener, *messageListeners.toTypedArray()),
                 listOf(updater),
-                downloadBehavior
+                downloadBehavior,
+                httpBuilder = OkHttpClient.Builder().addOkhttpLogger()
         )
         client
     }

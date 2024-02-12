@@ -7,7 +7,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-
 package org.eclipse.hara.ddiclient.integrationtest
 
 import kotlinx.coroutines.CancellationException
@@ -22,7 +21,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import org.eclipse.hara.ddi.security.Authentication
 import org.eclipse.hara.ddiclient.api.ConfigDataProvider
 import org.eclipse.hara.ddiclient.api.DeploymentPermitProvider
@@ -35,13 +33,14 @@ import org.eclipse.hara.ddiclient.api.MessageListener
 import org.eclipse.hara.ddiclient.api.MessageListener.Message.Event.Polling
 import org.eclipse.hara.ddiclient.api.MessageListener.Message.State.Idle
 import org.eclipse.hara.ddiclient.api.Updater
-import org.eclipse.hara.ddiclient.integrationtest.utils.ManagementApi
-import org.eclipse.hara.ddiclient.integrationtest.utils.ManagementClient
-import org.eclipse.hara.ddiclient.integrationtest.utils.ServerSystemConfig
+import org.eclipse.hara.ddiclient.integrationtest.api.management.ManagementApi
+import org.eclipse.hara.ddiclient.integrationtest.api.management.ManagementClient
+import org.eclipse.hara.ddiclient.integrationtest.api.management.ServerSystemConfig
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.basic
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.gatewayToken
-import org.eclipse.hara.ddiclient.integrationtest.utils.log
+import org.eclipse.hara.ddiclient.integrationtest.utils.addOkhttpLogger
+import org.eclipse.hara.ddiclient.integrationtest.utils.internalLog
 import org.eclipse.hara.ddiclient.integrationtest.utils.logCurrentFunctionName
 import org.testng.Assert
 import org.testng.annotations.AfterTest
@@ -74,8 +73,6 @@ class DdiClientHttpRequestsTest {
     companion object {
         const val TEST_TARGET_ID = "DoubleToken"
         const val TEST_TARGET_SECURITY_TOKEN = "r2m3ixxc86a2v4q81wntpyhr78zy08we"
-        const val LOG_HTTP: Boolean = false
-        const val LOG_INTERNAL: Boolean = false
     }
 
     private val messageListener: MessageListener
@@ -464,7 +461,7 @@ class DdiClientHttpRequestsTest {
                     }
                 }
                 if (expectedMessages.isEmpty() && expectedServerResponses.isEmpty()) {
-                    "INTERNAL: All expected messages received".internalLog()
+                    "All expected messages received".internalLog()
                     checkExpectedMessagesJob?.cancel()
                     if (lastTest) {
                         safeStopClient()
@@ -484,22 +481,5 @@ class DdiClientHttpRequestsTest {
     sealed class ExpectedMessage {
         data class HaraMessage(val message: MessageListener.Message) : ExpectedMessage()
         data class OkHttpMessage(val code: Int, val authHeader: String?) : ExpectedMessage()
-    }
-
-    private fun OkHttpClient.Builder.addOkhttpLogger() {
-        val logger = HttpLoggingInterceptor.Logger { message ->
-            if (LOG_HTTP) {
-                "OkHttp: $message".log()
-            }
-        }
-        addInterceptor(HttpLoggingInterceptor(logger).apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        })
-    }
-
-    private fun String.internalLog() {
-        if (LOG_INTERNAL) {
-            "INTERNAL: $this".log()
-        }
     }
 }
