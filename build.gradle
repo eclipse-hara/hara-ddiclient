@@ -163,25 +163,18 @@ detekt {
 
 test {
     useTestNG()
+    finalizedBy jacocoTestReport
 }
 
-task codeCoverage(type: JacocoReport, group: 'verification') {
-    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
-
+jacocoTestReport {
     subprojects.each {
         sourceSets it.sourceSets.main
     }
-
     reports {
-        xml.required.set(true)
-        xml.destination new File("${buildDir}/reports/jacoco/report.xml")
-        html.required.set(true)
-        csv.required.set(false)
+        xml.required = true
+        html.required = true
     }
-}
-
-codeCoverage.dependsOn {
-    subprojects*.test
+    dependsOn test
 }
 
 def dockerClientDir = new File(project.buildDir, "docker-client")
