@@ -276,11 +276,13 @@ object TestUtils {
             listOf("Assignment initiated by user 'test'")
     )
 
+    val targetRetrievedUpdateAction = ActionStatus.ContentEntry(
+        ActionStatus.ContentEntry.Type.retrieved,
+        listOf("Update Server: Target retrieved update action and should start now the download.")
+    )
+
     val startMessagesOnUpdateFond = arrayOf(
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.retrieved,
-                    listOf("Update Server: Target retrieved update action and should start now the download.")
-            ),
+        targetRetrievedUpdateAction,
         firstActionEntry
     )
 
@@ -301,6 +303,30 @@ object TestUtils {
 
     val defaultActionStatusOnStart =
         ActionStatus(setOf(firstActionEntry))
+
+    fun messagesOnSuccessfullyDownloadDistribution(
+        md5: String, targetId: String, softwareModuleId: String,
+        fileName: String) = arrayOf(
+        ActionStatus.ContentEntry(
+            ActionStatus.ContentEntry.Type.running,
+            listOf("Successfully downloaded all files")
+        ),
+        ActionStatus.ContentEntry(
+            ActionStatus.ContentEntry.Type.running,
+            listOf(
+                "Successfully downloaded file with md5 $md5"
+            )
+        ),
+        ActionStatus.ContentEntry(
+            ActionStatus.ContentEntry.Type.download,
+            listOf(
+                "Update Server: Target downloads /$tenantNameToLower/controller/v1/$targetId/softwaremodules/$softwareModuleId/artifacts/$fileName")
+        ),
+        ActionStatus.ContentEntry(
+            ActionStatus.ContentEntry.Type.running,
+            listOf("Start downloading 1 files")
+        )
+    )
 }
 
 
