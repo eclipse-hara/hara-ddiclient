@@ -65,13 +65,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                             forceDownloadTheArtifact(msg)
                         }
 
-                        msg.isDownloadSoft -> {
-                            attemptDownloadingTheArtifact(State(msg.info), msg)
-                        }
-
-                        msg.isDownloadSkip -> {
-                            // todo implement download skip option
-                            LOG.warn("skip download not yet implemented (used attempt)")
+                        else -> {
                             attemptDownloadingTheArtifact(State(msg.info), msg)
                         }
                     }
@@ -307,9 +301,6 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         get() = info.deployment.download == forced
 
     private val DeploymentInfo.isDownloadSoft: Boolean
-        get() = info.deployment.download == attempt
-
-    private val DeploymentInfo.isDownloadSkip: Boolean
         get() = info.deployment.download == attempt
 
     private fun childName(md5: String) = "fileDownloader_for_$md5"
