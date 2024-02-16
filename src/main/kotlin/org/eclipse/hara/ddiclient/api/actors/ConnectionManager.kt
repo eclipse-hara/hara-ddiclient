@@ -13,16 +13,22 @@ package org.eclipse.hara.ddiclient.api.actors
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.TickerMode
+import kotlinx.coroutines.channels.ticker
 import org.eclipse.hara.ddi.api.DdiClient
 import org.eclipse.hara.ddi.api.model.*
 import org.eclipse.hara.ddiclient.api.MessageListener
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.In
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.Out
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.Out.Err.ErrMsg
-import org.joda.time.*
+import org.joda.time.DateTimeZone
+import org.joda.time.Duration
+import org.joda.time.Instant
+import org.joda.time.LocalDateTime
+import org.slf4j.LoggerFactory
 import retrofit2.Response
-import java.util.*
-import kotlin.concurrent.timer
+import java.io.InterruptedIOException
 import kotlin.math.pow
 
 @OptIn(ObsoleteCoroutinesApi::class)
@@ -215,7 +221,12 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             val errorDetails = "exception: ${t.javaClass} message: ${loopMsg(t)}"
             this.send(ErrMsg(errorDetails), state)
             LOG.warn(t.message, t)
-            become(runningReceive(startPing(s.nextBackoff().clearEtags())))
+            val newBackoffState = if (t is InterruptedIOException) {
+                s.copy(backoffPingInterval = Duration.standardMinutes(5))
+            } else {
+                s.nextBackoff()
+            }.clearEtags()
+            become(runningReceive(startPing(newBackoffState)))
             notificationManager.send(MessageListener.Message.Event.Error(listOf(errorDetails)))
         }
     }
@@ -232,11 +243,13 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     private fun startPing(state: State): State {
         val now = Instant.now()
         val elapsed = Duration(state.lastPing, now)
-        val timer = timer(name = "Polling",
-                daemon = true,
-                initialDelay = Math.max(state.pingInterval.minus(elapsed).millis, 0),
-                period = Math.max(state.pingInterval.millis, 5_000)) {
-            launch {
+        val timer = ticker(
+            delayMillis = Math.max(state.pingInterval.millis, 5_000),
+            initialDelayMillis = Math.max(state.pingInterval.minus(elapsed).millis, 0),
+            mode = TickerMode.FIXED_PERIOD,
+            context = newSingleThreadContext("MyOwnThread"))
+        launch {
+            for (event in timer) {
                 channel.send(In.Ping)
             }
         }
@@ -268,18 +281,28 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             val lastPing: Instant? = Instant.EPOCH,
             val deploymentEtag: String = "",
             val controllerBaseEtag: String = "",
-            val timer: Timer? = null,
+            val timer: ReceiveChannel<Unit>? = null,
             val receivers: Set<ActorRef> = emptySet(),
             val requireUpdateNotification: Boolean = false
         ) {
+            protected val LOG = LoggerFactory.getLogger(this::class.java)
             val pingInterval = when {
                 backoffPingInterval != null -> backoffPingInterval
                 clientPingInterval != null -> clientPingInterval
                 else -> serverPingInterval
             }
-            fun nextBackoff() = if (backoffPingInterval == null)
-                this.copy(backoffPingInterval = Duration.standardSeconds(1))
-            else this.copy(backoffPingInterval = minOf(backoffPingInterval.multipliedBy(2), Duration.standardMinutes(1)))
+
+            fun nextBackoff(): State {
+                val nextBackoff = if (backoffPingInterval == null) {
+                    Duration.standardSeconds(30)
+                } else {
+                    val doubledTime = backoffPingInterval.multipliedBy(2)
+                    val maxTime = Duration.standardMinutes(5)
+                    minOf(doubledTime, maxTime)
+                }
+                LOG.debug("Next backoff: {}", nextBackoff)
+                return this.copy(backoffPingInterval = nextBackoff)
+            }
 
             fun clearEtags():State = copy(controllerBaseEtag = "", deploymentEtag = "")
 
