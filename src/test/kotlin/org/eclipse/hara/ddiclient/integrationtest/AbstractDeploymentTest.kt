@@ -9,6 +9,7 @@
  */
 package org.eclipse.hara.ddiclient.integrationtest
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
@@ -16,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import org.eclipse.hara.ddiclient.api.ConfigDataProvider
 import org.eclipse.hara.ddiclient.api.DeploymentPermitProvider
@@ -27,10 +29,12 @@ import org.eclipse.hara.ddiclient.api.HaraClientDefaultImpl
 import org.eclipse.hara.ddiclient.api.MessageListener
 import org.eclipse.hara.ddiclient.api.Updater
 import org.eclipse.hara.ddiclient.integrationtest.api.management.Action
+import org.eclipse.hara.ddiclient.integrationtest.api.management.ActionStatus
 import org.eclipse.hara.ddiclient.integrationtest.api.management.HawkbitAssignDistributionBody
 import org.eclipse.hara.ddiclient.integrationtest.api.management.HawkbitTargetInfo
 import org.eclipse.hara.ddiclient.integrationtest.api.management.ManagementApi
 import org.eclipse.hara.ddiclient.integrationtest.api.management.ManagementClient
+import org.eclipse.hara.ddiclient.integrationtest.api.management.ServerSystemConfig
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils
 import org.eclipse.hara.ddiclient.integrationtest.utils.addOkhttpLogger
 import org.eclipse.hara.ddiclient.integrationtest.utils.internalLog
@@ -85,6 +89,10 @@ abstract class AbstractDeploymentTest {
     open fun afterTest() {
     }
 
+    protected fun setPollingTime(time: String) = runBlocking {
+        managementApi.setPollingTime(TestUtils.basic, ServerSystemConfig(time))
+    }
+
     protected fun defaultClientFromTargetId(
         directoryDataProvider: DirectoryForArtifactsProvider = TestUtils.directoryDataProvider,
         configDataProvider: ConfigDataProvider = TestUtils.configDataProvider,
@@ -117,6 +125,18 @@ abstract class AbstractDeploymentTest {
             httpBuilder = okHttpClientBuilder
         )
         client
+    }
+
+    protected fun createHaraClientWithAuthorizationPermissions(
+        downloadAllowed: Boolean = true,
+        updateAllowed: Boolean = true): HaraClient {
+
+        val deploymentBehavior = object : DeploymentPermitProvider {
+            override fun downloadAllowed() = CompletableDeferred(downloadAllowed)
+            override fun updateAllowed() = CompletableDeferred(updateAllowed)
+        }
+        return defaultClientFromTargetId(
+            deploymentPermitProvider = deploymentBehavior).invoke(targetId)
     }
 
     protected suspend fun reCreateTestTargetOnServer() {
@@ -177,6 +197,10 @@ abstract class AbstractDeploymentTest {
             client.safeStopClient()
         }
     }
+
+    protected val expectedActionOnStart = ActionStatus(setOf(
+        TestUtils.firstActionWithAssignmentEntry
+    ))
 
     private suspend fun assertEquals(actual: Any?, expected: Any?) {
         throwableJob = throwableScope.async {
