@@ -41,7 +41,7 @@ class HaraClientDefaultImpl : HaraClient {
         httpBuilder: OkHttpClient.Builder,
         scope: CoroutineScope) {
         runBlocking {
-            scope.launch(Dispatchers.Default){
+            scope.launch {
                 for(msg in debouncingForcePingChannel){
                     rootActor?.send(msg)
                     delay(FORCE_PING_DEBOUNCING_TIME)

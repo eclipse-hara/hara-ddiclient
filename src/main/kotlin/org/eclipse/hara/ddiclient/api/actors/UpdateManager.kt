@@ -10,7 +10,6 @@
 
 package org.eclipse.hara.ddiclient.api.actors
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest
 import org.eclipse.hara.ddiclient.api.UpdaterRegistry
@@ -95,7 +94,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     }
 
     private fun forceUpdateDevice(state: State): String {
-        waitingAuthJob = launch(Dispatchers.IO) {
+        waitingAuthJob = launch {
             forceRequest.onAuthorizationReceive {
                 startUpdateProcedure(DeploymentInfo(state.deplBaseResp!!))
             }
@@ -108,7 +107,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         become(waitingUpdateAuthorization(state))
         notificationManager.send(
             MessageListener.Message.State.WaitingUpdateAuthorization(state.isUpdateForced))
-        waitingAuthJob = launch(Dispatchers.IO) {
+        waitingAuthJob = launch {
             softRequest.onAuthorizationReceive {
                 channel.send(Message.UpdateGranted)
             }

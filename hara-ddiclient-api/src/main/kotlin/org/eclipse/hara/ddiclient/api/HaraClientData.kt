@@ -38,15 +38,12 @@ data class HaraClientData constructor(
         notEmpty(controllerId, "controllerId")
         notEmpty(serverUrl, "serverUrl")
         validUrl(serverUrl, "serverUrl")
-        if (gatewayToken.isNullOrBlank() && targetToken.isNullOrBlank()) {
-            throw IllegalStateException("gatewayToken and targetToken cannot both be empty")
-        }
+        check(!(gatewayToken.isNullOrBlank() && targetToken.isNullOrBlank())) {
+            "gatewayToken and targetToken cannot both be empty" }
     }
 
     private fun notEmpty(item: String, itemName: String) {
-        if (item.isBlank()) {
-            throw IllegalArgumentException("$itemName could not be null or empty")
-        }
+        require(item.isNotBlank()) { "$itemName could not be null or empty" }
     }
 
     private fun validUrl(url: String, itemName: String) {
