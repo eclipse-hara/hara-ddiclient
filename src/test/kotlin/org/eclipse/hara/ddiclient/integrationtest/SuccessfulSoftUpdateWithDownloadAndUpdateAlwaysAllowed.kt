@@ -10,6 +10,7 @@
 
 package org.eclipse.hara.ddiclient.integrationtest
 
+import org.eclipse.hara.ddiclient.integrationtest.abstractions.AbstractClientTest
 import org.eclipse.hara.ddiclient.integrationtest.api.management.ActionStatus
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.defaultActionStatusOnStart

@@ -1,13 +1,15 @@
 /*
- * Copyright © 2017-2024  Kynetics  LLC
  *
- * This program and the accompanying materials are made
- * available under the terms of the Eclipse Public License 2.0
- * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *  * Copyright © 2017-2024  Kynetics  LLC
+ *  *
+ *  * This program and the accompanying materials are made
+ *  * available under the terms of the Eclipse Public License 2.0
+ *  * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *  *
+ *  * SPDX-License-Identifier: EPL-2.0
  *
- * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.hara.ddiclient.integrationtest
+package org.eclipse.hara.ddiclient.integrationtest.abstractions
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -17,7 +19,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import org.eclipse.hara.ddiclient.api.ConfigDataProvider
 import org.eclipse.hara.ddiclient.api.DeploymentPermitProvider
@@ -30,34 +31,19 @@ import org.eclipse.hara.ddiclient.api.MessageListener
 import org.eclipse.hara.ddiclient.api.Updater
 import org.eclipse.hara.ddiclient.integrationtest.api.management.Action
 import org.eclipse.hara.ddiclient.integrationtest.api.management.ActionStatus
-import org.eclipse.hara.ddiclient.integrationtest.api.management.HawkbitAssignDistributionBody
-import org.eclipse.hara.ddiclient.integrationtest.api.management.HawkbitTargetInfo
-import org.eclipse.hara.ddiclient.integrationtest.api.management.ManagementApi
-import org.eclipse.hara.ddiclient.integrationtest.api.management.ManagementClient
-import org.eclipse.hara.ddiclient.integrationtest.api.management.ServerSystemConfig
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils
 import org.eclipse.hara.ddiclient.integrationtest.utils.addOkhttpLogger
 import org.eclipse.hara.ddiclient.integrationtest.utils.internalLog
-import org.testng.Assert
-import org.testng.annotations.AfterTest
-import org.testng.annotations.BeforeTest
+import org.eclipse.hara.ddiclient.integrationtest.utils.safeStopClient
 import java.io.File
-import java.lang.Exception
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
 
-abstract class AbstractDeploymentTest {
-
-    protected lateinit var managementApi: ManagementApi
-    abstract val targetId: String
-    protected var actionId: Int = 0
+abstract class AbstractDeploymentTest: AbstractTest() {
 
     private var assertServerActionsScope = CoroutineScope(Dispatchers.IO)
     private var assertServerActionsOnCompleteJob: Deferred<Unit>? = null
     private var testScope = CoroutineScope(Dispatchers.Default)
-
-    private val throwableScope = CoroutineScope(Dispatchers.Default)
-    private var throwableJob: Deferred<Unit>? = null
 
     private val eventListener = object : MessageListener {
         override fun onMessage(message: MessageListener.Message) {
@@ -80,18 +66,6 @@ abstract class AbstractDeploymentTest {
         }
     }
 
-    @BeforeTest
-    open fun beforeTest() {
-        managementApi = ManagementClient.newInstance(TestUtils.hawkbitUrl)
-    }
-
-    @AfterTest
-    open fun afterTest() {
-    }
-
-    protected fun setPollingTime(time: String) = runBlocking {
-        managementApi.setPollingTime(TestUtils.basic, ServerSystemConfig(time))
-    }
 
     protected fun defaultClientFromTargetId(
         directoryDataProvider: DirectoryForArtifactsProvider = TestUtils.directoryDataProvider,
@@ -139,26 +113,6 @@ abstract class AbstractDeploymentTest {
             deploymentPermitProvider = deploymentBehavior).invoke(targetId)
     }
 
-    protected suspend fun reCreateTestTargetOnServer() {
-        runCatching {
-            managementApi.deleteTarget(TestUtils.basic, targetId)
-        }
-        runCatching {
-            managementApi.createTarget(
-                TestUtils.basic, listOf(HawkbitTargetInfo(targetId)))
-        }
-    }
-
-    protected suspend fun assignDistributionToTheTarget(
-        distribution: HawkbitAssignDistributionBody) {
-        val response =
-            managementApi.assignDistributionToTarget(TestUtils.basic,
-                targetId, distribution)
-        if (response.assignedActions.isNotEmpty()) {
-            actionId = response.assignedActions.first().id
-        }
-    }
-
     protected suspend fun startTheTestAndWaitForResult(client: HaraClient,
                                                        deployment: TestUtils.TargetDeployments) {
         client.startAsync()
@@ -202,20 +156,4 @@ abstract class AbstractDeploymentTest {
         TestUtils.firstActionWithAssignmentEntry
     ))
 
-    private suspend fun assertEquals(actual: Any?, expected: Any?) {
-        throwableJob = throwableScope.async {
-            Assert.assertEquals(actual, expected)
-        }
-        try {
-            throwableJob?.await()
-        } catch (ignored: CancellationException) {
-        }
-    }
-
-    private fun HaraClient.safeStopClient() {
-        try {
-            stop()
-        } catch (ignored: Exception) {
-        }
-    }
 }

@@ -10,6 +10,8 @@
 
 package org.eclipse.hara.ddiclient.integrationtest.utils
 
+import org.eclipse.hara.ddiclient.api.HaraClient
+import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -28,4 +30,11 @@ fun String.internalLog() {
 @Suppress("NOTHING_TO_INLINE")
 inline fun logCurrentFunctionName() {
     "Running Test: ${Thread.currentThread().stackTrace[1].methodName}".log()
+}
+
+fun HaraClient.safeStopClient() {
+    try {
+        stop()
+    } catch (ignored: Exception) {
+    }
 }

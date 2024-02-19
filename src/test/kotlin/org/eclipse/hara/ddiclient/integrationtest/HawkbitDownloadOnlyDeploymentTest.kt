@@ -10,6 +10,7 @@
 package org.eclipse.hara.ddiclient.integrationtest
 
 import kotlinx.coroutines.runBlocking
+import org.eclipse.hara.ddiclient.integrationtest.abstractions.AbstractDeploymentTest
 import org.eclipse.hara.ddiclient.integrationtest.api.management.ActionStatus
 import org.eclipse.hara.ddiclient.integrationtest.api.management.AssignDistributionType
 import org.eclipse.hara.ddiclient.integrationtest.api.management.HawkbitAssignDistributionBody
@@ -18,24 +19,25 @@ import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.endMessagesOnS
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.messagesOnSoftUpdateAuthorization
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.messagesOnSuccessfullyDownloadDistribution
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.targetRetrievedUpdateAction
-import org.testng.annotations.BeforeTest
+import org.testng.annotations.BeforeClass
 import org.testng.annotations.Test
 
 class HawkbitDownloadOnlyDeploymentTest : AbstractDeploymentTest() {
 
+    private var actionId: Int = 0
     override val targetId: String = "DownloadOnlyTest"
 
     companion object {
         const val DISTRIBUTION_ID = 3
     }
 
-    @BeforeTest
+    @BeforeClass
     override fun beforeTest() {
         super.beforeTest()
         setPollingTime("00:00:05")
     }
 
-    @Test(enabled = true, timeOut = 60_000)
+    @Test(enabled = true, timeOut = 60_000, priority = 3)
     fun testDownloadOnlyWhileWaitingForUpdateAuthorization() = runBlocking {
 
         reCreateTestTargetOnServer()
@@ -52,7 +54,7 @@ class HawkbitDownloadOnlyDeploymentTest : AbstractDeploymentTest() {
     private suspend fun assignDownloadOnlyDistribution() {
         val distribution = HawkbitAssignDistributionBody(DISTRIBUTION_ID,
             AssignDistributionType.DOWNLOAD_ONLY, 0)
-        assignDistributionToTheTarget(distribution)
+        actionId = assignDistributionToTheTarget(distribution)
     }
 
     private fun createTargetTestDeployment(

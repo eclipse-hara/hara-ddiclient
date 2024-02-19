@@ -10,6 +10,7 @@
 package org.eclipse.hara.ddiclient.integrationtest
 
 import kotlinx.coroutines.runBlocking
+import org.eclipse.hara.ddiclient.integrationtest.abstractions.AbstractDeploymentTest
 import org.eclipse.hara.ddiclient.integrationtest.api.management.ActionStatus
 import org.eclipse.hara.ddiclient.integrationtest.api.management.AssignDistributionType
 import org.eclipse.hara.ddiclient.integrationtest.api.management.HawkbitAssignDistributionBody
@@ -19,25 +20,26 @@ import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.firstActionWit
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.messagesOnSoftDownloadAuthorization
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.waitingForDownloadAuthorizationMessage
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.waitingForUpdateAuthorizationMessage
-import org.testng.annotations.BeforeTest
+import org.testng.annotations.BeforeClass
 import org.testng.annotations.Test
 import kotlin.time.Duration.Companion.seconds
 
 class HawkbitTimeForcedTest : AbstractDeploymentTest() {
 
+    private var actionId: Int = 0
     override val targetId: String = "TimeForceTest"
 
     companion object {
         const val DISTRIBUTION_ID = 3
     }
 
-    @BeforeTest
+    @BeforeClass
     override fun beforeTest() {
         super.beforeTest()
         setPollingTime("00:00:10")
     }
 
-    @Test(enabled = true, timeOut = 150_000)
+    @Test(enabled = true, timeOut = 150_000, priority = 1)
     fun testTimeForcedUpdateWhileWaitingForDownloadAuthorization() = runBlocking {
         reCreateTestTargetOnServer()
 
@@ -52,7 +54,7 @@ class HawkbitTimeForcedTest : AbstractDeploymentTest() {
 
     }
 
-    @Test(enabled = true, timeOut = 150_000)
+    @Test(enabled = true, timeOut = 150_000, priority = 2)
     fun testTimeForcedUpdateWhileWaitingForUpdateAuthorization() = runBlocking {
         reCreateTestTargetOnServer()
 
@@ -116,6 +118,6 @@ class HawkbitTimeForcedTest : AbstractDeploymentTest() {
         val distribution = HawkbitAssignDistributionBody(
             DISTRIBUTION_ID, AssignDistributionType.TIME_FORCED,
             System.currentTimeMillis() + timeForcedTime)
-        assignDistributionToTheTarget(distribution)
+        actionId = assignDistributionToTheTarget(distribution)
     }
 }

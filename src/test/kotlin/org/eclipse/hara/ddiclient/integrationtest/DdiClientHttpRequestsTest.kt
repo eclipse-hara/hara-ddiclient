@@ -9,155 +9,100 @@
  */
 package org.eclipse.hara.ddiclient.integrationtest
 
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import org.eclipse.hara.ddi.security.Authentication
-import org.eclipse.hara.ddiclient.api.ConfigDataProvider
-import org.eclipse.hara.ddiclient.api.DeploymentPermitProvider
-import org.eclipse.hara.ddiclient.api.DirectoryForArtifactsProvider
-import org.eclipse.hara.ddiclient.api.DownloadBehavior
 import org.eclipse.hara.ddiclient.api.HaraClient
-import org.eclipse.hara.ddiclient.api.HaraClientData
-import org.eclipse.hara.ddiclient.api.HaraClientDefaultImpl
 import org.eclipse.hara.ddiclient.api.MessageListener
 import org.eclipse.hara.ddiclient.api.MessageListener.Message.Event.Polling
 import org.eclipse.hara.ddiclient.api.MessageListener.Message.State.Idle
-import org.eclipse.hara.ddiclient.api.Updater
-import org.eclipse.hara.ddiclient.integrationtest.api.management.ManagementApi
-import org.eclipse.hara.ddiclient.integrationtest.api.management.ManagementClient
+import org.eclipse.hara.ddiclient.integrationtest.abstractions.AbstractHaraMessageTest
 import org.eclipse.hara.ddiclient.integrationtest.api.management.ServerSystemConfig
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.basic
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.gatewayToken
 import org.eclipse.hara.ddiclient.integrationtest.utils.addOkhttpLogger
-import org.eclipse.hara.ddiclient.integrationtest.utils.internalLog
 import org.eclipse.hara.ddiclient.integrationtest.utils.logCurrentFunctionName
-import org.testng.Assert
-import org.testng.annotations.AfterTest
-import org.testng.annotations.BeforeTest
+import org.testng.annotations.AfterClass
+import org.testng.annotations.BeforeClass
 import org.testng.annotations.Test
-import java.lang.Exception
 import java.net.HttpURLConnection
 import kotlin.time.Duration.Companion.seconds
 
-class DdiClientHttpRequestsTest {
+class DdiClientHttpRequestsTest : AbstractHaraMessageTest() {
 
-    private lateinit var managementApi: ManagementApi
+    override val targetId: String = "DoubleToken"
+    private var expectedServerResponses = mutableListOf<ExpectedMessage>()
 
-    private var expectedMessages = mutableListOf<ExpectedMessage.HaraMessage>()
-    private var expectedServerResponses = mutableListOf<ExpectedMessage.OkHttpMessage>()
-    private val expectedMessageChannel =
-        Channel<ExpectedMessage>(5, BufferOverflow.DROP_OLDEST)
-
-    private val checkMessagesScope = CoroutineScope(Dispatchers.IO)
-    private val throwableScope = CoroutineScope(Dispatchers.Default)
-
-    private var checkExpectedMessagesJob: Deferred<Unit>? = null
-    private var throwableJob: Deferred<Unit>? = null
-    private var client: HaraClient?= null
-        set(value) {
-            safeStopClient()
-            field = value
+    override val expectedMessagesList: MutableList<MutableList<ExpectedMessage>> by lazy {
+        super.expectedMessagesList.apply {
+            add(expectedServerResponses)
         }
+    }
+
+    override val expectedMessagesAssertionListener =
+        listOf(checkOkHttpExpectedMessages())
+
+    private fun checkOkHttpExpectedMessages(): suspend (ExpectedMessage) -> Unit = { msg ->
+        if (expectedServerResponses.isNotEmpty()) {
+            assertEquals(msg, expectedServerResponses.removeFirst())
+        }
+    }
 
     companion object {
-        const val TEST_TARGET_ID = "DoubleToken"
         const val TEST_TARGET_SECURITY_TOKEN = "r2m3ixxc86a2v4q81wntpyhr78zy08we"
     }
 
-    private val messageListener: MessageListener
-        get() = object : MessageListener {
-        override fun onMessage(message: MessageListener.Message) {
-            "Received message: $message".internalLog()
-            if (message is Polling || message is Idle) {
-                checkMessagesScope.launch {
-                    expectedMessageChannel.send(ExpectedMessage.HaraMessage(message))
-                }
-            }
-        }
+    override fun filterHaraMessages(message: MessageListener.Message): Boolean {
+        return message is Polling || message is Idle
     }
 
-    @BeforeTest
-    fun beforeTest() {
-        managementApi = ManagementClient.newInstance(TestUtils.hawkbitUrl)
-        runBlocking {
-            managementApi.setPollingTime(basic, ServerSystemConfig("00:00:05"))
-        }
+    @BeforeClass
+    override fun beforeTest() {
+        super.beforeTest()
+        setPollingTime("00:00:05")
     }
 
-    @AfterTest
-    fun afterTest() {
+    @AfterClass
+    override fun afterTest() {
+        setPollingTime("00:00:30")
         runBlocking {
-            managementApi.setPollingTime(basic, ServerSystemConfig("00:00:30"))
             enableTargetTokenInServer(true)
             enableGatewayTokenInServer(true)
         }
     }
 
-    private fun clientFromTargetId(
-        directoryDataProvider: DirectoryForArtifactsProvider = TestUtils.directoryDataProvider,
-        configDataProvider: ConfigDataProvider = TestUtils.configDataProvider,
-        updater: Updater = TestUtils.updater,
-        deploymentPermitProvider: DeploymentPermitProvider = object :
-            DeploymentPermitProvider {},
-        downloadBehavior: DownloadBehavior = TestUtils.downloadBehavior,
+    private fun createClient(
         targetToken: String? = TEST_TARGET_SECURITY_TOKEN,
-        gatewayToken: String? = TestUtils.gatewayToken): (String) -> HaraClient =
-        { targetId ->
-            val clientData = HaraClientData(
-                TestUtils.tenantName,
-                targetId,
-                TestUtils.hawkbitUrl,
-                gatewayToken, targetToken)
+        gatewayToken: String? = TestUtils.gatewayToken): HaraClient {
 
-            val client = HaraClientDefaultImpl()
+        val okHttpClient = OkHttpClient.Builder().apply {
+            addInterceptor(Interceptor { chain ->
+                val request = chain.request()
+                val response = chain.proceed(request)
 
-            val okHttpClient = OkHttpClient.Builder().apply {
-                addInterceptor(Interceptor { chain ->
-                    val request = chain.request()
-                    val response = chain.proceed(request)
+                val actualServerResponse = OkHttpMessage(
+                    response.code, request.header("Authorization"))
 
-                    val actualServerResponse = ExpectedMessage.OkHttpMessage(
-                        response.code, request.header("Authorization"))
-
-                    checkMessagesScope.launch {
-                        expectedMessageChannel.send(actualServerResponse)
-                    }
-                    response
-                })
-                addOkhttpLogger()
-            }
-            client.init(
-                clientData,
-                directoryDataProvider,
-                configDataProvider,
-                deploymentPermitProvider,
-                listOf(messageListener),
-                listOf(updater),
-                downloadBehavior,
-                httpBuilder = okHttpClient
-            )
-
-            client
+                sendExpectedMessage(actualServerResponse)
+                response
+            })
+            addOkhttpLogger()
         }
+
+        return clientFromTargetId(
+            okHttpClientBuilder = okHttpClient,
+            targetToken = targetToken,
+            gatewayToken = gatewayToken).invoke(targetId)
+    }
 
     @Suppress("UNUSED_VARIABLE")
     @Test(enabled = true, priority = 1)
     fun useEmptyTokensTest() = runBlocking {
         try {
-            val client = clientFromTargetId(targetToken = "", gatewayToken = "").also {
-                it.invoke(TEST_TARGET_ID)
-            }
+            val client = createClient(targetToken = "", gatewayToken = "")
         } catch (e: Throwable) {
             assertEquals(e.message, "gatewayToken and targetToken cannot both be empty")
         }
@@ -166,7 +111,7 @@ class DdiClientHttpRequestsTest {
     @Test(enabled = true, timeOut = 60_000, priority = 2)
     fun useOnlyGatewayTokenTest() {
         runBlocking {
-            client = clientFromTargetId(targetToken = "").invoke(TEST_TARGET_ID)
+            client = createClient(targetToken = "")
             enableTargetTokenInServer(false)
             enableGatewayTokenInServer(false)
 
@@ -200,8 +145,7 @@ class DdiClientHttpRequestsTest {
         enableGatewayTokenInServer()
 
         val invalidGatewayToken = "InValidToken"
-        client = clientFromTargetId(targetToken = "",
-            gatewayToken = invalidGatewayToken).invoke(TEST_TARGET_ID)
+        client = createClient(targetToken = "", gatewayToken = invalidGatewayToken)
         expectPollingOnlyMessage()
         expectedServerResponses.apply {
             add(gatewayTokenMessage(HttpURLConnection.HTTP_UNAUTHORIZED, invalidGatewayToken))
@@ -212,7 +156,7 @@ class DdiClientHttpRequestsTest {
     @Test(enabled = true, timeOut = 60_000, priority = 3)
     fun useOnlyTargetTokenTest() {
         runBlocking {
-            client = clientFromTargetId(gatewayToken = "").invoke(TEST_TARGET_ID)
+            client = createClient(gatewayToken = "")
             enableTargetTokenInServer(false)
             enableGatewayTokenInServer(false)
 
@@ -246,8 +190,7 @@ class DdiClientHttpRequestsTest {
         enableTargetTokenInServer()
 
         val invalidTargetToken = "InValidToken"
-        client = clientFromTargetId(targetToken = invalidTargetToken,
-            gatewayToken = "").invoke(TEST_TARGET_ID)
+        client = createClient(targetToken = invalidTargetToken, gatewayToken = "")
         expectPollingOnlyMessage()
         expectedServerResponses.apply {
             add(targetTokenMessage(HttpURLConnection.HTTP_UNAUTHORIZED, invalidTargetToken))
@@ -259,7 +202,7 @@ class DdiClientHttpRequestsTest {
     @Test(enabled = true, timeOut = 60_000, priority = 4)
     fun usingEmptyTargetTokenRequestShouldOnlyUseGatewayTokenTest() {
         runBlocking {
-            client = clientFromTargetId(targetToken = "").invoke(TEST_TARGET_ID)
+            client = createClient(targetToken = "")
             enableTargetTokenInServer(false)
             enableGatewayTokenInServer(true)
 
@@ -282,7 +225,7 @@ class DdiClientHttpRequestsTest {
         runBlocking {
             enableTargetTokenInServer(true)
             enableGatewayTokenInServer(false)
-            client = clientFromTargetId(gatewayToken = "").invoke(TEST_TARGET_ID)
+            client = createClient(gatewayToken = "")
 
             `test #4-1= request should succeed with target token, when gateway token is empty`()
         }
@@ -300,7 +243,7 @@ class DdiClientHttpRequestsTest {
     @Test(enabled = true, timeOut = 200_000, priority = 6)
     fun providingBothTokensTest() {
         runBlocking {
-            client = clientFromTargetId().invoke(TEST_TARGET_ID)
+            client = createClient()
             enableTargetTokenInServer(false)
             enableGatewayTokenInServer(false)
 
@@ -381,27 +324,12 @@ class DdiClientHttpRequestsTest {
         startWatchingExpectedMessages(lastTest)
     }
 
-    private suspend fun startWatchingExpectedMessages(lastTest: Boolean = false) {
-        checkExpectedMessagesJob = getExpectedMessagesCheckingJob(lastTest)
-        try {
-            checkExpectedMessagesJob?.await()
-        } catch (ignored: CancellationException) {
-        }
-    }
-
     private fun expectPollingAndIdleMessages() {
-        expectedMessages.clear()
-        expectedMessages.apply {
-            add(ExpectedMessage.HaraMessage(Polling))
-            add(ExpectedMessage.HaraMessage(Idle))
-        }
+        expectMessages(Polling, Idle)
     }
 
     private fun expectPollingOnlyMessage() {
-        expectedMessages.clear()
-        expectedMessages.apply {
-            add(ExpectedMessage.HaraMessage(Polling))
-        }
+        expectMessages(Polling)
     }
 
     private suspend fun enableGatewayTokenInServer(enabled: Boolean = true) {
@@ -416,7 +344,7 @@ class DdiClientHttpRequestsTest {
 
     private fun targetTokenMessage(responseCode: Int = HttpURLConnection.HTTP_OK,
                                    token: String = TEST_TARGET_SECURITY_TOKEN) =
-        ExpectedMessage.OkHttpMessage(
+        OkHttpMessage(
             responseCode,
             Authentication.newInstance(
                 Authentication.AuthenticationType.TARGET_TOKEN_AUTHENTICATION,
@@ -426,7 +354,7 @@ class DdiClientHttpRequestsTest {
 
     private fun gatewayTokenMessage(responseCode: Int = HttpURLConnection.HTTP_OK,
                                     token: String = gatewayToken) =
-        ExpectedMessage.OkHttpMessage(
+        OkHttpMessage(
             responseCode,
             Authentication.newInstance(
                 Authentication.AuthenticationType.GATEWAY_TOKEN_AUTHENTICATION,
@@ -434,52 +362,7 @@ class DdiClientHttpRequestsTest {
             ).headerValue
         )
 
-    private suspend fun assertEquals(actual: Any?, expected: Any?) {
-        throwableJob = throwableScope.async {
-            Assert.assertEquals(actual, expected)
-        }
-        try {
-            throwableJob?.await()
-        } catch (ignored: CancellationException) {
-        }
-    }
+    data class OkHttpMessage(val code: Int, val authHeader: String?) :
+        ExpectedMessage()
 
-    private suspend fun getExpectedMessagesCheckingJob(lastTest: Boolean): Deferred<Unit> {
-        return checkMessagesScope.async {
-            for (msg in expectedMessageChannel) {
-                when (msg) {
-                    is ExpectedMessage.HaraMessage -> {
-                        if (expectedMessages.isNotEmpty()) {
-                            assertEquals(msg, expectedMessages.removeFirst())
-                        }
-                    }
-
-                    is ExpectedMessage.OkHttpMessage -> {
-                        if (expectedServerResponses.isNotEmpty()) {
-                            assertEquals(msg, expectedServerResponses.removeFirst())
-                        }
-                    }
-                }
-                if (expectedMessages.isEmpty() && expectedServerResponses.isEmpty()) {
-                    "All expected messages received".internalLog()
-                    checkExpectedMessagesJob?.cancel()
-                    if (lastTest) {
-                        safeStopClient()
-                    }
-                }
-            }
-        }
-    }
-
-    private fun safeStopClient() {
-        try {
-            client?.stop()
-        } catch (ignored: Exception) {
-        }
-    }
-
-    sealed class ExpectedMessage {
-        data class HaraMessage(val message: MessageListener.Message) : ExpectedMessage()
-        data class OkHttpMessage(val code: Int, val authHeader: String?) : ExpectedMessage()
-    }
 }

@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-package org.eclipse.hara.ddiclient.integrationtest
+package org.eclipse.hara.ddiclient.integrationtest.abstractions
 
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.basic
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.gatewayToken
