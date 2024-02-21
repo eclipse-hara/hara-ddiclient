@@ -371,7 +371,7 @@ class DdiClientHttpRequestsTest {
 
     private suspend fun `test #5-6= next request should keep using target token, when gateway token is enabled in server`() {
         logCurrentFunctionName()
-        enableGatewayTokenInServer(false)
+        enableGatewayTokenInServer(true)
         expectPollingOnlyMessage()
         expectedServerResponses.apply {
             add(targetTokenMessage(HttpURLConnection.HTTP_NOT_MODIFIED))
