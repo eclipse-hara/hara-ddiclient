@@ -39,7 +39,7 @@ class HawkbitTimeForcedTest : AbstractDeploymentTest() {
         setPollingTime("00:00:10")
     }
 
-    @Test(enabled = true, timeOut = 150_000, priority = 1)
+    @Test(enabled = true, timeOut = 150_000, priority = 12)
     fun testTimeForcedUpdateWhileWaitingForDownloadAuthorization() = runBlocking {
         reCreateTestTargetOnServer()
 
@@ -54,7 +54,7 @@ class HawkbitTimeForcedTest : AbstractDeploymentTest() {
 
     }
 
-    @Test(enabled = true, timeOut = 150_000, priority = 2)
+    @Test(enabled = true, timeOut = 150_000, priority = 13)
     fun testTimeForcedUpdateWhileWaitingForUpdateAuthorization() = runBlocking {
         reCreateTestTargetOnServer()
 

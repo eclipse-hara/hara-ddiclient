@@ -108,7 +108,27 @@ class DdiClientHttpRequestsTest : AbstractHaraMessageTest() {
         }
     }
 
-    @Test(enabled = true, timeOut = 60_000, priority = 2)
+    @Test(enabled = true, priority = 2)
+    fun useNullTokensForAnonymousAuthorizationTest() {
+        runBlocking {
+            client = createClient(targetToken = null, gatewayToken = null)
+            enableTargetTokenInServer(false)
+            enableGatewayTokenInServer(false)
+
+            expectPollingOnlyMessage()
+            expectedServerResponses.apply {
+                OkHttpMessage(
+                    HttpURLConnection.HTTP_UNAUTHORIZED, null
+                ).also {
+                    add(it)
+                }
+            }
+
+            startSubTestTest(true)
+        }
+    }
+
+    @Test(enabled = true, timeOut = 60_000, priority = 3)
     fun useOnlyGatewayTokenTest() {
         runBlocking {
             client = createClient(targetToken = "")
@@ -153,7 +173,7 @@ class DdiClientHttpRequestsTest : AbstractHaraMessageTest() {
         startSubTestTest(true)
     }
 
-    @Test(enabled = true, timeOut = 60_000, priority = 3)
+    @Test(enabled = true, timeOut = 60_000, priority = 4)
     fun useOnlyTargetTokenTest() {
         runBlocking {
             client = createClient(gatewayToken = "")
@@ -199,7 +219,7 @@ class DdiClientHttpRequestsTest : AbstractHaraMessageTest() {
     }
 
 
-    @Test(enabled = true, timeOut = 60_000, priority = 4)
+    @Test(enabled = true, timeOut = 60_000, priority = 5)
     fun usingEmptyTargetTokenRequestShouldOnlyUseGatewayTokenTest() {
         runBlocking {
             client = createClient(targetToken = "")
@@ -220,7 +240,7 @@ class DdiClientHttpRequestsTest : AbstractHaraMessageTest() {
     }
 
 
-    @Test(enabled = true, timeOut = 60_000, priority = 5)
+    @Test(enabled = true, timeOut = 60_000, priority = 6)
     fun usingEmptyGatewayTokenRequestShouldOnlyUseTargetTokenTest() {
         runBlocking {
             enableTargetTokenInServer(true)
@@ -240,7 +260,7 @@ class DdiClientHttpRequestsTest : AbstractHaraMessageTest() {
         startSubTestTest(true)
     }
 
-    @Test(enabled = true, timeOut = 200_000, priority = 6)
+    @Test(enabled = true, timeOut = 200_000, priority = 7)
     fun providingBothTokensTest() {
         runBlocking {
             client = createClient()

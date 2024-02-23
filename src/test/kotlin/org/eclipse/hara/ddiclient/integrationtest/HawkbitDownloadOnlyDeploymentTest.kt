@@ -37,7 +37,7 @@ class HawkbitDownloadOnlyDeploymentTest : AbstractDeploymentTest() {
         setPollingTime("00:00:05")
     }
 
-    @Test(enabled = true, timeOut = 60_000, priority = 3)
+    @Test(enabled = true, timeOut = 60_000, priority = 14)
     fun testDownloadOnlyWhileWaitingForUpdateAuthorization() = runBlocking {
 
         reCreateTestTargetOnServer()

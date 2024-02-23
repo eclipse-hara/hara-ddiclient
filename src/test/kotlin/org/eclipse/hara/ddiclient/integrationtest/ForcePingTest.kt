@@ -54,7 +54,7 @@ class ForcePingTest : AbstractHaraMessageTest() {
         }
     }
 
-    @Test(enabled = true, priority = 7, timeOut = 10_000, invocationCount = 1)
+    @Test(enabled = true, priority = 8, timeOut = 10_000, invocationCount = 1)
     fun forcePingShouldPollFromServerImmediatelyTest() {
         logCurrentFunctionName()
         runBlocking {
@@ -76,7 +76,7 @@ class ForcePingTest : AbstractHaraMessageTest() {
         }
     }
 
-    @Test(enabled = true, priority = 8, timeOut = 60_000, invocationCount = 1)
+    @Test(enabled = true, priority = 9, timeOut = 60_000, invocationCount = 1)
     fun timeIntervalBetweenEachForcePingCallShouldBe30SecondsTest() {
         logCurrentFunctionName()
         runBlocking {
@@ -109,7 +109,7 @@ class ForcePingTest : AbstractHaraMessageTest() {
         }
     }
 
-    @Test(enabled = true, priority = 9, timeOut = 10_000, invocationCount = 1)
+    @Test(enabled = true, priority = 10, timeOut = 10_000, invocationCount = 1)
     fun forcePingShouldReturnNoNewStateWhenTargetStateOnServerIsNotChanged() {
         logCurrentFunctionName()
         runBlocking {
@@ -132,7 +132,7 @@ class ForcePingTest : AbstractHaraMessageTest() {
         }
     }
 
-    @Test(enabled = true, priority = 10, timeOut = 150_000, invocationCount = 1)
+    @Test(enabled = true, priority = 11, timeOut = 150_000, invocationCount = 1)
     fun haraClientShouldReturnPollingStateAfterTheForcePingPollsUpdateFromServer() {
         logCurrentFunctionName()
         runBlocking {
