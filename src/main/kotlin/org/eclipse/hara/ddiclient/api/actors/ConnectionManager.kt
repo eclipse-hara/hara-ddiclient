@@ -222,7 +222,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             this.send(ErrMsg(errorDetails), state)
             LOG.warn(t.message, t)
             val newBackoffState = if (t is InterruptedIOException) {
-                s.copy(backoffPingInterval = Duration.standardMinutes(5))
+                s.nextBackoffInCaseOfTimeout()
             } else {
                 s.nextBackoff()
             }.clearEtags()
@@ -290,6 +290,17 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 backoffPingInterval != null -> backoffPingInterval
                 clientPingInterval != null -> clientPingInterval
                 else -> serverPingInterval
+            }
+
+            fun nextBackoffInCaseOfTimeout(): State {
+                val testOnlyInterval = System.getProperty(
+                    "BACKOFF_INTERVAL_SECONDS", null)?.toLong()
+                return if (testOnlyInterval != null) {
+                    val testOnlyDuration = Duration.standardSeconds(testOnlyInterval)
+                    this.copy(backoffPingInterval = testOnlyDuration)
+                } else {
+                    this.copy(backoffPingInterval = Duration.standardMinutes(5))
+                }
             }
 
             fun nextBackoff(): State {

@@ -57,6 +57,7 @@ allprojects {
     dependencies {
         implementation deps.kotlin_stdlib
         implementation deps.kotlin_x
+        implementation deps.joda
     }
 
     publishing {
@@ -110,7 +111,6 @@ project(':ddi-consumer:ddi-api') {
     version app_version
 
     dependencies {
-        implementation deps.joda
     }
 }
 
@@ -132,7 +132,6 @@ project(':virtual-device'){
         implementation project(':hara-ddiclient-api')
         implementation project(':ddi-consumer')
         implementation project(':ddi-consumer:ddi-api')
-        implementation deps.joda
         implementation deps.slf4j_simple
         implementation deps.okhttp
     }
@@ -256,6 +255,8 @@ version app_version
 test {
     systemProperty("LOG_HTTP", project.findProperty("logHttp") ?: "false")
     systemProperty("LOG_INTERNAL", project.findProperty("logInternal") ?: "false")
+    systemProperty("BACKOFF_INTERVAL_SECONDS", 45)
+
     useTestNG()
 
     afterTest { desc, result ->

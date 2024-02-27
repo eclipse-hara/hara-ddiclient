@@ -53,6 +53,11 @@ abstract class AbstractHaraMessageTest : AbstractTest() {
         }
     }
 
+    protected suspend fun startAsyncAndWatchMessages(lastTest: Boolean = false) {
+        client?.startAsync()
+        startWatchingExpectedMessages(lastTest)
+    }
+
     protected suspend fun startWatchingExpectedMessages(lastTest: Boolean = false) {
         checkExpectedMessagesJob = getExpectedMessagesCheckingJob(lastTest)
         try {

@@ -45,7 +45,7 @@ abstract class AbstractTest {
     protected lateinit var managementApi: ManagementApi
     abstract val targetId: String
 
-    private val throwableScope = CoroutineScope(Dispatchers.Default)
+    protected val throwableScope = CoroutineScope(Dispatchers.Default)
 
     private var throwableJob: Deferred<Unit>? = null
 
@@ -99,8 +99,14 @@ abstract class AbstractTest {
     }
 
     protected suspend fun assertEquals(actual: Any?, expected: Any?) {
-        throwableJob = throwableScope.async {
+        assert {
             Assert.assertEquals(actual, expected)
+        }
+    }
+
+    protected suspend fun assert(assertionBlock: () -> Unit) {
+        throwableJob = throwableScope.async {
+            assertionBlock()
         }
         try {
             throwableJob?.await()
