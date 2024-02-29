@@ -18,16 +18,15 @@ import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.endMessagesOnSuccessUpdate
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.messagesOnSoftUpdateAuthorization
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.messagesOnSuccessfullyDownloadDistribution
-import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.targetRetrievedUpdateAction
 import org.testng.annotations.BeforeClass
 import org.testng.annotations.Test
 
-class HawkbitDownloadOnlyDeploymentTest : AbstractDeploymentTest() {
+class DeploymentDownloadOnlyTest : AbstractDeploymentTest() {
 
     private var actionId: Int = 0
-    override val targetId: String = "DownloadOnlyTest"
 
     companion object {
+        const val TARGET_ID: String = "DownloadOnlyTest"
         const val DISTRIBUTION_ID = 3
     }
 
@@ -40,12 +39,12 @@ class HawkbitDownloadOnlyDeploymentTest : AbstractDeploymentTest() {
     @Test(enabled = true, timeOut = 60_000, priority = 14)
     fun testDownloadOnlyWhileWaitingForUpdateAuthorization() = runBlocking {
 
-        reCreateTestTargetOnServer()
+        reCreateTestTargetOnServer(TARGET_ID)
 
         assignDownloadOnlyDistribution()
 
         val client = createHaraClientWithAuthorizationPermissions(
-            downloadAllowed = false, updateAllowed = true)
+            TARGET_ID, downloadAllowed = false, updateAllowed = true)
 
         startTheTestAndWaitForResult(client,
             createTargetTestDeployment(expectedActionsAfterDownloadOnlyDeployment))
@@ -54,7 +53,7 @@ class HawkbitDownloadOnlyDeploymentTest : AbstractDeploymentTest() {
     private suspend fun assignDownloadOnlyDistribution() {
         val distribution = HawkbitAssignDistributionBody(DISTRIBUTION_ID,
             AssignDistributionType.DOWNLOAD_ONLY, 0)
-        actionId = assignDistributionToTheTarget(distribution)
+        actionId = assignDistributionToTheTarget(TARGET_ID, distribution)
     }
 
     private fun createTargetTestDeployment(
@@ -64,12 +63,11 @@ class HawkbitDownloadOnlyDeploymentTest : AbstractDeploymentTest() {
                 TestUtils.test1Artifact) to TestUtils.locationOfFileNamed("test1"))
 
         return TestUtils.TargetDeployments(
-            targetId = targetId,
+            targetId = TARGET_ID,
             targetToken = "",
             deploymentInfo = listOf(
                 TestUtils.TargetDeployments.DeploymentInfo(
                     actionId = actionId,
-                    actionStatusOnStart = expectedActionOnStart,
                     actionStatusOnFinish = actionsOnFinish,
                     filesDownloadedPairedWithServerFile = filesDownloadedPairedToServerFile
                 )
@@ -82,9 +80,8 @@ class HawkbitDownloadOnlyDeploymentTest : AbstractDeploymentTest() {
             *endMessagesOnSuccessUpdate,
             *messagesOnSoftUpdateAuthorization,
             *messagesOnSuccessfullyDownloadDistribution(
-                TestUtils.md5OfFileNamed("test1"), targetId,
+                TestUtils.md5OfFileNamed("test1"), TARGET_ID,
                 "1", "test_1"),
-            targetRetrievedUpdateAction,
-            TestUtils.firstActionWithAssignmentEntry
+            *TestUtils.firstActionsOnTargetDeployment
         ))
 }

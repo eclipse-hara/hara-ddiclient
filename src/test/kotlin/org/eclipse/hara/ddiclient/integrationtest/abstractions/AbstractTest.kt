@@ -43,9 +43,8 @@ import kotlin.coroutines.cancellation.CancellationException
 abstract class AbstractTest {
 
     protected lateinit var managementApi: ManagementApi
-    abstract val targetId: String
 
-    protected val throwableScope = CoroutineScope(Dispatchers.Default)
+    private val throwableScope = CoroutineScope(Dispatchers.Default)
 
     private var throwableJob: Deferred<Unit>? = null
 
@@ -70,7 +69,7 @@ abstract class AbstractTest {
         managementApi.setPollingTime(TestUtils.basic, ServerSystemConfig(time))
     }
 
-    protected suspend fun reCreateTestTargetOnServer() {
+    protected suspend fun reCreateTestTargetOnServer(targetId: String) {
         runCatching {
             managementApi.deleteTarget(TestUtils.basic, targetId)
         }
@@ -81,6 +80,7 @@ abstract class AbstractTest {
     }
 
     protected suspend fun assignDistributionToTheTarget(
+        targetId: String,
         distribution: HawkbitAssignDistributionBody): Int {
         val response =
             managementApi.assignDistributionToTarget(TestUtils.basic,

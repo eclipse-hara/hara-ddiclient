@@ -19,6 +19,7 @@ import org.eclipse.hara.ddiclient.api.MessageListener
 import org.eclipse.hara.ddiclient.api.MessageListener.Message.Event.Polling
 import org.eclipse.hara.ddiclient.api.MessageListener.Message.State.Idle
 import org.eclipse.hara.ddiclient.integrationtest.abstractions.AbstractHaraMessageTest
+import org.eclipse.hara.ddiclient.integrationtest.api.management.HawkbitTargetInfo
 import org.eclipse.hara.ddiclient.integrationtest.api.management.ServerSystemConfig
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils.basic
@@ -33,7 +34,6 @@ import kotlin.time.Duration.Companion.seconds
 
 class DdiClientHttpRequestsTest : AbstractHaraMessageTest() {
 
-    override val targetId: String = "DoubleToken"
     private var expectedServerResponses = mutableListOf<ExpectedMessage>()
 
     override val expectedMessagesList: MutableList<MutableList<ExpectedMessage>> by lazy {
@@ -52,6 +52,7 @@ class DdiClientHttpRequestsTest : AbstractHaraMessageTest() {
     }
 
     companion object {
+        const val TARGET_ID = "DoubleTokenTest"
         const val TEST_TARGET_SECURITY_TOKEN = "r2m3ixxc86a2v4q81wntpyhr78zy08we"
     }
 
@@ -63,6 +64,15 @@ class DdiClientHttpRequestsTest : AbstractHaraMessageTest() {
     override fun beforeTest() {
         super.beforeTest()
         setPollingTime("00:00:05")
+        createTestTarget()
+    }
+
+    private fun createTestTarget() {
+        runBlocking {
+            managementApi.createTarget(
+                basic, listOf(HawkbitTargetInfo(TARGET_ID,
+                    securityToken = TEST_TARGET_SECURITY_TOKEN)))
+        }
     }
 
     @AfterClass
@@ -95,7 +105,7 @@ class DdiClientHttpRequestsTest : AbstractHaraMessageTest() {
         return clientFromTargetId(
             okHttpClientBuilder = okHttpClient,
             targetToken = targetToken,
-            gatewayToken = gatewayToken).invoke(targetId)
+            gatewayToken = gatewayToken).invoke(TARGET_ID)
     }
 
     @Suppress("UNUSED_VARIABLE")

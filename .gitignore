@@ -37,3 +37,4 @@
 
 local.properties
 detekt-baseline.xml
+gradle.properties

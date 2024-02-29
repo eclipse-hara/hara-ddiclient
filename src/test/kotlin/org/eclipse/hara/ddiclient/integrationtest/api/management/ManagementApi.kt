@@ -83,7 +83,7 @@ interface ManagementApi {
     suspend fun createTarget(
         @Header("Authorization") auth: String,
         @Body body: List<HawkbitTargetInfo>
-    ): HawkbitTargetInfo
+    ): List<HawkbitTargetInfo>
 }
 
 object ManagementClient {
@@ -132,7 +132,7 @@ object ManagementClient {
             }
 
             override suspend fun createTarget(auth: String,
-                                              body: List<HawkbitTargetInfo>): HawkbitTargetInfo {
+                                              body: List<HawkbitTargetInfo>): List<HawkbitTargetInfo> {
                 return delegate.createTarget(auth, body)
             }
         }

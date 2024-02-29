@@ -30,7 +30,6 @@ import org.eclipse.hara.ddiclient.api.HaraClientDefaultImpl
 import org.eclipse.hara.ddiclient.api.MessageListener
 import org.eclipse.hara.ddiclient.api.Updater
 import org.eclipse.hara.ddiclient.integrationtest.api.management.Action
-import org.eclipse.hara.ddiclient.integrationtest.api.management.ActionStatus
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils
 import org.eclipse.hara.ddiclient.integrationtest.utils.addOkhttpLogger
 import org.eclipse.hara.ddiclient.integrationtest.utils.internalLog
@@ -39,7 +38,7 @@ import java.io.File
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
 
-abstract class AbstractDeploymentTest: AbstractTest() {
+abstract class AbstractDeploymentTest : AbstractTest() {
 
     private var assertServerActionsScope = CoroutineScope(Dispatchers.IO)
     private var assertServerActionsOnCompleteJob: Deferred<Unit>? = null
@@ -102,6 +101,7 @@ abstract class AbstractDeploymentTest: AbstractTest() {
     }
 
     protected fun createHaraClientWithAuthorizationPermissions(
+        targetId: String,
         downloadAllowed: Boolean = true,
         updateAllowed: Boolean = true): HaraClient {
 
@@ -129,31 +129,31 @@ abstract class AbstractDeploymentTest: AbstractTest() {
         client: HaraClient,
         deployment: TestUtils.TargetDeployments): Deferred<Unit> {
         return assertServerActionsScope.async(start = CoroutineStart.LAZY) {
-            val deploymentInfo = deployment.deploymentInfo.first()
-            while (managementApi.getActionAsync(TestUtils.basic, deployment.targetId,
-                    deploymentInfo.actionId).status != Action.Status.finished
-            ) {
-                delay(5.seconds)
-            }
+            deployment.deploymentInfo.forEach { deploymentInfo ->
 
-            val actionStatus =
-                managementApi.getTargetActionStatusAsync(TestUtils.basic, deployment.targetId,
-                    deploymentInfo.actionId)
-            assertEquals(actionStatus.content,
-                deploymentInfo.actionStatusOnFinish.content)
+                while (managementApi.getActionAsync(TestUtils.basic, deployment.targetId,
+                        deploymentInfo.actionId).status != Action.Status.finished
+                ) {
+                    delay(5.seconds)
+                }
 
-            deploymentInfo.filesDownloadedPairedWithServerFile.forEach { (fileDownloaded, serverFile) ->
-                assertEquals(File(fileDownloaded).readText(),
-                    File(serverFile).readText())
-                File(fileDownloaded).deleteRecursively()
+                val actionStatus =
+                    managementApi.getTargetActionStatusAsync(TestUtils.basic,
+                        deployment.targetId,
+                        deploymentInfo.actionId)
+                assertEquals(actionStatus.content,
+                    deploymentInfo.actionStatusOnFinish.content)
+
+                deploymentInfo.filesDownloadedPairedWithServerFile.forEach { (fileDownloaded, serverFile) ->
+                    assertEquals(File(fileDownloaded).readText(),
+                        File(serverFile).readText())
+                    File(fileDownloaded).deleteRecursively()
+                }
+
             }
 
             client.safeStopClient()
         }
     }
-
-    protected val expectedActionOnStart = ActionStatus(setOf(
-        TestUtils.firstActionWithAssignmentEntry
-    ))
 
 }

@@ -41,8 +41,11 @@ import kotlin.coroutines.cancellation.CancellationException
 
 class PingBackoffStrategyTest : AbstractHaraMessageTest() {
 
-    override val targetId: String = "PingTimeOutTest"
     private val testScope = CoroutineScope(Dispatchers.Default)
+
+    companion object {
+        const val TARGET_ID = "PingTimeOutTest"
+    }
 
     private val expectedTestDuration =
         Channel<Long>(5, BufferOverflow.DROP_OLDEST)
@@ -77,7 +80,7 @@ class PingBackoffStrategyTest : AbstractHaraMessageTest() {
                 .addInterceptor(TimeoutInterceptor())
                 .addOkhttpLogger()
 
-            client = clientFromTargetId(okHttpClientBuilder = okHttpBuilder).invoke(targetId)
+            client = clientFromTargetId(okHttpClientBuilder = okHttpBuilder).invoke(TARGET_ID)
 
             expectMessages(
                 Polling,
@@ -106,7 +109,7 @@ class PingBackoffStrategyTest : AbstractHaraMessageTest() {
                 .addInterceptor(ConnectionLostInterceptor())
                 .addOkhttpLogger()
 
-            client = clientFromTargetId(okHttpClientBuilder = okHttpBuilder).invoke(targetId)
+            client = clientFromTargetId(okHttpClientBuilder = okHttpBuilder).invoke(TARGET_ID)
 
             expectMessages(
                 Polling,

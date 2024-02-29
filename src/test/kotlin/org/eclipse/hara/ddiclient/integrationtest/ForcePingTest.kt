@@ -32,15 +32,16 @@ import kotlin.time.Duration.Companion.seconds
 
 class ForcePingTest : AbstractHaraMessageTest() {
 
-    override val targetId: String = "forcePingTest"
-
+    companion object {
+        const val TARGET_ID = "forcePingTest"
+    }
 
     @BeforeClass
     override fun beforeTest() {
         super.beforeTest()
         setPollingTime("00:00:30")
         runBlocking {
-            reCreateTestTargetOnServer()
+            reCreateTestTargetOnServer(TARGET_ID)
         }
     }
 
@@ -59,7 +60,7 @@ class ForcePingTest : AbstractHaraMessageTest() {
         logCurrentFunctionName()
         runBlocking {
 
-            client = clientFromTargetId().invoke(targetId)
+            client = clientFromTargetId().invoke(TARGET_ID)
 
             expectMessages(
                 Polling,
@@ -82,7 +83,7 @@ class ForcePingTest : AbstractHaraMessageTest() {
         runBlocking {
             setPollingTime("00:00:30")
 
-            client = clientFromTargetId().invoke(targetId)
+            client = clientFromTargetId().invoke(TARGET_ID)
 
             expectMessages(
                 Polling,
@@ -114,7 +115,7 @@ class ForcePingTest : AbstractHaraMessageTest() {
         logCurrentFunctionName()
         runBlocking {
 
-            client = clientFromTargetId().invoke(targetId)
+            client = clientFromTargetId().invoke(TARGET_ID)
 
             expectMessages(
                 Polling,
@@ -144,7 +145,7 @@ class ForcePingTest : AbstractHaraMessageTest() {
             }
 
             client = clientFromTargetId(deploymentPermitProvider = deploymentBehavior).invoke(
-                targetId)
+                TARGET_ID)
 
             expectMessages(
                 Polling,
@@ -161,7 +162,7 @@ class ForcePingTest : AbstractHaraMessageTest() {
             }
 
             delay(3.seconds)
-            assignDistributionToTheTarget(
+            assignDistributionToTheTarget(TARGET_ID, 
                 HawkbitAssignDistributionBody(3, AssignDistributionType.SOFT, 0))
 
             delay(2.seconds)

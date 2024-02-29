@@ -30,6 +30,10 @@ val LOG_INTERNAL: Boolean = System.getProperty("LOG_INTERNAL", "false").toBoolea
  */
 object TestUtils {
 
+    const val APP_DISTRIBUTION_ID = 3
+    const val OS_DISTRIBUTION_ID = 2
+    const val OS_WITH_APPS_DISTRIBUTION_ID = 1
+
     data class TargetDeployments(
         val targetId: String,
         val targetToken: String,
@@ -37,19 +41,17 @@ object TestUtils {
     ) {
         data class DeploymentInfo(
             val actionId: Int,
-            val actionStatusOnStart: ActionStatus,
             val actionStatusOnFinish: ActionStatus,
             val filesDownloadedPairedWithServerFile: Set<Pair<String, String>>
         )
     }
 
-    val tenantName = "DEFAULT"
+    const val tenantName = "DEFAULT"
     val tenantNameToLower = tenantName.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
     val basic = Credentials.basic("test", "test")
-    val hawkbitUrl = "http://localhost:8081"
-    val downloadRootDirPath = "./build/test/download/"
-    val gatewayToken = "66076ab945a127dd80b15e9011995109"
-    val getDownloadDirectoryFromActionId = { actionId: String -> File("$downloadRootDirPath/$actionId") }
+    const val hawkbitUrl = "http://localhost:8081"
+    const val downloadRootDirPath = "./build/test/download/"
+    const val gatewayToken = "66076ab945a127dd80b15e9011995109"
     val directoryDataProvider = object : DirectoryForArtifactsProvider { override fun directoryForArtifacts(): File = File(
         downloadRootDirPath
     ) }
@@ -77,7 +79,7 @@ object TestUtils {
         }
     }
 
-    val serverFilesMappedToLocantionAndMd5 = mapOf(
+    private val serverFilesMappedToLocantionAndMd5 = mapOf(
         "test1" to Pair(
             "docker/test/artifactrepo/$tenantName/4b/5a/b54e43082887d1e7cdb10b7a21fe4a1e56b44b5a",
             "2490a3d39b0004e4afeb517ef0ddbe2d"),
@@ -107,123 +109,6 @@ object TestUtils {
     val test4Artifact = Updater.SwModule.Artifact("test4", Updater.Hashes("",
         md5OfFileNamed("test4")
     ), 0)
-
-    fun messagesOnSuccessfullyDownloadOsWithAppDistribution(target: String) = arrayOf(
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.running,
-                    listOf("Successfully downloaded all files")
-            ),
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.running,
-                    listOf(
-                            "Successfully downloaded file with md5 ${
-                                md5OfFileNamed(
-                                        "test1"
-                                )
-                            }"
-                    )
-            ),
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.running,
-                    listOf(
-                            "Successfully downloaded file with md5 ${
-                                md5OfFileNamed(
-                                        "test2"
-                                )
-                            }"
-                    )
-            ),
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.running,
-                    listOf(
-                            "Successfully downloaded file with md5 ${
-                                md5OfFileNamed(
-                                        "test3"
-                                )
-                            }"
-                    )
-            ),
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.running,
-                    listOf(
-                            "Successfully downloaded file with md5 ${
-                                md5OfFileNamed(
-                                        "test4"
-                                )
-                            }"
-                    )
-            ),
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.download,
-                    listOf("Update Server: Target downloads /$tenantNameToLower/controller/v1/$target/softwaremodules/2/artifacts/test_2")
-            ),
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.download,
-                    listOf("Update Server: Target downloads /$tenantNameToLower/controller/v1/$target/softwaremodules/2/artifacts/test_3")
-            ),
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.download,
-                    listOf("Update Server: Target downloads /$tenantNameToLower/controller/v1/$target/softwaremodules/1/artifacts/test_1")
-            ),
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.download,
-                    listOf("Update Server: Target downloads /$tenantNameToLower/controller/v1/$target/softwaremodules/3/artifacts/test_4")
-            ),
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.running,
-                    listOf("Start downloading 4 files")
-            )
-    )
-
-    fun messagesOnSuccefullyDownloadOsDistribution(target: String) = arrayOf(
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.running,
-                    listOf("Successfully downloaded all files")
-            ),
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.running,
-                    listOf(
-                            "Successfully downloaded file with md5 ${
-                                md5OfFileNamed(
-                                        "test4"
-                                )
-                            }"
-                    )
-            ),
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.download,
-                    listOf("Update Server: Target downloads /$tenantNameToLower/controller/v1/$target/softwaremodules/3/artifacts/test_4")
-            ),
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.running,
-                    listOf("Start downloading 1 files")
-            )
-    )
-
-    fun messagesOnSuccefullyDownloadAppDistribution(target: String) = arrayOf(
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.running,
-                    listOf("Successfully downloaded all files")
-            ),
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.running,
-                    listOf(
-                            "Successfully downloaded file with md5 ${
-                                md5OfFileNamed(
-                                        "test1"
-                                )
-                            }"
-                    )
-            ),
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.download,
-                    listOf("Update Server: Target downloads /$tenantNameToLower/controller/v1/$target/softwaremodules/1/artifacts/test_1")
-            ),
-            ActionStatus.ContentEntry(
-                    ActionStatus.ContentEntry.Type.running,
-                    listOf("Start downloading 1 files")
-            )
-    )
 
     val endMessagesOnSuccessUpdate = arrayOf(
             ActionStatus.ContentEntry(
@@ -266,11 +151,6 @@ object TestUtils {
         waitingForUpdateAuthorizationMessage
     )
 
-    val firstActionEntry = ActionStatus.ContentEntry(
-            ActionStatus.ContentEntry.Type.running,
-            listOf(null)
-    )
-
     val firstActionWithAssignmentEntry = ActionStatus.ContentEntry(
             ActionStatus.ContentEntry.Type.running,
             listOf("Assignment initiated by user 'test'")
@@ -281,28 +161,10 @@ object TestUtils {
         listOf("Update Server: Target retrieved update action and should start now the download.")
     )
 
-    val startMessagesOnUpdateFond = arrayOf(
+    val firstActionsOnTargetDeployment = arrayOf(
         targetRetrievedUpdateAction,
-        firstActionEntry
+        firstActionWithAssignmentEntry
     )
-
-    fun filesDownloadedInOsWithAppsPairedToServerFile(action: Int) = setOf(
-        pathResolver.fromArtifact(action.toString()).invoke(
-            test1Artifact
-        ) to locationOfFileNamed("test1"),
-        pathResolver.fromArtifact(action.toString()).invoke(
-            test2Artifact
-        ) to locationOfFileNamed("test2"),
-        pathResolver.fromArtifact(action.toString()).invoke(
-            test3Artifact
-        ) to locationOfFileNamed("test3"),
-        pathResolver.fromArtifact(action.toString()).invoke(
-            test4Artifact
-        ) to locationOfFileNamed("test4"),
-    )
-
-    val defaultActionStatusOnStart =
-        ActionStatus(setOf(firstActionEntry))
 
     fun messagesOnSuccessfullyDownloadDistribution(
         md5: String, targetId: String, softwareModuleId: String,
