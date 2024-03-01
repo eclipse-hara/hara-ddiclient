@@ -1,8 +1,8 @@
 <p align="center"><img src="hara_logo.png" width=20% height=20% ></p>
 <h1 align="center">Eclipse Hara™ - hara-ddiclient</h1>
 <p align="center">
-<a href="https://github.com/eclipse/hara-ddiclient/actions/workflows/pipeline-build.yml"><img alt="Build Status" src="https://github.com/eclipse/hara-ddiclient/actions/workflows/pipeline-build.yml/badge.svg"></a>
-<a href="https://sonarcloud.io/summary/new_code?id=eclipse_hara-ddiclient"><img alt="Quality Gate Status" src="https://sonarcloud.io/api/project_badges/measure?project=eclipse_hara-ddiclient&metric=alert_status"></a>
+<a href="https://github.com/eclipse-hara/hara-ddiclient/actions/workflows/pipeline-build.yml"><img alt="Build Status" src="https://github.com/eclipse-hara/hara-ddiclient/actions/workflows/pipeline-build.yml/badge.svg"></a>
+<a href="https://sonarcloud.io/summary/new_code?id=eclipse-hara_hara-ddiclient"><img alt="Quality Gate Status" src="https://sonarcloud.io/api/project_badges/measure?project=eclipse-hara_hara-ddiclient&metric=alert_status"></a>
 <a href="https://www.eclipse.org/legal/epl-2.0"><img alt="EPL-2.0 License" src="https://img.shields.io/badge/License-EPL%202.0-red.svg"></a>
 <a href="#contributing"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg"></a>
 </p>
@@ -41,7 +41,7 @@ dependencies {
 }
 ```
 
-For additional information refer to [jitpack](https://jitpack.io/#eclipse/hara-ddiclient).
+For additional information refer to [jitpack](https://jitpack.io/#eclipse-hara/hara-ddiclient).
 
 ## Build from source
 
@@ -157,7 +157,7 @@ To contribute to this project please [open a GitHub pull request](https://docs.g
 ## Contact us
 
 - Having questions about hara-ddiclient? Subscribe to the [hara-dev mailing list](https://accounts.eclipse.org/mailing-list/hara-dev) and post a question!
-- Having issues with hara-ddiclient? Please [open a GitHub issue](https://github.com/eclipse/hara-ddiclient/issues).
+- Having issues with hara-ddiclient? Please [open a GitHub issue](https://github.com/eclipse-hara/hara-ddiclient/issues).
 
 ## Third-Party Libraries
 
@@ -171,7 +171,7 @@ For information on the libraries used by this project see [NOTICE](NOTICE.md).
 * **Alberto Battiston**
 * **Saeed Rezaee**
 
-See also the list of [contributors](https://github.com/eclipse/hara-ddiclient/graphs/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/eclipse-hara/hara-ddiclient/graphs/contributors) who participated in this project.
 
 ## License
 
