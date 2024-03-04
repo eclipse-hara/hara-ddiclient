@@ -126,6 +126,7 @@ project(':virtual-device'){
     group 'org.eclipse.hara.hara-virtual-device'
     version app_version
     apply plugin: 'application'
+    apply plugin: 'jacoco'
 
     dependencies {
         implementation rootProject
@@ -134,6 +135,35 @@ project(':virtual-device'){
         implementation project(':ddi-consumer:ddi-api')
         implementation deps.slf4j_simple
         implementation deps.okhttp
+        testImplementation deps.kotlin_stdlib
+        testImplementation deps.kotlin_x
+        testImplementation tdeps.testng
+        testImplementation tdeps.mockk
+        testImplementation deps.retrofit
+        testImplementation deps.okhttp
+        testImplementation deps.okhttp_logging
+        testImplementation deps.retrofit_converter
+    }
+
+    jacocoTestReport {
+        dependsOn test
+        sourceSets sourceSets.main
+
+        reports {
+            xml.required = true
+            html.required = true
+        }
+    }
+
+    test {
+        dependsOn ':waitingHawkbitServer'
+
+        useTestNG()
+
+        afterTest { desc, result ->
+            logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+        }
+        finalizedBy jacocoTestReport
     }
 
     mainClassName = 'org.eclipse.hara.ddiclient.virtualdevice.MainKt'
@@ -160,20 +190,27 @@ detekt {
     buildUponDefaultConfig = true
 }
 
-test {
-    useTestNG()
-    finalizedBy jacocoTestReport
-}
-
 jacocoTestReport {
+    dependsOn tasks.withType(Test)
+
+    sourceSets sourceSets.main
     subprojects.each {
         sourceSets it.sourceSets.main
     }
+
+    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/test.exec")
+
+    classDirectories.setFrom(files(sourceSets.main.output) +
+            files(subprojects.sourceSets.main.output))
+    sourceDirectories.setFrom(files(sourceSets.main.allSource.srcDirs) +
+            files(subprojects.sourceSets.main.allSource.srcDirs))
+    additionalSourceDirs.setFrom(files(sourceSets.main.allSource.srcDirs) +
+            files(subprojects.sourceSets.main.allSource.srcDirs))
+
     reports {
         xml.required = true
         html.required = true
     }
-    dependsOn test
 }
 
 def dockerClientDir = new File(project.buildDir, "docker-client")
@@ -257,11 +294,14 @@ test {
     systemProperty("LOG_INTERNAL", project.findProperty("logInternal") ?: "false")
     systemProperty("BACKOFF_INTERVAL_SECONDS", 45)
 
+    dependsOn ':virtual-device:test'
+
     useTestNG()
 
     afterTest { desc, result ->
         logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
     }
+    finalizedBy jacocoTestReport
 }
 
 
@@ -273,7 +313,6 @@ dependencies{
     implementation deps.joda
     implementation deps.gson
     implementation deps.retrofit_converter
-    testImplementation tdeps.testng
     testImplementation tdeps.testng
     testImplementation deps.kotlin_stdlib
     testImplementation deps.kotlin_x

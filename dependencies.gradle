@@ -26,6 +26,7 @@ ext {
             joda:'joda-time:joda-time:2.10.13'
     ]
     test_dependencies = [
-            testng: 'org.testng:testng:7.9.0'
+            testng: 'org.testng:testng:7.9.0',
+            mockk: 'io.mockk:mockk:1.12.0'
     ]
 }
