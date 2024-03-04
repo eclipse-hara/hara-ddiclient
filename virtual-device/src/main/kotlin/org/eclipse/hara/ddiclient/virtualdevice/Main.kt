@@ -17,7 +17,9 @@ import org.eclipse.hara.ddiclient.virtualdevice.entrypoint.*
 import java.time.Duration
 import kotlin.random.Random.Default.nextLong
 
-fun main() = runBlocking {
+val virtualMachineGlobalScope = CoroutineScope(Dispatchers.Default)
+
+fun main() {
     Configuration.apply {
         System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, logLevel)
         val connTimeoutDuration = Duration.ofSeconds(connectTimeout)
@@ -39,7 +41,7 @@ fun main() = runBlocking {
                 .readTimeout(readTimeoutDuration)
                 .writeTimeout(writeTimeoutDuration)
 
-            launch(Dispatchers.IO) {
+            virtualMachineGlobalScope.launch {
                 val delay = nextLong(0, virtualDeviceStartingDelay)
                 println("Virtual Device $it starts in $delay milliseconds")
                 delay(delay)
@@ -58,7 +60,8 @@ private fun getClient(
     return HaraClientDefaultImpl().apply {
         init(
             haraClientData = clientData,
-            directoryForArtifactsProvider = DirectoryForArtifactsProviderImpl(clientData.controllerId),
+            directoryForArtifactsProvider = DirectoryForArtifactsProviderImpl(
+                clientData.controllerId),
             configDataProvider = ConfigDataProviderImpl(virtualDeviceId, clientData),
             softDeploymentPermitProvider = DeploymentPermitProviderImpl(),
             messageListeners = listOf(MessageListenerImpl(virtualDeviceId, clientData)),
