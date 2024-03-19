@@ -73,7 +73,8 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 }
                 if (msg is In.DeploymentFeedback) {
                     notificationManager.send(MessageListener.Message.Event
-                        .DeployFeedbackRequestResult(success, msg.feedback.id, msg.closeAction))
+                        .DeployFeedbackRequestResult(success, msg.feedback.id,
+                            msg.closeAction, msg.feedback.status.details))
                 }
             }
         }

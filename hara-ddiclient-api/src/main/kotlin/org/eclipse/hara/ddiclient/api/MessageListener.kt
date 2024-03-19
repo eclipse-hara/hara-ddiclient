@@ -131,7 +131,8 @@ interface MessageListener {
              */
             data class DeployFeedbackRequestResult(val success: Boolean,
                                                    val id: String,
-                                                   val closeAction: Boolean) :
+                                                   val closeAction: Boolean,
+                                                   val requestDetails: List<String>) :
                 Event("Result of the feedback request to the server")
 
             /**
