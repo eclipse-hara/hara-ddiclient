@@ -105,20 +105,28 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
 
     private suspend fun attemptUpdateDevice(state: State): String {
         become(waitingUpdateAuthorization(state))
-        notificationManager.send(
-            MessageListener.Message.State.WaitingUpdateAuthorization(state.isUpdateForced))
         waitingAuthJob = launch {
-            softRequest.onAuthorizationReceive {
-                channel.send(Message.UpdateGranted)
-            }
+            softRequest.onAuthorizationReceive(
+                onWaitForAuthorization = {
+                    notificationManager.send(
+                        MessageListener.Message.State.WaitingUpdateAuthorization(
+                            state.isUpdateForced))
+                }, onGrantAuthorization = {
+                    channel.send(Message.UpdateGranted)
+                })
             waitingAuthJob = null
         }
         return "Waiting authorization to update"
     }
 
     private suspend fun DeploymentPermitProvider.onAuthorizationReceive(
+        onWaitForAuthorization: (suspend ()-> Unit)? = null,
         onGrantAuthorization: suspend ()-> Unit){
-        if(updateAllowed().await()){
+        //Since updateAllowed function might be a long-running operation,
+        // it is better to execute it first and then notify the user about the waiting process
+        val updateAllowed = updateAllowed()
+        onWaitForAuthorization?.invoke()
+        if(updateAllowed.await()){
             onGrantAuthorization.invoke()
         } else {
             LOG.info("Authorization denied for update")

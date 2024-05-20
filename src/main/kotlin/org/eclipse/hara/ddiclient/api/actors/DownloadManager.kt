@@ -90,13 +90,14 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         LOG.info(message)
         feedback(msg.info.id, proceeding, Progress(0, 0), none, message)
         become(waitingDownloadAuthorization(state.copy(deplBaseResp = msg.info)))
-        notificationManager.send(MessageListener.Message.State
-            .WaitingDownloadAuthorization(false))
         waitingAuthJob?.cancel()
         waitingAuthJob = launch {
-            softRequest.onAuthorizationReceive {
+            softRequest.onAuthorizationReceive(onWaitForAuthorization = {
+                notificationManager.send(MessageListener.Message.State
+                    .WaitingDownloadAuthorization(false))
+            }, onGrantAuthorization = {
                 channel.send(Message.DownloadGranted)
-            }
+            })
             waitingAuthJob = null
         }
     }
@@ -127,8 +128,13 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     }
 
     private suspend fun DeploymentPermitProvider.onAuthorizationReceive(
+        onWaitForAuthorization: (suspend ()-> Unit)? = null,
         onGrantAuthorization: suspend ()-> Unit){
-        if(downloadAllowed().await()){
+        //Since downloadAllowed function might be a long-running operation,
+        // it is better to execute it first and then notify the user about the waiting process
+        val downloadAllowed = downloadAllowed()
+        onWaitForAuthorization?.invoke()
+        if(downloadAllowed.await()){
             onGrantAuthorization.invoke()
         } else {
             LOG.info("Authorization denied for download files")
