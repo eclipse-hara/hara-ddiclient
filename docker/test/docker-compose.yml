@@ -69,6 +69,8 @@ services:
       test: '/bin/sh -c "mysqladmin -u$$MYSQL_USER -P3306 -p$$MYSQL_PASSWORD ping"'
       interval: 10s
       start_period: 30s
+      timeout: 2m
+      retries: 10
 
   # ------------------------------------------------
 networks:
