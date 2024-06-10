@@ -349,6 +349,46 @@ class DdiClientHttpRequestsTest : AbstractHaraMessageTest() {
         startSubTestTest(true)
     }
 
+    @Test(enabled = true, priority = 8, timeOut = 60_000)
+    fun useInvalidTokenWithForbiddenCharactersTest() = runBlocking {
+        enableTargetTokenInServer(true)
+        enableGatewayTokenInServer(true)
+        client = createClient(gatewayToken = "")
+
+        `test #6-1= request should fail, when there is invalid character in both auth tokens`()
+        `test #6-2= request should succeed, when there is an invalid character in target token with valid gateway token`()
+    }
+
+    private suspend fun `test #6-1= request should fail, when there is invalid character in both auth tokens`() {
+        logCurrentFunctionName()
+
+        val invalidToken = "\nInvalidGatewayToken"
+        client = createClient(targetToken = invalidToken, gatewayToken = invalidToken)
+
+        expectPollingOnlyMessage()
+        expectedServerResponses.apply {
+            add(emptyTokenErrorMessage())
+            add(emptyTokenErrorMessage())
+        }
+
+        startSubTestTest()
+    }
+
+    private suspend fun `test #6-2= request should succeed, when there is an invalid character in target token with valid gateway token`() {
+        logCurrentFunctionName()
+
+        val invalidToken = "\nInvalidGatewayToken"
+        client = createClient(targetToken = invalidToken, gatewayToken = gatewayToken)
+
+        expectPollingAndIdleMessages()
+        expectedServerResponses.apply {
+            add(emptyTokenErrorMessage())
+            add(gatewayTokenMessage(HttpURLConnection.HTTP_OK))
+        }
+
+        startSubTestTest()
+    }
+
     private suspend fun startSubTestTest(lastTest: Boolean = false) {
         client?.startAsync()
         startWatchingExpectedMessages(lastTest)
@@ -391,6 +431,9 @@ class DdiClientHttpRequestsTest : AbstractHaraMessageTest() {
                 token
             ).headerValue
         )
+
+    private fun emptyTokenErrorMessage() =
+        OkHttpMessage(HttpURLConnection.HTTP_UNAUTHORIZED, null)
 
     data class OkHttpMessage(val code: Int, val authHeader: String?) :
         ExpectedMessage()

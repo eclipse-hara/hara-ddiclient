@@ -14,6 +14,7 @@ import java.io.IOException
 import java.util.Objects
 import okhttp3.Interceptor
 import okhttp3.Response
+import org.slf4j.LoggerFactory
 
 /**
  * @author Daniele Sergio
@@ -41,7 +42,11 @@ class HawkbitAuthenticationRequestInterceptor(private val authentications: List<
         do {
             response?.close()
             val authentication = authentications[authenticationUse]
-            builder.header(authentication.header, authentication.headerValue)
+            runCatching {
+                builder.header(authentication.header, authentication.headerValue)
+            }.onFailure {
+                LOG.error("Error in setting the ${authentication.type.type} header", it)
+            }
             response = chain.proceed(builder.build())
             if (response.code != 401) {
                 break
@@ -50,5 +55,9 @@ class HawkbitAuthenticationRequestInterceptor(private val authentications: List<
         } while (authenticationUse != exitValue)
 
         return response!!
+    }
+
+    companion object {
+        val LOG = LoggerFactory.getLogger(HawkbitAuthenticationRequestInterceptor::class.java)!!
     }
 }
