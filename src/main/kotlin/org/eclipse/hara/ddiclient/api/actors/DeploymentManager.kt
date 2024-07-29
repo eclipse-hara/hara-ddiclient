@@ -36,7 +36,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 stopUpdateAndNotify(msg)
             }
 
-            else -> unhandled(msg)
+            else -> handleMsgDefault(msg)
         }
     }
 
@@ -61,7 +61,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             is CancelForced -> {
                 stopUpdate()
             }
-            else -> unhandled(msg)
+            else -> handleMsgDefault(msg)
         }
     }
 
@@ -95,7 +95,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             is CancelForced -> {
                 LOG.info("Force cancel ignored")
             }
-            else -> unhandled(msg)
+            else -> handleMsgDefault(msg)
         }
     }
 

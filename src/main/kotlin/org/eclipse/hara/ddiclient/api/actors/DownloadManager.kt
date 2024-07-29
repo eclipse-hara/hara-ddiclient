@@ -72,7 +72,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 }
             }
 
-            else -> unhandled(msg)
+            else -> handleMsgDefault(msg)
         }
     }
 
@@ -196,7 +196,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 stopUpdate()
             }
 
-            else -> unhandled(msg)
+            else -> handleMsgDefault(msg)
         }
     }
 
@@ -221,7 +221,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                     Status.ERROR, "Failed to download file with md5 ${msg.md5} due to ${msg.message}", msg.message)
             }
 
-            else -> unhandled(msg)
+            else -> handleMsgDefault(msg)
         }
     }
 
@@ -321,12 +321,6 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                         LOG.info("Removing artifacts of update with action id ${it.name}")
                         it.deleteRecursively() }
         }
-    }
-
-    //todo remove FileDownloader.Companion.Message.Stop message and use default implementation of beforeCloseChannel
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override fun beforeCloseChannel() {
-        forEachActorNode { actorRef -> if(!actorRef.isClosedForSend) launch { actorRef.send(FileDownloader.Companion.Message.Stop) } }
     }
 
     init {

@@ -23,12 +23,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         when (msg) {
             is In.Start, In.ForcePing -> child("connectionManager")!!.send(msg)
 
-            is In.Stop -> {
-                child("connectionManager")!!.send(msg)
-                channel.close()
-            }
-
-            else -> unhandled(msg)
+            else -> handleMsgDefault(msg)
         }
     }
 

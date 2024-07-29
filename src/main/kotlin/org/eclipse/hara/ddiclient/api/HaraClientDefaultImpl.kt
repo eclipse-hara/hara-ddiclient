@@ -20,9 +20,12 @@ import org.eclipse.hara.ddiclient.api.actors.ConnectionManager
 import org.eclipse.hara.ddiclient.api.actors.RootActor
 import org.eclipse.hara.ddiclient.api.actors.HaraClientContext
 import okhttp3.OkHttpClient
+import org.eclipse.hara.ddiclient.api.actors.sendMessageToChannelIfOpen
+import org.slf4j.LoggerFactory
 
 class HaraClientDefaultImpl : HaraClient {
 
+    private val LOG = LoggerFactory.getLogger(this::class.java)
     private var rootActor: ActorRef? = null
 
     private val debouncingForcePingChannel: Channel<ConnectionManager.Companion.Message.In.ForcePing> =
@@ -66,13 +69,20 @@ class HaraClientDefaultImpl : HaraClient {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun stop() = runBlocking {
-        rootActor!!.send(ConnectionManager.Companion.Message.In.Stop)
+        rootActor!!.sendMessageToChannelIfOpen(ConnectionManager.Companion.Message.In.Stop)
         if(!debouncingForcePingChannel.isClosedForSend){
             debouncingForcePingChannel.close()
         }
     }
 
-    override fun forcePing() = runBlocking { debouncingForcePingChannel.send(ConnectionManager.Companion.Message.In.ForcePing) }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun forcePing() = runBlocking {
+        if (!debouncingForcePingChannel.isClosedForSend) {
+            debouncingForcePingChannel.send(ConnectionManager.Companion.Message.In.ForcePing)
+        } else {
+            LOG.warn("HaraClient is stopped. Cannot force ping.")
+        }
+    }
 
     companion object{
         const val FORCE_PING_DEBOUNCING_TIME = 30_000L

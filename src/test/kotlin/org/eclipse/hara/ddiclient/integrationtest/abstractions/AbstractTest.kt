@@ -13,7 +13,6 @@
 package org.eclipse.hara.ddiclient.integrationtest.abstractions
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -43,10 +42,6 @@ import kotlin.coroutines.cancellation.CancellationException
 abstract class AbstractTest {
 
     protected lateinit var managementApi: ManagementApi
-
-    private val throwableScope = CoroutineScope(Dispatchers.Default)
-
-    private var throwableJob: Deferred<Unit>? = null
 
     protected var client: HaraClient? = null
         set(value) {
@@ -104,12 +99,13 @@ abstract class AbstractTest {
         }
     }
 
-    protected suspend fun assert(assertionBlock: () -> Unit) {
-        throwableJob = throwableScope.async {
+    protected suspend fun assert(assertionBlock: suspend () -> Unit) {
+        val throwableScope = CoroutineScope(Dispatchers.Default)
+        val throwableJob = throwableScope.async {
             assertionBlock()
         }
         try {
-            throwableJob?.await()
+            throwableJob.await()
         } catch (ignored: CancellationException) {
         }
     }
@@ -124,7 +120,8 @@ abstract class AbstractTest {
         downloadBehavior: DownloadBehavior = TestUtils.downloadBehavior,
         okHttpClientBuilder: OkHttpClient.Builder = OkHttpClient.Builder().addOkhttpLogger(),
         targetToken: String? = "",
-        gatewayToken: String? = TestUtils.gatewayToken): (String) -> HaraClient =
+        gatewayToken: String? = TestUtils.gatewayToken,
+        scope: CoroutineScope = CoroutineScope(Dispatchers.Default)): (String) -> HaraClient =
         { targetId ->
             val clientData = HaraClientData(
                 TestUtils.tenantName,
@@ -142,7 +139,8 @@ abstract class AbstractTest {
                 listOf(*messageListeners.toTypedArray()),
                 listOf(updater),
                 downloadBehavior,
-                httpBuilder = okHttpClientBuilder
+                httpBuilder = okHttpClientBuilder,
+                scope = scope
             )
 
             client

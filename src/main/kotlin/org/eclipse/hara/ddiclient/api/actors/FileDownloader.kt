@@ -25,7 +25,6 @@ import java.lang.StringBuilder
 import java.security.DigestInputStream
 import java.security.MessageDigest
 import kotlin.time.DurationUnit
-import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
 
 @OptIn(ObsoleteCoroutinesApi::class)
@@ -40,6 +39,8 @@ private constructor(
     private val downloadBehavior: DownloadBehavior = coroutineContext[HaraClientContext]!!.downloadBehavior
     private val notificationManager = coroutineContext[NMActor]!!.ref
     private val connectionManager = coroutineContext[CMActor]!!.ref
+    private var downloadJob: Job? = null
+    private var downloadScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 
     private fun beforeStart(state: State): Receive = { msg ->
         when (msg) {
@@ -54,9 +55,7 @@ private constructor(
                 }
             }
 
-            is Message.Stop -> this.cancel()
-
-            else -> unhandled(msg)
+            else -> handleMsgDefault(msg)
         }
     }
 
@@ -84,21 +83,18 @@ private constructor(
                 tryDownload(newState, msg.cause)
             }
 
-            is Message.Stop -> this.cancel()
-
-            else -> unhandled(msg)
+            else -> handleMsgDefault(msg)
         }
     }
 
-    @OptIn(ExperimentalTime::class)
-    private suspend fun tryDownload(state: State, error:Throwable? = null) = withContext(Dispatchers.IO){
+    private suspend fun tryDownload(state: State, error:Throwable? = null) {
 
         when(val tryDownload = downloadBehavior.onAttempt(state.currentAttempt, "${state.actionId}-${fileToDownload.md5}", error)){
 
             is DownloadBehavior.Try.Stop ->  channel.send(Message.TrialExhausted)
 
             is DownloadBehavior.Try.After -> {
-                launch {
+                downloadJob = downloadScope.launch {
                     if(error != null){
                         val errorMessage = "Retry download of ${fileToDownload.fileName} due to: $error. The download will start in ${tryDownload.seconds.toDuration(DurationUnit.SECONDS)}."
                         parent!!.send(Message.Info(channel, fileToDownload.md5, errorMessage))
@@ -136,14 +132,27 @@ private constructor(
         val timer = checkDownloadProgress(inputStream, queue, actionId)
 
         runCatching {
-            file.outputStream().use {
-                inputStream.copyTo(it)
+            inputStream.use { inputStream ->
+                file.outputStream().use { outputStream ->
+                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                    var progressBytes = 0L
+                    var bytes = inputStream.read(buffer)
+                    while (bytes >= 0) {
+                        if (!downloadScope.isActive) {
+                            LOG.info("Download of ${fileToDownload.fileName} was cancelled")
+                            return
+                        }
+                        outputStream.write(buffer, 0, bytes)
+                        progressBytes += bytes
+                        bytes = inputStream.read(buffer)
+                    }
+                }
             }
         }.also {
             timer.purge()
             timer.cancel()
         }.onFailure {
-            throw  it
+            throw it
         }
 
     }
@@ -209,6 +218,19 @@ private constructor(
         }
     }
 
+    override suspend fun stopActor() {
+        runCatching {
+            downloadJob?.let {
+                LOG.debug("Cancelling download job $it")
+                if (it.isActive) {
+                    it.cancel()
+                    downloadScope.cancel()
+                }
+            }
+        }
+        super.stopActor()
+    }
+
     private fun State.nextAttempt():Int = if (currentAttempt == Int.MAX_VALUE) currentAttempt else currentAttempt + 1
 
     init {
@@ -244,7 +266,6 @@ private constructor(
         sealed class Message {
 
             object Start : Message()
-            object Stop : Message()
 
             object FileDownloaded : Message()
             object FileChecked : Message()

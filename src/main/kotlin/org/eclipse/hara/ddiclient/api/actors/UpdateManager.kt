@@ -62,7 +62,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 LOG.info(message)
             }
 
-            else -> unhandled(msg)
+            else -> handleMsgDefault(msg)
         }
     }
 
@@ -89,7 +89,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 stopUpdate()
             }
 
-            else -> unhandled(msg)
+            else -> handleMsgDefault(msg)
         }
     }
 
@@ -146,7 +146,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 sendFeedback(msg.info.id, closed, Progress(0,0), success,
                     "No update applied"
                 )
-                notificationManager.send(MessageListener.Message.Event.NoUpdate)
+                notificationManager.sendMessageToChannelIfOpen(MessageListener.Message.Event.NoUpdate)
             }
 
             updaterError.isNotEmpty() -> {
@@ -154,14 +154,14 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 parent!!.send(DeploymentManager.Companion.Message.UpdateFailed)
                 sendFeedback(msg.info.id, closed, Progress(updaters.size, updaterError[0].first),
                     failure, *details.toTypedArray())
-                notificationManager.send(MessageListener.Message.Event.UpdateFinished(successApply = false, details = details))
+                notificationManager.sendMessageToChannelIfOpen(MessageListener.Message.Event.UpdateFinished(successApply = false, details = details))
             }
 
             else -> {
                 parent!!.send(DeploymentManager.Companion.Message.UpdateFinished)
                 sendFeedback(msg.info.id, closed, Progress(updaters.size, updaters.size),
                     success, *details.toTypedArray())
-                notificationManager.send(MessageListener.Message.Event.UpdateFinished(successApply = true, details = details))
+                notificationManager.sendMessageToChannelIfOpen(MessageListener.Message.Event.UpdateFinished(successApply = true, details = details))
             }
         }
     }
@@ -201,7 +201,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             vararg messages: String
     ) {
         val request = DeploymentFeedbackRequest.newInstance(id, execution, progress, finished, *messages)
-        connectionManager.send(DeploymentFeedback(request))
+        connectionManager.sendMessageToChannelIfOpen(DeploymentFeedback(request))
     }
 
     private fun convert(swModule: Updater.SwModule, pathCalculator: (Updater.SwModule.Artifact) -> String): Updater.SwModuleWithPath =
@@ -225,7 +225,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     private suspend fun stopUpdate() {
         LOG.info("Stopping update")
         channel.cancel()
-        notificationManager.send(MessageListener.Message.State.CancellingUpdate)
+        notificationManager.sendMessageToChannelIfOpen(MessageListener.Message.State.CancellingUpdate)
         parent!!.send(ActionManager.Companion.Message.UpdateStopped)
     }
 

@@ -79,7 +79,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 LOG.warn("ErrMsg. Not yet implemented")
             }
 
-            else -> unhandled(msg)
+            else -> handleMsgDefault(msg)
         }
     }
 

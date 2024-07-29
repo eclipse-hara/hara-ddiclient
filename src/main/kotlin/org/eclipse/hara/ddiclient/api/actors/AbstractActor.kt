@@ -41,15 +41,24 @@ abstract class AbstractActor protected constructor(private val actorScope: Actor
 
     private var __receive__: Receive = EmptyReceive
 
-    private val childs: MutableMap<String, ActorRef> = emptyMap<String, ActorRef>().toMutableMap()
+    private val children: MutableMap<String, ActorRef> = emptyMap<String, ActorRef>().toMutableMap()
 
-    protected fun child(name: String) = childs[name]
+    protected fun child(name: String) = children[name]
 
     protected fun become(receive: Receive) { __receive__ = receive }
 
     protected val LOG = LoggerFactory.getLogger(this::class.java)
 
-    protected fun unhandled(msg: Any) {
+    protected suspend fun handleMsgDefault(msg: Any) {
+        when (msg) {
+           is ConnectionManager.Companion.Message.In.Stop -> {
+               stopActor()
+           }
+            else -> unhandled(msg)
+        }
+    }
+
+    private fun unhandled(msg: Any) {
         if (LOG.isWarnEnabled) {
             LOG.warn("received unexpected message $msg in ${coroutineContext[CoroutineName]} actor")
         }
@@ -59,22 +68,22 @@ abstract class AbstractActor protected constructor(private val actorScope: Actor
 
     protected val name: String = coroutineContext[CoroutineName]!!.name
 
-    protected open fun beforeCloseChannel() {
-        childs.forEach { (_, c) -> c.close() }
+    protected open suspend fun stopActor() {
+        forEachActorNode { it.send(ConnectionManager.Companion.Message.In.Stop) }
+        channel.close()
     }
 
-    protected fun forEachActorNode(ope: (ActorRef) -> Unit) {
-            childs.forEach { (_, actorRef) -> ope(actorRef) }
+    protected open fun beforeCloseChannel() {
+        children.forEach { (_, c) -> c.close() }
+    }
+
+    protected suspend fun forEachActorNode(ope: suspend (ActorRef) -> Unit) {
+            children.forEach { (_, actorRef) -> ope(actorRef) }
     }
 
     override val channel: Channel<Any> = object : Channel<Any> by actorScope.channel {
         override suspend fun send(element: Any) {
-            if(actorScope.channel.isClosedForSend){
-                LOG.debug("Channel is close for send. Message {} isn't sent to actor {}.", element.javaClass.simpleName, name)
-            } else {
-                LOG.debug("Send message {} to actor {}.", element.javaClass.simpleName, name)
-                actorScope.channel.send(element)
-            }
+            actorScope.channel.sendMessageToChannelIfOpen(element, name)
         }
 
         override fun close(cause: Throwable?): Boolean {
@@ -94,7 +103,7 @@ abstract class AbstractActor protected constructor(private val actorScope: Actor
         val childRef = actorScope.actor<Any>(
                 Dispatchers.IO.plus(CoroutineName(name)).plus(ParentActor(this.channel)).plus(context),
                 capacity, start, onCompletion) { __workflow__(LOG, block)() }
-        childs.put(name, childRef)
+        children.put(name, childRef)
         return childRef
     }
 
@@ -166,3 +175,17 @@ data class ParentActor(val ref: ActorRef) : AbstractCoroutineContextElement(Pare
 
 class ActorException(val actorName: String, val actorRef: ActorRef, throwable: Throwable) : Exception(throwable)
 class ActorCreationException(val actorName: String, val actorRef: ActorRef, throwable: Throwable) : Exception(throwable)
+
+
+@OptIn(ExperimentalCoroutinesApi::class)
+suspend fun SendChannel<Any>.sendMessageToChannelIfOpen(message: Any,
+                                                        name: String = this.toString()) {
+    val logger = LoggerFactory.getLogger(this::class.java)
+    if (isClosedForSend) {
+        logger.debug("Channel is close for send. Message {} isn't sent to actor {}.",
+            message.javaClass.simpleName, name)
+    } else {
+        logger.debug("Send message {} to actor {}.", message.javaClass.simpleName, name)
+        send(message)
+    }
+}

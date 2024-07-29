@@ -46,7 +46,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     }
 
     init{
-        CoroutineScope(Dispatchers.IO).launch{
+        scope.launch{
 
             val isSuccessful: (Response<Unit>) -> Boolean = { response ->
                 when(response.code()){
@@ -72,7 +72,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                     channel.send(In.Ping)
                 }
                 if (msg is In.DeploymentFeedback) {
-                    notificationManager.send(MessageListener.Message.Event
+                    notificationManager.sendMessageToChannelIfOpen(MessageListener.Message.Event
                         .DeployFeedbackRequestResult(success, msg.feedback.id,
                             msg.closeAction, msg.feedback.status.details))
                 }
@@ -113,15 +113,13 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
 
             is In.Start -> become(runningReceive(startPing(state)))
 
-            is In.Stop -> {}
-
             is In.Register -> become(stoppedReceive(state.withReceiver(msg.listener)))
 
             is In.Unregister -> become(stoppedReceive(state.withoutReceiver(msg.listener)))
 
             is In.SetPing -> become(stoppedReceive(state.copy(clientPingInterval = msg.duration, lastPing = Instant.EPOCH)))
 
-            else -> unhandled(msg)
+            else -> handleMsgDefault(msg)
         }
     }
 
@@ -130,7 +128,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
 
             is In.Start -> {}
 
-            is In.Stop -> become(stoppedReceive(stopPing(state)))
+            is In.Stop -> {
+                become(stoppedReceive(stopPing(state)))
+                stopActor()
+            }
 
             is In.Register -> become(runningReceive(state.withReceiver(msg.listener)))
 
@@ -158,7 +159,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             }
 
             else -> {
-                unhandled(msg)
+                handleMsgDefault(msg)
             }
         }
     }

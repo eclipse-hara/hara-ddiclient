@@ -25,7 +25,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
 
             is MessageListener.Message -> listeners.forEach { it.onMessage(msg) }
 
-            else -> unhandled(msg)
+            else -> handleMsgDefault(msg)
         }
     }
 

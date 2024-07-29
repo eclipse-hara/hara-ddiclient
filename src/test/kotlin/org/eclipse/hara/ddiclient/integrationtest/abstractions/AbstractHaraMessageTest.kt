@@ -114,13 +114,14 @@ abstract class AbstractHaraMessageTest : AbstractTest() {
         downloadBehavior: DownloadBehavior,
         okHttpClientBuilder: OkHttpClient.Builder,
         targetToken: String?,
-        gatewayToken: String?): (String) -> HaraClient {
+        gatewayToken: String?,
+        scope: CoroutineScope): (String) -> HaraClient {
         return super.clientFromTargetId(
             directoryDataProvider, configDataProvider, updater,
             listOf(messageListener),
             deploymentPermitProvider,
             downloadBehavior, okHttpClientBuilder,
-            targetToken, gatewayToken)
+            targetToken, gatewayToken, scope)
     }
 
     protected fun expectMessages(vararg messages: MessageListener.Message) {
