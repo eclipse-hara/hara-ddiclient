@@ -242,7 +242,7 @@ task stopHawkbitServer() {
         if (!keep_test_container_alive) {
             exec {
                 workingDir 'docker/test/'
-                commandLine 'docker-compose', 'down'
+                commandLine 'docker', 'compose', 'down'
             }
         }
     }
@@ -253,14 +253,14 @@ task restartHawkbitServer() {
     doFirst {
         exec {
             workingDir 'docker/test/'
-            commandLine 'docker-compose', 'down'
+            commandLine 'docker', 'compose', 'down'
         }
     }
 
     doLast{
         exec {
             workingDir 'docker/test/'
-            commandLine 'docker-compose', 'up', '--detach'
+            commandLine 'docker', 'compose', 'up', '--detach'
         }
     }
 }

@@ -51,7 +51,7 @@ To build this project from source:
 ./gradlew assemble
 ```
 
-to build this project and run the tests (`docker 19.03.0+` and `docker-compose 1.27.0+` required):
+to build this project and run the tests (`docker compose v2` required):
 
 ```shell
 ./gradlew build
