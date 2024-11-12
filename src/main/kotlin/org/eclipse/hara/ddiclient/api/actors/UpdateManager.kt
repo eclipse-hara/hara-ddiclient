@@ -103,14 +103,13 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         return "Start updating the device"
     }
 
-    private suspend fun attemptUpdateDevice(state: State): String {
+    private fun attemptUpdateDevice(state: State): String {
         become(waitingUpdateAuthorization(state))
         waitingAuthJob = launch {
             softRequest.onAuthorizationReceive(
                 onWaitForAuthorization = {
                     notificationManager.send(
-                        MessageListener.Message.State.WaitingUpdateAuthorization(
-                            state.isUpdateForced))
+                        MessageListener.Message.State.WaitingUpdateAuthorization())
                 }, onGrantAuthorization = {
                     channel.send(Message.UpdateGranted)
                 })

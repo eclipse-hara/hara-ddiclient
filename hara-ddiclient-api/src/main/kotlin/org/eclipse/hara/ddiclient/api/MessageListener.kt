@@ -59,15 +59,34 @@ interface MessageListener {
 
             /**
              * Client is waiting for the authorization to start downloading
-             * @property forcedDownload: if true, immediate download is requested from server
              */
-            class WaitingDownloadAuthorization(val forcedDownload:Boolean) : State("Waiting authorization to start download")
+            @Suppress("unused")
+            class WaitingDownloadAuthorization @Deprecated(
+                "The forcedDownload parameter is unnecessary and adds no value",
+                replaceWith = ReplaceWith("WaitingDownloadAuthorization()")
+            )
+            constructor(
+                @Deprecated("The forcedDownload property is unnecessary and represents nothing and it is always false.")
+                val forcedDownload: Boolean = false
+            ) : State("Waiting authorization to start download") {
+
+                constructor() : this(false)
+            }
 
             /**
              * Client is waiting for the authorization to start updating
-             * @property forcedUpdate: if true, immediate update is requested from server
              */
-            class WaitingUpdateAuthorization(val forcedUpdate:Boolean) : State("Waiting authorization to start update")
+            @Suppress("unused")
+            class WaitingUpdateAuthorization @Deprecated(
+                "The forcedUpdate parameter is unnecessary and adds no value",
+                replaceWith = ReplaceWith("WaitingUpdateAuthorization()")
+            ) constructor(
+                @Deprecated("The forcedUpdate property is unnecessary and represents nothing and it is always false.")
+                val forcedUpdate: Boolean = false
+            ) : State("Waiting authorization to start update") {
+
+                constructor() : this(false)
+            }
 
             /**
              * Client is waiting for new requests from server

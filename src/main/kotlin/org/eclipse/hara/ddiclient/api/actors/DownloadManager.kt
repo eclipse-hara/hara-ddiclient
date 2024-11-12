@@ -93,8 +93,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         waitingAuthJob?.cancel()
         waitingAuthJob = launch {
             softRequest.onAuthorizationReceive(onWaitForAuthorization = {
-                notificationManager.send(MessageListener.Message.State
-                    .WaitingDownloadAuthorization(false))
+                notificationManager.send(MessageListener.Message.State.WaitingDownloadAuthorization())
             }, onGrantAuthorization = {
                 channel.send(Message.DownloadGranted)
             })
