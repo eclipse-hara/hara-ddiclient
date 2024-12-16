@@ -1,13 +1,10 @@
-repositories {
-    mavenCentral()
-}
-
 configurations {
     ktlint
 }
 
 dependencies {
-    ktlint "com.pinterest:ktlint:0.34.2"}
+    ktlint "com.pinterest:ktlint:0.34.2"
+}
 
 task checkStyle(type: JavaExec, group: "klint") {
     description = "Check Kotlin code style."

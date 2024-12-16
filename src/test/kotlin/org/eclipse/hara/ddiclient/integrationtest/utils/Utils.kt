@@ -49,7 +49,7 @@ object TestUtils {
     const val tenantName = "DEFAULT"
     val tenantNameToLower = tenantName.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
     val basic = Credentials.basic("test", "test")
-    const val hawkbitUrl = "http://localhost:8081"
+    const val hawkbitUrl = "http://localhost:8080"
     const val downloadRootDirPath = "./build/test/download/"
     const val gatewayToken = "66076ab945a127dd80b15e9011995109"
     val directoryDataProvider = object : DirectoryForArtifactsProvider { override fun directoryForArtifacts(): File = File(

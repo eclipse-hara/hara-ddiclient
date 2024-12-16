@@ -6,7 +6,7 @@ $docker compose up
 
 # DATA
 - Tenant: Default
-- Port: 8081
+- Port: 8080
 
 ## UI
 - username: test

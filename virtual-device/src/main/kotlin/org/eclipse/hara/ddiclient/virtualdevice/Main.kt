@@ -14,6 +14,7 @@ import okhttp3.OkHttpClient
 import org.eclipse.hara.ddiclient.api.HaraClientDefaultImpl
 import org.eclipse.hara.ddiclient.api.HaraClientData
 import org.eclipse.hara.ddiclient.virtualdevice.entrypoint.*
+import org.slf4j.simple.SimpleLogger.DEFAULT_LOG_LEVEL_KEY
 import java.time.Duration
 import kotlin.random.Random.Default.nextLong
 
@@ -21,7 +22,7 @@ val virtualMachineGlobalScope = CoroutineScope(Dispatchers.Default)
 
 fun main() {
     Configuration.apply {
-        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, logLevel)
+        System.setProperty(DEFAULT_LOG_LEVEL_KEY, logLevel)
         val connTimeoutDuration = Duration.ofSeconds(connectTimeout)
         val callTimeoutDuration = Duration.ofSeconds(callTimeout)
         val readTimeoutDuration = Duration.ofSeconds(readTimeout)

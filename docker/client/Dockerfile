@@ -7,7 +7,7 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 #
-FROM eclipse-temurin:11
+FROM eclipse-temurin:17
 
 COPY ./virtual-device /client
 

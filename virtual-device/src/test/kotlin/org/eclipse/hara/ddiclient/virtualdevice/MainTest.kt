@@ -25,7 +25,7 @@ import org.testng.annotations.Test
 class MainTest {
 
     companion object {
-        const val HAWKBIT_URL = "http://localhost:8081"
+        const val HAWKBIT_URL = "http://localhost:8080"
         val BASIC_AUTH = Credentials.basic("test", "test")
         val GATEWAY_TOKEN = "66076ab945a127dd80b15e9011995109"
 

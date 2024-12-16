@@ -66,21 +66,21 @@ to build the `hara-virtual-device` docker image:
 To test the hara-ddiClient library, a hawkbit server is required.
 
 To run the hawkbit server, please follow the instructions provided in the hawkbit Update Server documentation:
-- [hawkbit Update Server](https://kynetics.github.io/hawkbit/gettingstarted/#from-docker-image)
+- [hawkbit Update Server](https://eclipse.dev/hawkbit/gettingstarted/#from-docker-image)
 
-to connect the virtual devices to the hawkbit server, find the gateway token in the ["System Config"](https://www.eclipse.org/hawkbit/concepts/authentication/#ddi-api-authentication-modes) page in Hawkbit server and use the following command:
+to connect the virtual devices to the hawkbit server, find the gateway token in the ["System Config"](https://eclipse.dev/hawkbit/concepts/authentication/#ddi-api-authentication-modes) page in Hawkbit server and use the following command:
 
 ```shell
-docker run -e HAWKBIT_GATEWAY_TOKEN=<gatewaytokenvalue> -e HAWKBIT_CONTROLLER_ID=<mycontrollerid> hara-virtual-device:<virtual-device-version>
+docker run -e HAWKBIT_URL=<hawkbit-server-url> -e HAWKBIT_GATEWAY_TOKEN=<gatewaytokenvalue> -e HAWKBIT_CONTROLLER_ID=<mycontrollerid> hara-virtual-device:<virtual-device-version>
 ```
 
 for example:
 
 ```shell
-docker run -e HAWKBIT_GATEWAY_TOKEN=50f600c6e7e517b98b008311b0a325eb -e HAWKBIT_CONTROLLER_ID=mydevice hara-virtual-device:2.0.0
+docker run -e HAWKBIT_URL='http://localhost:8080' -e HAWKBIT_GATEWAY_TOKEN=50f600c6e7e517b98b008311b0a325eb -e HAWKBIT_CONTROLLER_ID=mydevice hara-virtual-device:2.0.0
 ```
 
-Make sure the authentication method provided in the parameters is enabled in the ["System Config"](https://www.eclipse.org/hawkbit/concepts/authentication/#ddi-api-authentication-modes) page. Available virtual device parameters can be found in the [Configuration class](virtual-device/src/main/kotlin/org/eclipse/hara/ddiclient/virtualdevice/Configuration.kt).
+Make sure the authentication method provided in the parameters is enabled in the ["System Config"](https://eclipse.dev/hawkbit/concepts/authentication/#ddi-api-authentication-modes) page. Available virtual device parameters can be found in the [Configuration class](virtual-device/src/main/kotlin/org/eclipse/hara/ddiclient/virtualdevice/Configuration.kt).
 
 ## API usage
 

@@ -8,8 +8,31 @@
 * SPDX-License-Identifier: EPL-2.0
 */
 
+pluginManagement {
+    repositories {
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
 plugins {
     id "com.gradle.enterprise" version "3.16.1"
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
 }
 
 gradleEnterprise {
@@ -29,5 +52,3 @@ include ':ddi-consumer'
 include ':ddi-consumer:ddi-api'
 include ':hara-ddiclient-api'
 include ':virtual-device'
-
-apply from: 'dependencies.gradle'

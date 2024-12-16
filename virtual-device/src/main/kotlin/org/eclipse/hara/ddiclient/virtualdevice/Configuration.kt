@@ -30,7 +30,7 @@ object Configuration {
     val controllerIdGenerator = { id: Int ->
         System.getenv("HAWKBIT_CONTROLLER_ID")?.let { "${it}_$id" } ?: UUID.randomUUID().toString()
     }
-    val url = env("HAWKBIT_URL", "https://hawkbit.eclipseprojects.io")
+    val url = env("HAWKBIT_URL", "http://localhost:8080")
     val gatewayToken = env("HAWKBIT_GATEWAY_TOKEN", "")
 
     /**

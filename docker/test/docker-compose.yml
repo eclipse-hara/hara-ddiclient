@@ -39,7 +39,7 @@ services:
     ]
 
     ports:
-    - 8081:8080
+    - 8080:8080
 
     networks:
     - hara-network

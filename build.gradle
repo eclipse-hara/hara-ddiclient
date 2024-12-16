@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 /*
 * Copyright © 2017-2024  Kynetics, Inc.
 *
@@ -9,22 +11,14 @@
 */
 
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.8.10'
-    id 'io.gitlab.arturbosch.detekt' version '1.17.1'
-    id 'jacoco'
     id 'java'
-    id 'com.github.jk1.dependency-license-report' version '1.16'
-    id("org.jetbrains.dokka") version "1.6.10"
-    id "org.sonarqube" version "4.4.1.3373"
+    id 'jacoco'
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.license.report)  apply true
+    alias(libs.plugins.dokka)  apply false
+    alias(libs.plugins.sonarqube)  apply true
 }
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-}
-
-final def deps = gradle.settings.app_dependencies
-final def tdeps = gradle.settings.test_dependencies
 final def app_version = '2.0.0'
 ext.keep_test_container_alive = project.hasProperty('keep_test_container_alive') ? project.getProperty('keep_test_container_alive').toBoolean() : false
 
@@ -45,19 +39,16 @@ sonar {
 allprojects {
     apply plugin: 'org.jetbrains.kotlin.jvm'
     apply plugin: 'maven-publish'
-    apply from: "$rootDir/ktlint.gradle"
     apply plugin: 'java'
-    apply plugin: "org.jetbrains.dokka"
     apply plugin: "org.sonarqube"
 
-    repositories {
-        mavenCentral()
-        mavenLocal()
-    }
+    apply from: "$rootDir/ktlint.gradle"
+
     dependencies {
-        implementation deps.kotlin_stdlib
-        implementation deps.kotlin_x
-        implementation deps.joda
+
+        implementation libs.kotlin.stdlib
+        implementation libs.kotlin.coroutines.jdk8
+        implementation libs.joda.time
     }
 
     publishing {
@@ -70,8 +61,17 @@ allprojects {
 
     java {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(11)
-            vendor = JvmVendorSpec.ADOPTOPENJDK
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
+    jacocoTestReport {
+        mustRunAfter test
+        sourceSets sourceSets.main
+
+        reports {
+            xml.required = true
+            html.required = true
         }
     }
 }
@@ -84,20 +84,19 @@ project(':ddi-consumer') {
     dependencies {
         implementation project(subprj)
         implementation project(':hara-ddiclient-api')
-        implementation deps.retrofit_converter
+        implementation libs.retrofit.converter.gson
     }
     allprojects {
         dependencies {
-            implementation deps.okhttp
-            implementation deps.retrofit
-            implementation deps.slf4j_api
-
+            implementation libs.okhttp
+            implementation libs.retrofit
+            implementation libs.slf4j.api
         }
     }
     project(subprj) {
         dependencies {
-            implementation deps.gson
-            testImplementation tdeps.testng
+            implementation libs.gson
+            testImplementation libs.testng
         }
         test {
             useTestNG()
@@ -118,7 +117,7 @@ project(':hara-ddiclient-api') {
     group 'org.eclipse.hara.hara-ddiclient.api'
     version app_version
     dependencies {
-        implementation deps.okhttp
+        implementation libs.okhttp
     }
 }
 
@@ -133,20 +132,22 @@ project(':virtual-device'){
         implementation project(':hara-ddiclient-api')
         implementation project(':ddi-consumer')
         implementation project(':ddi-consumer:ddi-api')
-        implementation deps.slf4j_simple
-        implementation deps.okhttp
-        testImplementation deps.kotlin_stdlib
-        testImplementation deps.kotlin_x
-        testImplementation tdeps.testng
-        testImplementation tdeps.mockk
-        testImplementation deps.retrofit
-        testImplementation deps.okhttp
-        testImplementation deps.okhttp_logging
-        testImplementation deps.retrofit_converter
+
+        implementation libs.okhttp
+        implementation libs.slf4j.simple
+
+        testImplementation libs.kotlin.stdlib
+        testImplementation libs.kotlin.coroutines.jdk8
+        testImplementation libs.testng
+        testImplementation libs.mockk
+        testImplementation libs.retrofit
+        testImplementation libs.okhttp
+        testImplementation libs.okhttp.logging
+        testImplementation libs.retrofit.converter.gson
     }
 
     jacocoTestReport {
-        dependsOn test
+        mustRunAfter test
         sourceSets sourceSets.main
 
         reports {
@@ -163,13 +164,18 @@ project(':virtual-device'){
         afterTest { desc, result ->
             logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
         }
-        finalizedBy jacocoTestReport
     }
 
     mainClassName = 'org.eclipse.hara.ddiclient.virtualdevice.MainKt'
 
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    tasks.withType(KotlinCompile).configureEach {
         kotlinOptions.freeCompilerArgs += ["-opt-in=kotlin.RequiresOptIn"]
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        javaCompiler = javaToolchains.compilerFor {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
     }
 }
 
@@ -183,15 +189,8 @@ boolean doHead(url) {
     }
 }
 
-detekt {
-    toolVersion = "1.17.1"
-    config = files("$rootDir/default-detekt-config.yml", "$rootDir/detekt-config.yml")
-    input = files("$projectDir")
-    buildUponDefaultConfig = true
-}
-
 jacocoTestReport {
-    dependsOn tasks.withType(Test)
+    mustRunAfter test
 
     sourceSets sourceSets.main
     subprojects.each {
@@ -271,7 +270,7 @@ task waitingHawkbitServer(){
     dependsOn 'restartHawkbitServer'
 
     doFirst {
-        def url = 'http://localhost:8081/UI/login'
+        def url = 'http://localhost:8080/UI/login'
         println "Waiting for ${url} ..."
         while (!doHead(url)) {
             sleep(5000)
@@ -301,7 +300,6 @@ test {
     afterTest { desc, result ->
         logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
     }
-    finalizedBy jacocoTestReport
 }
 
 
@@ -309,15 +307,17 @@ dependencies{
     implementation project(':hara-ddiclient-api')
     implementation project(':ddi-consumer')
     implementation project(':ddi-consumer:ddi-api')
-    implementation deps.slf4j_api
-    implementation deps.joda
-    implementation deps.gson
-    implementation deps.retrofit_converter
-    testImplementation tdeps.testng
-    testImplementation deps.kotlin_stdlib
-    testImplementation deps.kotlin_x
-    testImplementation deps.joda
-    testImplementation deps.okhttp
-    testImplementation deps.okhttp_logging
-    testImplementation deps.retrofit
+
+    implementation libs.slf4j.api
+    implementation libs.joda.time
+    implementation libs.gson
+    implementation libs.retrofit.converter.gson
+
+    testImplementation libs.testng
+    testImplementation libs.kotlin.stdlib
+    testImplementation libs.kotlin.coroutines.jdk8
+    testImplementation libs.joda.time
+    testImplementation libs.okhttp
+    testImplementation libs.okhttp.logging
+    testImplementation libs.retrofit
 }
