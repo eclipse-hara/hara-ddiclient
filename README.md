@@ -63,7 +63,12 @@ to build the `hara-virtual-device` docker image:
 ./gradlew buildImage
 ```
 
-to connect the virtual devices to the [hawkBit sandbox](https://hawkbit.eclipseprojects.io/):
+To test the hara-ddiClient library, a hawkbit server is required.
+
+To run the hawkbit server, please follow the instructions provided in the hawkbit Update Server documentation:
+- [hawkbit Update Server](https://kynetics.github.io/hawkbit/gettingstarted/#from-docker-image)
+
+to connect the virtual devices to the hawkbit server, find the gateway token in the ["System Config"](https://www.eclipse.org/hawkbit/concepts/authentication/#ddi-api-authentication-modes) page in Hawkbit server and use the following command:
 
 ```shell
 docker run -e HAWKBIT_GATEWAY_TOKEN=<gatewaytokenvalue> -e HAWKBIT_CONTROLLER_ID=<mycontrollerid> hara-virtual-device:<virtual-device-version>
