@@ -20,37 +20,39 @@ import kotlin.random.Random.Default.nextLong
 
 val virtualMachineGlobalScope = CoroutineScope(Dispatchers.Default)
 
-fun main() {
-    Configuration.apply {
+fun main() = runBlocking(virtualMachineGlobalScope.coroutineContext) {
+    with(Configuration) {
         System.setProperty(DEFAULT_LOG_LEVEL_KEY, logLevel)
         val connTimeoutDuration = Duration.ofSeconds(connectTimeout)
         val callTimeoutDuration = Duration.ofSeconds(callTimeout)
         val readTimeoutDuration = Duration.ofSeconds(readTimeout)
         val writeTimeoutDuration = Duration.ofSeconds(writeTimeout)
+        println("Virtual Device Starting Delay: $virtualDeviceStartingDelay")
 
-        repeat(poolSize) {
-            val clientData = HaraClientData(
-                tenant,
-                controllerIdGenerator.invoke(it),
-                url,
-                gatewayToken
-            )
+        coroutineScope {
+            repeat(poolSize) {
+                val clientData = HaraClientData(
+                    tenant,
+                    controllerIdGenerator.invoke(it),
+                    url,
+                    gatewayToken
+                )
 
-            val httpBuilder = OkHttpClient.Builder()
-                .connectTimeout(connTimeoutDuration)
-                .callTimeout(callTimeoutDuration)
-                .readTimeout(readTimeoutDuration)
-                .writeTimeout(writeTimeoutDuration)
+                val httpBuilder = OkHttpClient.Builder()
+                    .connectTimeout(connTimeoutDuration)
+                    .callTimeout(callTimeoutDuration)
+                    .readTimeout(readTimeoutDuration)
+                    .writeTimeout(writeTimeoutDuration)
 
-            virtualMachineGlobalScope.launch {
-                val delay = nextLong(0, virtualDeviceStartingDelay)
-                println("Virtual Device $it starts in $delay milliseconds")
-                delay(delay)
-                getClient(this, clientData, it, httpBuilder).startAsync()
+                launch {
+                    val delay = nextLong(0, virtualDeviceStartingDelay)
+                    println("Virtual Device $it starts in $delay milliseconds")
+                    delay(delay)
+                    getClient(this, clientData, it, httpBuilder).startAsync()
+                }
             }
         }
     }
-    Unit
 }
 
 private fun getClient(

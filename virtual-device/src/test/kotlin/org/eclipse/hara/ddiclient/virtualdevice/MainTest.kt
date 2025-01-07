@@ -16,6 +16,7 @@ import io.mockk.every
 import io.mockk.mockkObject
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okhttp3.Credentials
 import org.testng.Assert
@@ -52,21 +53,26 @@ class MainTest {
 
     }
 
-    @Test(enabled = true)
+    @Test(enabled = true, timeOut = 60_000)
     fun testVirtualDeviceCreationAndPolling() {
         runBlocking {
-            main()
+            launch {
+                main()
+            }
+            delay(5_000)
 
-            delay(2_000)
-            val targets = managementApi.getAllTargets(BASIC_AUTH)
-            val testTargets =
-                targets.content.filter { devicesControllerId.contains(it.controllerId) }
-            Assert.assertEquals(devicesControllerId.size, testTargets.size)
-            testTargets
-                .forEachIndexed { index, deviceTarget ->
-                    Assert.assertEquals(devicesControllerId[index], deviceTarget.controllerId)
-                    Assert.assertNotNull(deviceTarget.lastControllerRequestAt)
+            do {
+                val targets = managementApi.getAllTargets(BASIC_AUTH).content
+                val testTargets = targets.filter { devicesControllerId.contains(it.controllerId) }
+                testTargets.forEach { target ->
+                    println("Testing device ${target.controllerId}")
+                    Assert.assertNotNull(target.lastControllerRequestAt)
+                    devicesControllerId.remove(target.controllerId)
                 }
+                println("Waiting for ${devicesControllerId.size} remaining devices to poll ...")
+                delay(1_000)
+            } while (devicesControllerId.isNotEmpty())
+
             virtualMachineGlobalScope.cancel()
         }
     }
