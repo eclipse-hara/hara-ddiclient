@@ -24,6 +24,10 @@ import org.joda.time.Duration
 class ActionManager
 private constructor(scope: ActorScope) : AbstractActor(scope) {
 
+    private val isFrequentPollingEnabled: Boolean by lazy {
+        System.getProperty("FREQUENT_POLLING_WHILE_UPDATING", null) == "true"
+    }
+
     private val registry = coroutineContext[HaraClientContext]!!.registry
     private val configDataProvider = coroutineContext[HaraClientContext]!!.configDataProvider
     private val connectionManager = coroutineContext[CMActor]!!.ref
@@ -55,8 +59,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 LOG.info(msg.javaClass.simpleName)
                 become(defaultReceive(state.copy(deployment = null)))
                 child("deploymentManager")!!.close()
-                LOG.info("Restore server ping interval")
-                connectionManager.send(In.SetPing(null))
+                if (isFrequentPollingEnabled) {
+                    LOG.info("Restore server ping interval")
+                    connectionManager.send(In.SetPing(null))
+                }
             }
 
             msg is Out.DeploymentCancelInfo -> onCancelInfo(msg, state)
@@ -64,8 +70,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             msg is Message.UpdateStopped -> {
                 LOG.info("update stopped")
                 become(defaultReceive(state.copy(deployment = null)))
-                LOG.info("Restore server ping interval")
-                connectionManager.send(In.SetPing(null))
+                if (isFrequentPollingEnabled) {
+                    LOG.info("Restore server ping interval")
+                    connectionManager.send(In.SetPing(null))
+                }
             }
 
             state.inDeployment && msg is Out.NoAction -> {
@@ -93,8 +101,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 val deploymentManager = actorOf("deploymentManager") { DeploymentManager.of(it) }
                 become(defaultReceive(state.copy(deployment = msg)))
                 deploymentManager.send(msg)
-                LOG.info("DeploymentInfo msg, decreased ping interval to be reactive on server requests (ping: 30s)")
-                connectionManager.send(In.SetPing(Duration.standardSeconds(30)))
+                if (isFrequentPollingEnabled) {
+                    LOG.info("DeploymentInfo msg, decreased ping interval to be reactive on server requests (ping: 30s)")
+                    connectionManager.send(In.SetPing(Duration.standardSeconds(30)))
+                }
             }
         }
     }
@@ -107,7 +117,9 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                                 CancelFeedbackRequest.Status.Execution.closed,
                                 CancelFeedbackRequest.Status.Result.Finished.success)))
                 notificationManager.send(MessageListener.Message.State.CancellingUpdate)
-                connectionManager.send(In.SetPing(null))
+                if (isFrequentPollingEnabled) {
+                    connectionManager.send(In.SetPing(null))
+                }
             }
 
             !registry.currentUpdateIsCancellable() -> {
@@ -121,8 +133,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             else -> {
                 LOG.warn("DeploymentCancelInfo")
                 child("deploymentManager")!!.send(msg)
-                LOG.info("Restore server ping interval")
-                connectionManager.send(In.SetPing(null))
+                if (isFrequentPollingEnabled) {
+                    LOG.info("Restore server ping interval")
+                    connectionManager.send(In.SetPing(null))
+                }
             }
         }
     }

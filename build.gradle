@@ -292,6 +292,7 @@ test {
     systemProperty("LOG_HTTP", project.findProperty("logHttp") ?: "false")
     systemProperty("LOG_INTERNAL", project.findProperty("logInternal") ?: "false")
     systemProperty("BACKOFF_INTERVAL_SECONDS", 45)
+    systemProperty("FREQUENT_POLLING_WHILE_UPDATING", false)
 
     dependsOn ':virtual-device:test'
 
