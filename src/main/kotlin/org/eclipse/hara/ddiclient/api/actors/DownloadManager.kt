@@ -112,7 +112,8 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             .filter { md5s.contains(it.hashes.md5) }.forEach { at ->
                 val ftd = FileToDownload(at.filename, at.hashes.md5,
                     at._links.download_http?.href ?: "" , wd, at.size)
-                alreadyDownloaded[ftd.md5] = ftd.destination.exists() && ftd.md5 == ftd.destination.md5()
+                alreadyDownloaded[ftd.md5] = ftd.destination.exists() && (ftd.md5 == ftd.destination.md5() ||
+                        (ftd.destinationMd5File.exists() && ftd.md5 == ftd.destinationMd5File.readText()))
             }
 
         if (alreadyDownloaded.isNotEmpty() && !alreadyDownloaded.values.contains(false)) {

@@ -208,6 +208,7 @@ private constructor(
 
                 !fileAlreadyDownloaded && md5CheckResult -> {
                     fileToDownload.onFileSaved()
+                    fileToDownload.destinationMd5File.writeText(md5)
                     channel.send(Message.FileChecked)
                 }
 
@@ -254,6 +255,7 @@ private constructor(
         ) {
             val tempFile = File(folder, "$md5.$DOWNLOADING_EXTENSION")
             val destination = File(folder, md5)
+            val destinationMd5File = File(folder, "$md5.md5")
             fun onFileSaved() = tempFile.renameTo(destination)
         }
 
