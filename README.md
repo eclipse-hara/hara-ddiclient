@@ -171,10 +171,10 @@ For information on the libraries used by this project see [NOTICE](NOTICE.md).
 ## Authors
 
 * **Daniele Sergio** - *Initial work* - [danielesergio](https://github.com/danielesergio).
-* **Andrea Zoleo**
-* **Diego Rondini**
-* **Alberto Battiston**
-* **Saeed Rezaee**
+* **Andrea Zoleo** - [andrea-zoleo](https://github.com/andrea-zoleo)
+* **Diego Rondini** - [diegorondini](https://github.com/diegorondini)
+* **Alberto Battiston** - [albertob13](https://github.com/albertob13)
+* **Saeed Rezaee** - [SaeedRe](https://github.com/SaeedRe)
 
 See also the list of [contributors](https://github.com/eclipse-hara/hara-ddiclient/graphs/contributors) who participated in this project.
 
