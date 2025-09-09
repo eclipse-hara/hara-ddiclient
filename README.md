@@ -63,12 +63,11 @@ to build the `hara-virtual-device` docker image:
 ./gradlew buildImage
 ```
 
-To test the hara-ddiClient library, a hawkbit server is required.
+To test the hara-ddiclient library, a hawkBit server is required.
 
-To run the hawkbit server, please follow the instructions provided in the hawkbit Update Server documentation:
-- [hawkbit Update Server](https://eclipse.dev/hawkbit/gettingstarted/#from-docker-image)
+To run the hawkBit server, please follow the instructions provided in the [hawkBit Update Server documentation](https://eclipse.dev/hawkbit/gettingstarted/#from-docker-image).
 
-to connect the virtual devices to the hawkbit server, find the gateway token in the ["System Config"](https://eclipse.dev/hawkbit/concepts/authentication/#ddi-api-authentication-modes) page in Hawkbit server and use the following command:
+To connect virtual devices to the hawkBit server, find the gateway token in the ["System Config"](https://eclipse.dev/hawkbit/concepts/authentication/#ddi-api-authentication-modes) page or obtain it with the [Management API](https://eclipse.dev/hawkbit/rest-api/mgmt.html#tag/System-Configuration/operation/getTenantConfiguration) and use the following command:
 
 ```shell
 docker run -e HAWKBIT_URL=<hawkbit-server-url> -e HAWKBIT_GATEWAY_TOKEN=<gatewaytokenvalue> -e HAWKBIT_CONTROLLER_ID=<mycontrollerid> hara-virtual-device:<virtual-device-version>
@@ -170,16 +169,16 @@ For information on the libraries used by this project see [NOTICE](NOTICE.md).
 
 ## Authors
 
-* **Daniele Sergio** - *Initial work* - [danielesergio](https://github.com/danielesergio).
+* **Saeed Rezaee**
+* **Daniele Sergio**
 * **Andrea Zoleo**
 * **Diego Rondini**
 * **Alberto Battiston**
-* **Saeed Rezaee**
 
 See also the list of [contributors](https://github.com/eclipse-hara/hara-ddiclient/graphs/contributors) who participated in this project.
 
 ## License
 
-Copyright © 2017-2024, [Kynetics, Inc](https://www.kynetics.com).
+Copyright © 2017-2025, [Kynetics, Inc](https://www.kynetics.com).
 
 Released under the [EPLv2 License](https://www.eclipse.org/legal/epl-2.0).
