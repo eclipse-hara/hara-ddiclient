@@ -70,6 +70,7 @@ interface MessageListener {
                 val forcedDownload: Boolean = false
             ) : State("Waiting authorization to start download") {
 
+                @Suppress("DEPRECATION")
                 constructor() : this(false)
             }
 
@@ -85,6 +86,7 @@ interface MessageListener {
                 val forcedUpdate: Boolean = false
             ) : State("Waiting authorization to start update") {
 
+                @Suppress("DEPRECATION")
                 constructor() : this(false)
             }
 
