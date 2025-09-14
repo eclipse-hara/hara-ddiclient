@@ -61,7 +61,7 @@ object Configuration {
      *  3- client = kotlin
      *
      */
-    val targetAttributes = env("HARA_TARGET_ATTRIBUTES","client,kotlin virtual device")
+    val targetAttributes = env("HARA_TARGET_ATTRIBUTES","client,Hara virtual device")
 
     /**
      *
