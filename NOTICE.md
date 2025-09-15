@@ -31,53 +31,47 @@ The project maintains the following source code repositories:
 
 ## Third-Party Content
 
-gson (2.8.9)
+gson (2.13.2)
 
     * License: Apache 2.0
     * Project: https://github.com/google/gson
-    * Source:  https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.9/gson-2.8.9-sources.jar
+    * Source:  https://repo1.maven.org/maven2/com/google/code/gson/gson/2.13.2/gson-2.13.2-sources.jar
 
-okhttp (4.9.3)
+okhttp (5.1.0)
 
     * License: Apache 2.0
     * Project: https://square.github.io/okhttp/
-    * Source:  https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/4.9.3/okhttp-4.9.3-sources.jar
+    * Source:  https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/5.1.0/okhttp-5.1.0-sources.jar
 
-converter-gson (2.9.0)
-
-    * License: Apache 2.0
-    * Project: https://github.com/square/retrofit
-    * Source:  https://repo1.maven.org/maven2/com/squareup/retrofit2/converter-gson/2.9.0/converter-gson-2.9.0-sources.jar
-
-retrofit (2.9.0)
+retrofit (3.0.0)
 
     * License: Apache 2.0
     * Project: https://github.com/square/retrofit
-    * Source:  https://repo1.maven.org/maven2/com/squareup/retrofit2/retrofit/2.9.0/retrofit-2.9.0-sources.jar
+    * Source:  https://repo1.maven.org/maven2/com/squareup/retrofit2/retrofit/3.0.0/retrofit-3.0.0-sources.jar
 
-joda-time (2.10.13)
+joda-time (2.14.0)
 
     * License: Apache 2.0
     * Project: https://www.joda.org/joda-time/
-    * Source:  https://repo1.maven.org/maven2/joda-time/joda-time/2.10.13/joda-time-2.10.13-sources.jar
+    * Source:  https://repo1.maven.org/maven2/joda-time/joda-time/2.14.0/joda-time-2.14.0-sources.jar
 
-kotlin-stdlib-jdk8 (1.6.10)
+kotlin-stdlib-jdk8 (2.2.20)
 
     * License: Apache 2.0
     * Project: https://kotlinlang.org/
-    * Source:  https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.6.10/kotlin-stdlib-jdk8-1.6.10-sources.jar
+    * Source:  https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-jdk8/2.2.20/kotlin-stdlib-jdk8-2.2.20-sources.jar
 
-kotlinx-coroutines-jdk8 (1.6.1)
+kotlinx-coroutines-jdk8 (1.10.2)
 
     * License: Apache 2.0
     * Project: https://github.com/Kotlin/kotlinx.coroutines
-    * Source:  https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-jdk8/1.6.1/kotlinx-coroutines-jdk8-1.6.1-sources.jar
+    * Source:  https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-jdk8/1.10.2/kotlinx-coroutines-jdk8-1.10.2-sources.jar
 
-slf4j-api (1.7.33)
+slf4j-api (2.0.17)
 
     * License: MIT
     * Project: http://www.slf4j.org
-    * Source:  https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.33/slf4j-api-1.7.33-sources.jar
+    * Source:  https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17-sources.jar
 
 ## Cryptography
 
