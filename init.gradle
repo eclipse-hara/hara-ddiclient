@@ -1,0 +1,65 @@
+/*
+ *
+ *  * Copyright © 2017-2024  Kynetics  LLC
+ *  *
+ *  * This program and the accompanying materials are made
+ *  * available under the terms of the Eclipse Public License 2.0
+ *  * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *  *
+ *  * SPDX-License-Identifier: EPL-2.0
+ *
+ */
+
+initscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "org.cyclonedx:cyclonedx-gradle-plugin:2.3.1"
+    }
+}
+
+def hara_version = "5c14fba22f"
+
+allprojects {
+    apply plugin: org.cyclonedx.gradle.CycloneDxPlugin
+    cyclonedxBom {
+
+        includeConfigs = [
+                "implementation",
+                "runtimeClasspath",
+                "debugImplementation",
+                "releaseImplementation",
+                "debugRuntimeClasspath",
+                "releaseRuntimeClasspath"
+        ]
+
+        skipConfigs = [".*test.*", ".*Test.*", ".*virtual-device.*", "compileOnly"]
+        skipProjects = [":virtual-device"]
+
+        projectType = "application"
+        setComponentName("hara-ddiclient")
+        componentVersion = "" + hara_version
+
+
+        destination = file("build/reports")
+        outputName = "hara-ddiclient-$hara_version"
+        outputFormat = "json"
+
+        schemaVersion = "1.6"
+        includeBomSerialNumber = true
+        includeLicenseText = true
+
+        setOrganizationalEntity { org ->
+            org.name = "Kynetics, Inc."
+            org.urls = ["https://kynetics.com"]
+        }
+
+        setVCSGit {
+            it.type = org.cyclonedx.model.ExternalReference.Type.WEBSITE
+            it.url = "https://kynetics.com"
+        }
+    }
+}
