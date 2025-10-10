@@ -147,6 +147,7 @@ private constructor(
                         bytes = inputStream.read(buffer)
                     }
                 }
+                file.setReadable(true, false)
             }
         }.also {
             timer.purge()

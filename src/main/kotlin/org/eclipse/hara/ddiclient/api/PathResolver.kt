@@ -20,15 +20,15 @@ class PathResolver(private val dfap: DirectoryForArtifactsProvider) {
 
     fun fromArtifact(id: String): (artifact: Updater.SwModule.Artifact) -> String {
         return { artifact ->
-            File(dfap.directoryForArtifacts(), "$ROOT/$id/${artifact.hashes.md5}").absolutePath
+            File(dfap.directoryForArtifacts(), artifact.hashes.md5).absolutePath
         }
     }
 
     fun baseDirectory(): File {
-        return File(dfap.directoryForArtifacts(), ROOT)
+        return dfap.directoryForArtifacts()
     }
 
     fun updateDir(actionId: String): File {
-        return File(baseDirectory(), actionId)
+        return baseDirectory()
     }
 }
