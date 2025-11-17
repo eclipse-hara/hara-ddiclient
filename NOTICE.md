@@ -37,11 +37,11 @@ gson (2.13.2)
     * Project: https://github.com/google/gson
     * Source:  https://repo1.maven.org/maven2/com/google/code/gson/gson/2.13.2/gson-2.13.2-sources.jar
 
-okhttp (5.1.0)
+okhttp (4.12.0)
 
     * License: Apache 2.0
     * Project: https://square.github.io/okhttp/
-    * Source:  https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/5.1.0/okhttp-5.1.0-sources.jar
+    * Source:  https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/4.12.0/okhttp-4.12.0-sources.jar
 
 retrofit (3.0.0)
 
