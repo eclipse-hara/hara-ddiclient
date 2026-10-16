@@ -14,6 +14,7 @@ import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.runBlocking
 
 @OptIn(ObsoleteCoroutinesApi::class)
 class RootActor
@@ -31,7 +32,8 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         val nmActor = actorOf("notificationManager") { NotificationManager.of(it) }
         val cmActor = actorOf("connectionManager", NMActor(nmActor)) { ConnectionManager.of(it) }
         val ctxt = CMActor(cmActor).plus(NMActor(nmActor))
-        actorOf("actionManager", ctxt) { ActionManager.of(it) }
+        val amActor = actorOf("actionManager", ctxt) { ActionManager.of(it) }
+        runBlocking { cmActor.send(In.Register(amActor)) }
         become(mainReceive())
     }
 

@@ -17,7 +17,6 @@ import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.Out.Err.ErrMsg
 import org.eclipse.hara.ddiclient.api.MessageListener
 import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.runBlocking
 import org.joda.time.Duration
 
 @OptIn(ObsoleteCoroutinesApi::class)
@@ -155,7 +154,6 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     }
     init {
         become(defaultReceive(State()))
-        runBlocking { connectionManager.send(In.Register(channel)) }
     }
 
     companion object {

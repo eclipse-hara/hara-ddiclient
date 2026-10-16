@@ -266,7 +266,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     }
 
     private suspend fun send(msg: Out, state: State) {
-        state.receivers.forEach { it.send(msg) }
+        state.receivers.forEach { it.sendMessageToChannelIfOpen(msg) }
     }
 
     init {
