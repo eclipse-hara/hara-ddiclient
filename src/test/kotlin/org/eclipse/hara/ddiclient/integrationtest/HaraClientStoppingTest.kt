@@ -34,7 +34,9 @@ import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils
 import org.eclipse.hara.ddiclient.integrationtest.utils.internalLog
 import org.eclipse.hara.ddiclient.integrationtest.utils.logCurrentFunctionName
 import org.testng.annotations.AfterClass
+import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
+import java.io.File
 import kotlin.coroutines.cancellation.CancellationException
 
 class HaraClientStoppingTest : AbstractTest() {
@@ -63,10 +65,16 @@ class HaraClientStoppingTest : AbstractTest() {
     }
 
 
+    @BeforeMethod
+    fun cleanDownloadDirectory() {
+        File(TestUtils.downloadRootDirPath).listFiles()?.forEach { it.deleteRecursively() }
+    }
+
     @AfterClass
     override fun afterTest() {
         super.afterTest()
         setPollingTime("00:00:10")
+        cleanDownloadDirectory()
     }
 
     @Test(enabled = true, priority = 41, timeOut = 45_000, invocationCount = 1)
