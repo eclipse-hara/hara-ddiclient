@@ -95,11 +95,11 @@ Submit a pull request via the normal GitHub UI (desktop or web).
 ## Reporting a security vulnerability
 
 If you find a vulnerability, **DO NOT** disclose it in the public immediately! Instead, give us the possibility to fix it beforehand.
-So please don’t report your finding using GitHub issues and better head over to [https://eclipse.org/security](https://eclipse.org/security) and learn how to disclose a vulnerability in a safe and responsible manner
+So please don’t report your finding using GitHub issues and better head over to [https://www.eclipse.org/security/](https://www.eclipse.org/security/) and learn how to disclose a vulnerability in a safe and responsible manner
 
 ## Further information
 
-* [Eclipse Hara Project Page](http://projects.eclipse.org/projects/iot.hara)
+* [Eclipse Hara Project Page](https://projects.eclipse.org/projects/iot.hawkbit.hara)
 
 ## Contact
 

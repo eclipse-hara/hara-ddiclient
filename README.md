@@ -3,13 +3,13 @@
 <p align="center">
 <a href="https://github.com/eclipse-hara/hara-ddiclient/actions/workflows/pipeline-build.yml"><img alt="Build Status" src="https://github.com/eclipse-hara/hara-ddiclient/actions/workflows/pipeline-build.yml/badge.svg"></a>
 <a href="https://sonarcloud.io/summary/new_code?id=eclipse-hara_hara-ddiclient"><img alt="Quality Gate Status" src="https://sonarcloud.io/api/project_badges/measure?project=eclipse-hara_hara-ddiclient&metric=alert_status"></a>
-<a href="https://www.eclipse.org/legal/epl-2.0"><img alt="EPL-2.0 License" src="https://img.shields.io/badge/License-EPL%202.0-red.svg"></a>
+<a href="https://www.eclipse.org/legal/epl-2.0/"><img alt="EPL-2.0 License" src="https://img.shields.io/badge/License-EPL%202.0-red.svg"></a>
 <a href="#contributing"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg"></a>
 </p>
 
 Hara-ddiclient is a Kotlin library that facilitates and speeds up the development
-of [DDI API](https://www.eclipse.org/hawkbit/apis/ddi_api/) clients for devices 
-connecting to [hawkBit](https://eclipse.org/hawkbit/) servers. It can be used from
+of [DDI API](https://hawkbit.eclipse.dev/rest-api/ddi.html) clients for devices
+connecting to [hawkBit](https://hawkbit.eclipse.dev/) servers. It can be used from
 any JVM compatible language (Java, Kotlin, etc).
 Hara-ddiclient is part of the [Eclipse Hara™ project](https://projects.eclipse.org/projects/iot.hawkbit.hara)
 
@@ -65,9 +65,9 @@ to build the `hara-virtual-device` docker image:
 
 To test the hara-ddiclient library, a hawkBit server is required.
 
-To run the hawkBit server, please follow the instructions provided in the [hawkBit Update Server documentation](https://eclipse.dev/hawkbit/gettingstarted/#from-docker-image).
+To run the hawkBit server, please follow the instructions provided in the [hawkBit Update Server documentation](https://hawkbit.eclipse.dev/#/quick-start?id=from-docker-image).
 
-To connect virtual devices to the hawkBit server, find the gateway token in the ["System Config"](https://eclipse.dev/hawkbit/concepts/authentication/#ddi-api-authentication-modes) page or obtain it with the [Management API](https://eclipse.dev/hawkbit/rest-api/mgmt.html#tag/System-Configuration/operation/getTenantConfiguration) and use the following command:
+To connect virtual devices to the hawkBit server, find the gateway token in the ["System Config"](https://hawkbit.eclipse.dev/#/authentication?id=ddi-api-authentication-modes) page or obtain it with the [Management API](https://hawkbit.eclipse.dev/rest-api/mgmt.html#tag/System-Configuration/operation/getTenantConfiguration) and use the following command:
 
 ```shell
 docker run -e HAWKBIT_URL=<hawkbit-server-url> -e HAWKBIT_GATEWAY_TOKEN=<gatewaytokenvalue> -e HAWKBIT_CONTROLLER_ID=<mycontrollerid> hara-virtual-device:<virtual-device-version>
@@ -79,12 +79,12 @@ for example:
 docker run -e HAWKBIT_URL='http://localhost:8080' -e HAWKBIT_GATEWAY_TOKEN=50f600c6e7e517b98b008311b0a325eb -e HAWKBIT_CONTROLLER_ID=mydevice hara-virtual-device:2.0.0
 ```
 
-Make sure the authentication method provided in the parameters is enabled in the ["System Config"](https://eclipse.dev/hawkbit/concepts/authentication/#ddi-api-authentication-modes) page. Available virtual device parameters can be found in the [Configuration class](virtual-device/src/main/kotlin/org/eclipse/hara/ddiclient/virtualdevice/Configuration.kt).
+Make sure the authentication method provided in the parameters is enabled in the ["System Config"](https://hawkbit.eclipse.dev/#/authentication?id=ddi-api-authentication-modes) page. Available virtual device parameters can be found in the [Configuration class](virtual-device/src/main/kotlin/org/eclipse/hara/ddiclient/virtualdevice/Configuration.kt).
 
 ## API usage
 
 To learn how to use the hara-ddiclient library:
-1. read the [APIs documentation](https://eclipse.github.io/hara-ddiclient/)
+1. read the [APIs documentation](https://eclipse-hara.github.io/hara-ddiclient/)
 1. follow the [API usage example instructions](#api-usage-example)
 1. poke around the [virtual-device source code](virtual-device/src/main/kotlin/org/eclipse/hara/ddiclient/virtualdevice/)
 
@@ -156,7 +156,7 @@ Create the Client, add the provider and return the client:
 
 ## Contributing
 
-To contribute to this project please [open a GitHub pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests).
+To contribute to this project please [open a GitHub pull request](https://docs.github.com/en/pull-requests/reference/pull-requests).
 
 ## Contact us
 
@@ -179,6 +179,6 @@ See also the list of [contributors](https://github.com/eclipse-hara/hara-ddiclie
 
 ## License
 
-Copyright © 2017-2025, [Kynetics, Inc](https://www.kynetics.com).
+Copyright © 2017-2026, [Kynetics, Inc](https://www.kynetics.com).
 
-Released under the [EPLv2 License](https://www.eclipse.org/legal/epl-2.0).
+Released under the [EPLv2 License](https://www.eclipse.org/legal/epl-2.0/).
