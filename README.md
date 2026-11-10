@@ -63,6 +63,12 @@ to build the `hara-virtual-device` docker image:
 ./gradlew buildImage
 ```
 
+The build needs JDK 17, but the libraries are compiled for Java 8, so they run on Java 8 and later (the tests need Java 11 or later). To run one deployment against a fake server on a real Java 8 runtime (a Java 8 installation that Gradle can find is required):
+
+```shell
+./gradlew java8Smoke
+```
+
 To test the hara-ddiclient library, a hawkBit server is required.
 
 To run the hawkBit server, please follow the instructions provided in the [hawkBit Update Server documentation](https://hawkbit.eclipse.dev/#/quick-start?id=from-docker-image).

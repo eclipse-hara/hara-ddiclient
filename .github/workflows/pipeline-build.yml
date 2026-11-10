@@ -28,6 +28,14 @@ jobs:
           if: ${{ matrix.os == 'macos-15-intel' && github.event_name == 'pull_request' }}
           uses: douglascamata/setup-docker-macos-action@d5ccc6aae0ce23e7700154f5e63cc53e6433ac48 # v1.1.0
 
+        #Java 8 for the smoke check only (set up before JDK 17, which stays the default)
+        - name: Set up JDK 8
+          if: ${{ matrix.os == 'ubuntu-latest' }}
+          uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+          with:
+            distribution: 'temurin'
+            java-version: 8
+
         - name: Set up JDK 17
           uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
           with:
@@ -65,5 +73,11 @@ jobs:
               else
                   ./gradlew --info build sonar
               fi
+          shell: bash
+
+        #The library modules are built for Java 8: run one deployment on a real Java 8 runtime
+        - name: Java 8 smoke check
+          if: ${{ matrix.os == 'ubuntu-latest' }}
+          run: ./gradlew java8Smoke -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8_X64
           shell: bash
 
