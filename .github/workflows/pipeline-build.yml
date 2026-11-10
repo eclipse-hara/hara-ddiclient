@@ -48,7 +48,7 @@ jobs:
             key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
             restore-keys: ${{ runner.os }}-gradle
 
-        #Build without test on Windows or macOS (when not a PR)
+        #Build with unit tests only (no Docker) on Windows or macOS (when not a PR)
         - name: Gradle build
           env:
             SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -57,7 +57,7 @@ jobs:
             SONAR_CLOUD_PROJECT_NAME: ${{ vars.SONAR_CLOUD_PROJECT_NAME }}
           run: |
               if [[ "$RUNNER_OS" == "Windows" || ( "$RUNNER_OS" == "macOS" && ${{ github.event_name }} != 'pull_request' ) ]]; then
-                  ./gradlew build -x test
+                  ./gradlew build -x test unitTest
               elif [[ ${{ github.event_name }} == 'pull_request' && ${{ github.event.pull_request.head.repo.full_name != 'eclipse-hara/hara-ddiclient' }} == true ]]; then
                   ./gradlew --info build
               elif [[ -z "$SONAR_CLOUD_ORGANIZATION" ]]; then
