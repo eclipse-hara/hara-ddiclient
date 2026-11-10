@@ -29,7 +29,6 @@ import org.eclipse.hara.ddiclient.api.HaraClientData
 import org.eclipse.hara.ddiclient.api.HaraClientDefaultImpl
 import org.eclipse.hara.ddiclient.api.MessageListener
 import org.eclipse.hara.ddiclient.api.Updater
-import org.eclipse.hara.ddiclient.integrationtest.api.management.Action
 import org.eclipse.hara.ddiclient.integrationtest.utils.TestUtils
 import org.eclipse.hara.ddiclient.integrationtest.utils.addOkhttpLogger
 import org.eclipse.hara.ddiclient.integrationtest.utils.internalLog
@@ -132,7 +131,7 @@ abstract class AbstractDeploymentTest : AbstractTest() {
             deployment.deploymentInfo.forEach { deploymentInfo ->
 
                 while (managementApi.getActionAsync(TestUtils.basic, deployment.targetId,
-                        deploymentInfo.actionId).status != Action.Status.finished
+                        deploymentInfo.actionId).active
                 ) {
                     delay(5.seconds)
                 }

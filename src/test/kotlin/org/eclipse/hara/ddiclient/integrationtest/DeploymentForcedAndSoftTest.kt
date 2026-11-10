@@ -90,7 +90,7 @@ class DeploymentForcedAndSoftTest : AbstractDeploymentTest() {
                     ActionStatus.ContentEntry.Type.canceled,
                     listOf(
                         "Update Server: Cancellation confirmed.",
-                        "Update Server: Cancellation completion is finished sucessfully."
+                        "Update Server: Cancellation completion is finished successfully."
                     )
                 ),
                 ActionStatus.ContentEntry(
@@ -309,19 +309,19 @@ class DeploymentForcedAndSoftTest : AbstractDeploymentTest() {
         ),
         ActionStatus.ContentEntry(
             ActionStatus.ContentEntry.Type.download,
-            listOf("Update Server: Target downloads /${TestUtils.tenantNameToLower}/controller/v1/$target/softwaremodules/2/artifacts/test_2")
+            listOf("Update Server: Target downloads /${TestUtils.tenantName}/controller/v1/$target/softwaremodules/2/artifacts/test_2")
         ),
         ActionStatus.ContentEntry(
             ActionStatus.ContentEntry.Type.download,
-            listOf("Update Server: Target downloads /${TestUtils.tenantNameToLower}/controller/v1/$target/softwaremodules/2/artifacts/test_3")
+            listOf("Update Server: Target downloads /${TestUtils.tenantName}/controller/v1/$target/softwaremodules/2/artifacts/test_3")
         ),
         ActionStatus.ContentEntry(
             ActionStatus.ContentEntry.Type.download,
-            listOf("Update Server: Target downloads /${TestUtils.tenantNameToLower}/controller/v1/$target/softwaremodules/1/artifacts/test_1")
+            listOf("Update Server: Target downloads /${TestUtils.tenantName}/controller/v1/$target/softwaremodules/1/artifacts/test_1")
         ),
         ActionStatus.ContentEntry(
             ActionStatus.ContentEntry.Type.download,
-            listOf("Update Server: Target downloads /${TestUtils.tenantNameToLower}/controller/v1/$target/softwaremodules/3/artifacts/test_4")
+            listOf("Update Server: Target downloads /${TestUtils.tenantName}/controller/v1/$target/softwaremodules/3/artifacts/test_4")
         ),
         ActionStatus.ContentEntry(
             ActionStatus.ContentEntry.Type.running,

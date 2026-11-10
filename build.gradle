@@ -179,9 +179,10 @@ project(':virtual-device'){
     }
 }
 
-boolean doHead(url) {
+boolean doGet(url, user, password) {
     def connection = new URL(url).openConnection()
-    connection.requestMethod = 'HEAD'
+    connection.setRequestProperty('Authorization',
+            'Basic ' + "${user}:${password}".bytes.encodeBase64().toString())
     try {
         connection.responseCode == 200
     } catch (IOException error) {
@@ -269,10 +270,11 @@ task waitingHawkbitServer(){
 
     dependsOn 'restartHawkbitServer'
 
+    // docker/test/seed.sh creates distribution set 3 last: once it exists, the server is seeded
     doFirst {
-        def url = 'http://localhost:8080/UI/login'
+        def url = 'http://localhost:8080/rest/v1/distributionsets/3'
         println "Waiting for ${url} ..."
-        while (!doHead(url)) {
+        while (!doGet(url, 'test', 'test')) {
             sleep(5000)
             println "Waiting for ${url} ..."
         }
@@ -295,6 +297,12 @@ test {
     systemProperty("FREQUENT_POLLING_WHILE_UPDATING", false)
 
     dependsOn ':virtual-device:test'
+
+    // Files left by a failed run would be reported as "already downloaded" and break the
+    // next run (see TestUtils.downloadRootDirPath)
+    doFirst {
+        delete 'build/test/download'
+    }
 
     useTestNG()
 

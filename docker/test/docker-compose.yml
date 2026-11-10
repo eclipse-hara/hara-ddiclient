@@ -1,5 +1,5 @@
 #
-# Copyright © 2017-2024  Kynetics, Inc.
+# Copyright © 2017-2026  Kynetics, Inc. and others
 #
 # This program and the accompanying materials are made
 # available under the terms of the Eclipse Public License 2.0
@@ -7,72 +7,34 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 #
+# hawkBit 1.x with its in-memory database: every "docker compose up" starts empty and the
+# seed service fills it with the data the tests expect (see seed.sh).
 services:
 
   update-server:
-    image: hawkbit/hawkbit-update-server:0.4.1-mysql
-
-    environment:
-    - JAVA_STD_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n
-    - JAVA_NOSTD_OPTIONS=-Xmx768m -Xss300K
-    - JAVA_ADV_RUNTIME_OPTIONS=-XX:+UseCompressedOops
-    - JAVA_ADV_SERVICEABILITY_OPTIONS=-XX:+HeapDumpOnOutOfMemoryError
-    - JAVA_ADV_GC_OPTIONS=-XX:MaxMetaspaceSize=250m -XX:MetaspaceSize=250m -XX:+UseG1GC -XX:+UseStringDeduplication
-    - JAVA_ARGS=--spring.profiles.active=mockIam,withMariaDB
-    - SPRING_DATASOURCE_URL=jdbc:mariadb://maria-db:3306/hawkbit?useMysqlMetadata=true
-
-    command: [
-      "--spring.datasource.url=jdbc:mariadb://maria-db:3306/hawkbit?useMysqlMetadata=true",
-      "--spring.datasource.username=hawkbit",
-      "--spring.datasource.password=1234",
-      "--spring.security.user.name=test",
-      "--spring.security.user.password={noop}test",
-      "--hawkbit.server.ui.demo.disclaimer=Test configuration",
-      "--spring.http.multipart.max-file-size=3072MB",
-      "--hawkbit.server.security.dos.maxArtifactSize=3073741824",
-      "--hawkbit.server.security.dos.maxArtifactStorage=3073741824",
-      "--hawkbit.artifact.url.protocols.download-http.protocol=http",
-      "--hawkbit.artifact.url.protocols.download-http.port=8080",
-      "--hawkbit.dmf.rabbitmq.enabled=false",
-      "--management.health.rabbit.enabled=false",
-      "--hawkbit.controller.minPollingTime=00:00:01",
-    ]
-
-    ports:
-    - 8080:8080
-
-    networks:
-    - hara-network
-
+    image: hawkbit/hawkbit-update-server:1.1.0
     volumes:
-    - ./artifactrepo:/artifactrepo:Z
-    depends_on:
-      maria-db:
-        condition: service_healthy
+      - ./application.properties:/app/config/application.properties:ro
+    ports:
+      - 8080:8080
+    networks:
+      - hara-network
 
   # ------------------------------------------------
 
-  maria-db:
-    image: mariadb:10.6
+  seed:
+    image: curlimages/curl:8.16.0
+    entrypoint: ["sh", "/seed.sh"]
+    environment:
+      - HAWKBIT_URL=http://update-server:8080
+    volumes:
+      - ./seed.sh:/seed.sh:ro
+      - ./artifactrepo/DEFAULT:/fixtures:ro
     networks:
       - hara-network
-    environment:
-      - MYSQL_ROOT_PASSWORD=secret
-      - MYSQL_USER=hawkbit
-      - MYSQL_PASSWORD=1234
-      - MYSQL_DATABASE=hawkbit
-    volumes:
-      - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql:Z
-    ports:
-      - 3307:3306
-    healthcheck:
-      test: '/bin/sh -c "mysqladmin -u$$MYSQL_USER -P3306 -p$$MYSQL_PASSWORD ping"'
-      interval: 10s
-      start_period: 30s
-      timeout: 2m
-      retries: 10
+    depends_on:
+      - update-server
 
   # ------------------------------------------------
 networks:
   hara-network:
-

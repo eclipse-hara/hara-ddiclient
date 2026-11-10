@@ -1,41 +1,35 @@
 # LAUNCH UPDATE-SERVER
 
 ```$shell
-$docker compose up
+cd test
+docker compose up
 ```
 
+`./gradlew test` does the same and waits until the server is seeded.
+
+The server is hawkBit 1.1.0 with its in-memory database: every start is empty, and the `seed`
+service fills it through the Management API ([seed.sh](test/seed.sh)). The artifact files are
+in `test/artifactrepo`.
+
 # DATA
-- Tenant: Default
+- Tenant: DEFAULT
 - Port: 8080
 
-## UI
+## MANAGEMENT API
 - username: test
 - password: test
 
 ## SOFTWARE MODULES
-- os: type os, 1 file named test_4
-- app: type app, 1 file named test_1
-- apps: type app, 2 file named test_2, test_3
+- app (id 1): type application, 1 file named test_1
+- apps (id 2): type application, 2 files named test_2, test_3
+- os (id 3): type os, 1 file named test_4
 
 ## DISTRIBUTIONS
-- osWithApps: type os with apps, with app, apps and os software module
-- os: type os, with software module named os
-- app: type app, with softwrae module named app
+- osWithApps (id 1): type os with apps, with app, apps and os software modules
+- os (id 2): type os, with software module os
+- app (id 3): type app, with software module app
 
 ## DDI SECURITY:
-- Gataway token: 66076ab945a127dd80b15e9011995109
-- Target1 target token: 447fb8b5b3ea156470e852b94166a673
-- Target2 target token: 0fe7b8c9de2102ec6bf305b6f66df5b2
-- Target3 target token: 4a28d893bb841def706073c789c0f3a7
+- Gateway token: 66076ab945a127dd80b15e9011995109
 
-## Server request:
-- Target1 server request: 
-  * put target metadata
-  * cancel update osWithApps;
-  * apply update app;
-- Target2 server request:
-  * put target metadata
-  * apply update os
-- Target3 server request:
-  * put target metadata
-  * apply osWithApps
+The tests create their own targets.
