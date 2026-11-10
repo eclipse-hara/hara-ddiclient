@@ -20,11 +20,9 @@ data class ActionStatus(val content: Set<ContentEntry>, val total: Int = content
     }
 }
 
-data class Action(val status: Status) {
-    enum class Status {
-        finished, pending
-    }
-}
+// hawkBit 1.x reports the detailed status (finished, canceled, error, ...);
+// "active" turns false whatever way the action was closed
+data class Action(val active: Boolean)
 
 data class ServerSystemConfig(val value: Any)
 

@@ -20,7 +20,6 @@ import org.eclipse.hara.ddiclient.api.DirectoryForArtifactsProvider
 import org.eclipse.hara.ddiclient.api.DownloadBehavior
 import org.eclipse.hara.ddiclient.integrationtest.api.management.ActionStatus
 import java.io.File
-import java.util.*
 
 val LOG_HTTP: Boolean = System.getProperty("LOG_HTTP", "false").toBoolean()
 val LOG_INTERNAL: Boolean = System.getProperty("LOG_INTERNAL", "false").toBoolean()
@@ -47,7 +46,6 @@ object TestUtils {
     }
 
     const val tenantName = "DEFAULT"
-    val tenantNameToLower = tenantName.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
     val basic = Credentials.basic("test", "test")
     const val hawkbitUrl = "http://localhost:8080"
     const val downloadRootDirPath = "./build/test/download/"
@@ -182,7 +180,7 @@ object TestUtils {
         ActionStatus.ContentEntry(
             ActionStatus.ContentEntry.Type.download,
             listOf(
-                "Update Server: Target downloads /$tenantNameToLower/controller/v1/$targetId/softwaremodules/$softwareModuleId/artifacts/$fileName")
+                "Update Server: Target downloads /$tenantName/controller/v1/$targetId/softwaremodules/$softwareModuleId/artifacts/$fileName")
         ),
         ActionStatus.ContentEntry(
             ActionStatus.ContentEntry.Type.running,
