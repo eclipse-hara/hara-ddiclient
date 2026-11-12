@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 /*
@@ -57,6 +58,31 @@ allprojects {
                 from components.java
             }
         }
+    }
+
+    // Build with JDK 17 but emit Java 8 bytecode, checked against the Java 8 API,
+    // so the same jars run on Java 8 and later. `./gradlew java8Smoke` runs them on Java 8
+    tasks.named('compileKotlin', KotlinCompile) {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_1_8
+            freeCompilerArgs.add("-Xjdk-release=1.8")
+        }
+    }
+
+    tasks.named('compileJava', JavaCompile) {
+        options.release = 8
+    }
+
+    // Tests: Java 11, the minimum of the test libraries (TestNG), so they run on Java 11 and later
+    tasks.named('compileTestKotlin', KotlinCompile) {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_11
+            freeCompilerArgs.add("-Xjdk-release=11")
+        }
+    }
+
+    tasks.named('compileTestJava', JavaCompile) {
+        options.release = 11
     }
 
     java {
@@ -329,4 +355,39 @@ dependencies{
     testImplementation libs.okhttp
     testImplementation libs.okhttp.logging
     testImplementation libs.retrofit
+}
+
+// One whole deployment against a fake DDI server, run on a real Java 8 runtime
+// (src/java8Smoke). Not part of `build`: Gradle must find a Java 8 installation
+sourceSets {
+    java8Smoke {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    java8SmokeImplementation.extendsFrom implementation
+    java8SmokeRuntimeOnly.extendsFrom runtimeOnly
+}
+
+tasks.named('compileJava8SmokeKotlin', KotlinCompile) {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_1_8
+        freeCompilerArgs.add("-Xjdk-release=1.8")
+    }
+}
+
+tasks.named('compileJava8SmokeJava', JavaCompile) {
+    options.release = 8
+}
+
+tasks.register('java8Smoke', JavaExec) {
+    description = 'Runs one deployment against a fake DDI server on a Java 8 runtime.'
+    group = 'verification'
+    classpath = sourceSets.java8Smoke.runtimeClasspath
+    mainClass = 'org.eclipse.hara.ddiclient.smoke.Java8SmokeCheckKt'
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
 }
