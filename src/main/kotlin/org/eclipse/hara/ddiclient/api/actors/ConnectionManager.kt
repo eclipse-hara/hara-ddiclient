@@ -276,7 +276,8 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     companion object {
         fun of(scope: ActorScope) = ConnectionManager(scope)
 
-        private data class State(
+        // Internal for the unit tests
+        internal data class State(
             val serverPingInterval: Duration = Duration.standardSeconds(0),
             val clientPingInterval: Duration? = null,
             val backoffPingInterval: Duration? = null,

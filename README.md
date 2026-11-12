@@ -57,6 +57,12 @@ to build this project and run the tests (`docker compose v2` required):
 ./gradlew build
 ```
 
+to run only the unit tests, which need no hawkBit server and no Docker (a few seconds):
+
+```shell
+./gradlew unitTest
+```
+
 to build the `hara-virtual-device` docker image:
 
 ```shell

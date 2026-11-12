@@ -65,6 +65,17 @@ allprojects {
         }
     }
 
+    // Fast tests that need no hawkBit server (no Docker): every test except the
+    // integration tests, which live in the integrationtest packages. `test` still runs both
+    tasks.register('unitTest', Test) {
+        description = 'Runs the tests that need no hawkBit server.'
+        group = 'verification'
+        testClassesDirs = sourceSets.test.output.classesDirs
+        classpath = sourceSets.test.runtimeClasspath
+        useTestNG()
+        exclude '**/integrationtest/**'
+    }
+
     jacocoTestReport {
         mustRunAfter test
         sourceSets sourceSets.main
@@ -85,6 +96,12 @@ project(':ddi-consumer') {
         implementation project(subprj)
         implementation project(':hara-ddiclient-api')
         implementation libs.retrofit.converter.gson
+
+        testImplementation libs.testng
+        testImplementation libs.okhttp.mockwebserver
+    }
+    test {
+        useTestNG()
     }
     allprojects {
         dependencies {
@@ -118,6 +135,11 @@ project(':hara-ddiclient-api') {
     version app_version
     dependencies {
         implementation libs.okhttp
+
+        testImplementation libs.testng
+    }
+    test {
+        useTestNG()
     }
 }
 
@@ -164,6 +186,11 @@ project(':virtual-device'){
         afterTest { desc, result ->
             logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
         }
+    }
+
+    // MainTest polls a real hawkBit server
+    tasks.named('unitTest') {
+        exclude '**/virtualdevice/MainTest*'
     }
 
     mainClassName = 'org.eclipse.hara.ddiclient.virtualdevice.MainKt'
