@@ -10,12 +10,15 @@
 
 package org.eclipse.hara.ddiclient.api.actors
 
+import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.INSTANT_FORMAT
+import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.LOCAL_DATE_TIME_FORMAT
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.State
 import org.testng.Assert.assertEquals
 import org.testng.Assert.assertNull
 import org.testng.Assert.assertSame
 import org.testng.annotations.Test
-import org.joda.time.Duration
+import java.time.Duration
+import java.time.Instant
 
 class ConnectionManagerStateTest {
 
@@ -23,7 +26,7 @@ class ConnectionManagerStateTest {
     fun backoffStartsAt30SecondsAndDoublesUpTo5Minutes() {
         val intervals = generateSequence(State().nextBackoff()) { it.nextBackoff() }
             .take(6)
-            .map { it.backoffPingInterval!!.standardSeconds }
+            .map { it.backoffPingInterval!!.seconds }
             .toList()
 
         assertEquals(intervals, listOf(30L, 60L, 120L, 240L, 300L, 300L))
@@ -32,7 +35,7 @@ class ConnectionManagerStateTest {
     @Test
     fun backoffOnTimeoutIs5Minutes() {
         withoutSystemProperty(BACKOFF_PROPERTY) {
-            assertEquals(State().nextBackoffInCaseOfTimeout().backoffPingInterval, Duration.standardMinutes(5))
+            assertEquals(State().nextBackoffInCaseOfTimeout().backoffPingInterval, Duration.ofMinutes(5))
         }
     }
 
@@ -40,7 +43,7 @@ class ConnectionManagerStateTest {
     fun backoffOnTimeoutCanBeShortenedForTests() {
         withoutSystemProperty(BACKOFF_PROPERTY) {
             System.setProperty(BACKOFF_PROPERTY, "7")
-            assertEquals(State().nextBackoffInCaseOfTimeout().backoffPingInterval, Duration.standardSeconds(7))
+            assertEquals(State().nextBackoffInCaseOfTimeout().backoffPingInterval, Duration.ofSeconds(7))
         }
     }
 
@@ -54,19 +57,19 @@ class ConnectionManagerStateTest {
     @Test
     fun pingIntervalPrefersBackoffThenClientThenServer() {
         val server = State().withServerSleep("00:05:00")
-        val client = server.copy(clientPingInterval = Duration.standardSeconds(10))
+        val client = server.copy(clientPingInterval = Duration.ofSeconds(10))
         val backoff = client.nextBackoff()
 
-        assertEquals(server.pingInterval, Duration.standardMinutes(5))
-        assertEquals(client.pingInterval, Duration.standardSeconds(10))
-        assertEquals(backoff.pingInterval, Duration.standardSeconds(30))
+        assertEquals(server.pingInterval, Duration.ofMinutes(5))
+        assertEquals(client.pingInterval, Duration.ofSeconds(10))
+        assertEquals(backoff.pingInterval, Duration.ofSeconds(30))
     }
 
     @Test
     fun serverSleepIsParsedAsHoursMinutesSeconds() {
         val state = State().withServerSleep("01:02:03")
 
-        assertEquals(state.serverPingInterval, Duration.standardSeconds(3723))
+        assertEquals(state.serverPingInterval, Duration.ofSeconds(3723))
     }
 
     @Test
@@ -82,6 +85,17 @@ class ConnectionManagerStateTest {
 
         assertEquals(state.deploymentEtag, "")
         assertEquals(state.controllerBaseEtag, "")
+    }
+
+    // Formats used in the feedback messages: the same text joda-time's toString() produced
+    @Test
+    fun timestampsAlwaysHaveMillisecondsInUtc() {
+        val withMillis = Instant.ofEpochMilli(1_700_000_000_123)
+        val wholeSecond = Instant.ofEpochSecond(1_700_000_000)
+
+        assertEquals(INSTANT_FORMAT.format(withMillis), "2023-11-14T22:13:20.123Z")
+        assertEquals(INSTANT_FORMAT.format(wholeSecond), "2023-11-14T22:13:20.000Z")
+        assertEquals(LOCAL_DATE_TIME_FORMAT.format(withMillis), "2023-11-14T22:13:20.123")
     }
 
     private fun withoutSystemProperty(name: String, block: () -> Unit) {

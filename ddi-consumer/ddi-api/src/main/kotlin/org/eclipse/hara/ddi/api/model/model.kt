@@ -11,7 +11,12 @@
 package org.eclipse.hara.ddi.api.model
 
 import com.google.gson.annotations.SerializedName
-import org.joda.time.Instant
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+
+// Same output as the joda-time Instant.toString() used before: always milliseconds, UTC
+private val FEEDBACK_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC)
 
 /*======================================================================================================================
  *==== REQUESTS ========================================================================================================
@@ -50,7 +55,7 @@ data class CancelFeedbackRequest(
                 finished: Status.Result.Finished,
                 vararg messages: String
         ): CancelFeedbackRequest {
-            return CancelFeedbackRequest(id, Instant.now().toString(), Status(
+            return CancelFeedbackRequest(id, FEEDBACK_TIME_FORMAT.format(Instant.now()), Status(
                     execution,
                     Status.Result(
                             finished),
@@ -100,7 +105,7 @@ data class DeploymentFeedbackRequest(
                 finished: Status.Result.Finished,
                 vararg messages: String
         ): DeploymentFeedbackRequest {
-            return DeploymentFeedbackRequest(id, Instant.now().toString(), Status(
+            return DeploymentFeedbackRequest(id, FEEDBACK_TIME_FORMAT.format(Instant.now()), Status(
                     execution,
                     Status.Result(
                             finished,

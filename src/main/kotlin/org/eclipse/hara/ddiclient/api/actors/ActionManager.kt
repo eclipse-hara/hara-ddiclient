@@ -17,7 +17,7 @@ import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.Out.Err.ErrMsg
 import org.eclipse.hara.ddiclient.api.MessageListener
 import kotlinx.coroutines.ObsoleteCoroutinesApi
-import org.joda.time.Duration
+import java.time.Duration
 
 @OptIn(ObsoleteCoroutinesApi::class)
 class ActionManager
@@ -102,7 +102,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 deploymentManager.send(msg)
                 if (isFrequentPollingEnabled) {
                     LOG.info("DeploymentInfo msg, decreased ping interval to be reactive on server requests (ping: 30s)")
-                    connectionManager.send(In.SetPing(Duration.standardSeconds(30)))
+                    connectionManager.send(In.SetPing(Duration.ofSeconds(30)))
                 }
             }
         }
