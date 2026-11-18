@@ -48,8 +48,7 @@ allprojects {
     dependencies {
 
         implementation libs.kotlin.stdlib
-        implementation libs.kotlin.coroutines.jdk8
-        implementation libs.joda.time
+        implementation libs.kotlin.coroutines.core
     }
 
     publishing {
@@ -185,7 +184,7 @@ project(':virtual-device'){
         implementation libs.slf4j.simple
 
         testImplementation libs.kotlin.stdlib
-        testImplementation libs.kotlin.coroutines.jdk8
+        testImplementation libs.kotlin.coroutines.core
         testImplementation libs.testng
         testImplementation libs.mockk
         testImplementation libs.retrofit
@@ -371,14 +370,12 @@ dependencies{
     implementation project(':ddi-consumer:ddi-api')
 
     implementation libs.slf4j.api
-    implementation libs.joda.time
     implementation libs.gson
     implementation libs.retrofit.converter.gson
 
     testImplementation libs.testng
     testImplementation libs.kotlin.stdlib
-    testImplementation libs.kotlin.coroutines.jdk8
-    testImplementation libs.joda.time
+    testImplementation libs.kotlin.coroutines.core
     testImplementation libs.okhttp
     testImplementation libs.okhttp.logging
     testImplementation libs.retrofit

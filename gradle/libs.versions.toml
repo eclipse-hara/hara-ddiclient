@@ -1,22 +1,20 @@
 [versions]
-dokka = "2.0.0"
-gson = "2.13.2"
-jodaTime = "2.14.0"
-kotlin = "2.2.20"
-kotlinxCoroutines = "1.10.2"
-license-report = "2.9"
-mockk = "1.14.5"
+dokka = "2.2.0"
+gson = "2.14.0"
+kotlin = "2.4.21"
+kotlinxCoroutines = "1.11.0"
+license-report = "3.1.4"
+mockk = "1.14.11"
 okhttp = "4.12.0"
 retrofit = "3.0.0"
-slf4j = "2.0.17"
-sonarqube = "6.3.1.5724"
-testng = "7.11.0"
+slf4j = "2.0.20"
+sonarqube = "7.5.0.8588"
+testng = "7.12.0"
 
 [libraries]
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
-joda-time = { module = "joda-time:joda-time", version.ref = "jodaTime" }
-kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
-kotlin-coroutines-jdk8 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8", version.ref = "kotlinxCoroutines" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp-logging = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }

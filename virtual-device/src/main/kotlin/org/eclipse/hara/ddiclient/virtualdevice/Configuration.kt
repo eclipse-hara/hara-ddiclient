@@ -13,8 +13,8 @@ package org.eclipse.hara.ddiclient.virtualdevice
 import okhttp3.Response
 import okio.Sink
 import okio.Source
-import org.joda.time.Duration
 import java.net.Socket
+import java.time.Duration
 import java.util.UUID
 
 object Configuration {
@@ -36,9 +36,9 @@ object Configuration {
     /**
      * Each virtual device will be started with a random delay in [0, HARA_VIRTUAL_DEVICE_STARTING_DELAY]
      */
-    val virtualDeviceStartingDelay = Duration.standardSeconds(
+    val virtualDeviceStartingDelay = Duration.ofSeconds(
         env("HARA_VIRTUAL_DEVICE_STARTING_DELAY", "1").toLong()
-    ).millis
+    ).toMillis()
 
     val storagePath = env("HARA_STORAGE_PATH", "/client")
 

@@ -22,13 +22,13 @@ import org.eclipse.hara.ddiclient.api.MessageListener
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.In
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.Out
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.Out.Err.ErrMsg
-import org.joda.time.DateTimeZone
-import org.joda.time.Duration
-import org.joda.time.Instant
-import org.joda.time.LocalDateTime
 import org.slf4j.LoggerFactory
 import retrofit2.Response
 import java.io.InterruptedIOException
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import kotlin.math.pow
 
 @OptIn(ObsoleteCoroutinesApi::class)
@@ -91,18 +91,18 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         val detailsDecorator: (List<String>, String) -> List<String> = { list, time ->
             list.toMutableList().apply {
                 if(attempt > 0){
-                    add("Re-sent at ${Instant.now()} (First try at $time")
+                    add("Re-sent at ${INSTANT_FORMAT.format(Instant.now())} (First try at $time")
                 }
             }
         }
 
         return when(this){
             is In.DeploymentFeedback -> copy(feedback = feedback.copy(
-                time = LocalDateTime(Instant.now(), DateTimeZone.UTC).toString(),
+                time = LOCAL_DATE_TIME_FORMAT.format(Instant.now()),
                 status = feedback.status.copy(details = detailsDecorator(feedback.status.details, feedback.time))
             ))
             is In.CancelFeedback -> copy(feedback = feedback.copy(
-                time = LocalDateTime(Instant.now(), DateTimeZone.UTC).toString(),
+                time = LOCAL_DATE_TIME_FORMAT.format(Instant.now()),
                 status = feedback.status.copy(details = detailsDecorator(feedback.status.details, feedback.time))
             ))
         }
@@ -244,10 +244,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
 
     private fun startPing(state: State): State {
         val now = Instant.now()
-        val elapsed = Duration(state.lastPing, now)
+        val elapsed = Duration.between(state.lastPing ?: now, now)
         val timer = ticker(
-            delayMillis = Math.max(state.pingInterval.millis, 5_000),
-            initialDelayMillis = Math.max(state.pingInterval.minus(elapsed).millis, 0),
+            delayMillis = Math.max(state.pingInterval.toMillis(), 5_000),
+            initialDelayMillis = Math.max(state.pingInterval.minus(elapsed).toMillis(), 0),
             mode = TickerMode.FIXED_PERIOD,
             context = newSingleThreadContext("MyOwnThread"))
         launch {
@@ -276,9 +276,14 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     companion object {
         fun of(scope: ActorScope) = ConnectionManager(scope)
 
+        // Same output as the joda-time toString() used before: always milliseconds, UTC.
+        // Internal, like State, for the unit tests
+        internal val INSTANT_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC)
+        internal val LOCAL_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS").withZone(ZoneOffset.UTC)
+
         // Internal for the unit tests
         internal data class State(
-            val serverPingInterval: Duration = Duration.standardSeconds(0),
+            val serverPingInterval: Duration = Duration.ofSeconds(0),
             val clientPingInterval: Duration? = null,
             val backoffPingInterval: Duration? = null,
             val lastPing: Instant? = Instant.EPOCH,
@@ -299,19 +304,19 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 val testOnlyInterval = System.getProperty(
                     "BACKOFF_INTERVAL_SECONDS", null)?.toLong()
                 return if (testOnlyInterval != null) {
-                    val testOnlyDuration = Duration.standardSeconds(testOnlyInterval)
+                    val testOnlyDuration = Duration.ofSeconds(testOnlyInterval)
                     this.copy(backoffPingInterval = testOnlyDuration)
                 } else {
-                    this.copy(backoffPingInterval = Duration.standardMinutes(5))
+                    this.copy(backoffPingInterval = Duration.ofMinutes(5))
                 }
             }
 
             fun nextBackoff(): State {
                 val nextBackoff = if (backoffPingInterval == null) {
-                    Duration.standardSeconds(30)
+                    Duration.ofSeconds(30)
                 } else {
                     val doubledTime = backoffPingInterval.multipliedBy(2)
-                    val maxTime = Duration.standardMinutes(5)
+                    val maxTime = Duration.ofMinutes(5)
                     minOf(doubledTime, maxTime)
                 }
                 LOG.debug("Next backoff: {}", nextBackoff)
@@ -325,9 +330,9 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             fun withServerSleep(sleep: String): State {
                 fun sleepStr2duration(str: String): Duration {
                     val fields = str.split(':').map { Integer.parseInt(it).toLong() }.toTypedArray()
-                    return Duration.standardHours(fields[0]).plus(
-                            Duration.standardMinutes(fields[1])).plus(
-                            Duration.standardSeconds(fields[2]))
+                    return Duration.ofHours(fields[0]).plus(
+                            Duration.ofMinutes(fields[1])).plus(
+                            Duration.ofSeconds(fields[2]))
                 }
                 val newServerPingInterval = sleepStr2duration(sleep)
                 return if (newServerPingInterval != serverPingInterval) this.copy(serverPingInterval = newServerPingInterval)
