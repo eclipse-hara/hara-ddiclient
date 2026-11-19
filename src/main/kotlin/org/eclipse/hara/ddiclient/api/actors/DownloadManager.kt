@@ -259,12 +259,21 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         try {
             block()
         } catch (e: UpdaterException) {
+            become(downloadFailedReceive())
             val message = "Failed to select the files to download: ${e.message}"
             feedback(id, closed, Progress(0, 0), failure, message)
             notificationManager.send(
                 MessageListener.Message.Event.UpdateFinished(successApply = false,
                     details = listOf(message)))
             parent!!.send(DownloadFailed(listOf(message)))
+        }
+    }
+
+    // The action is closed: the deployment messages queued in the meantime must not start it again
+    private fun downloadFailedReceive(): Receive = { msg ->
+        when (msg) {
+            is DeploymentInfo -> LOG.debug("Action {} already failed, ignoring the deployment", msg.info.id)
+            else -> handleMsgDefault(msg)
         }
     }
 

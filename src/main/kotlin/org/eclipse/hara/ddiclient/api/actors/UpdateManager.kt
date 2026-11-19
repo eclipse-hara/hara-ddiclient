@@ -148,17 +148,18 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         val updaterError = update(updaters, msg, details)
 
         when{
+            // Before the no-update case: an updater may fail even with no module to apply
+            updaterError.isNotEmpty() -> {
+                LOG.warn("update ${updaterError[0].first} failed!")
+                updateFailed(msg.info.id, Progress(updaters.size, updaterError[0].first), details)
+            }
+
             updaters.all { it.softwareModules.isEmpty() } -> {
                 parent!!.send(DeploymentManager.Companion.Message.UpdateFinished)
                 sendFeedback(msg.info.id, closed, Progress(0,0), success,
                     "No update applied"
                 )
                 notificationManager.sendMessageToChannelIfOpen(MessageListener.Message.Event.NoUpdate)
-            }
-
-            updaterError.isNotEmpty() -> {
-                LOG.warn("update ${updaterError[0].first} failed!")
-                updateFailed(msg.info.id, Progress(updaters.size, updaterError[0].first), details)
             }
 
             else -> {
