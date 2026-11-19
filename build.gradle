@@ -379,6 +379,7 @@ dependencies{
     testImplementation libs.okhttp
     testImplementation libs.okhttp.logging
     testImplementation libs.retrofit
+    testImplementation libs.okhttp.mockwebserver
 }
 
 // One whole deployment against a fake DDI server, run on a real Java 8 runtime
