@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017-2024  Kynetics, Inc.
+ * Copyright © 2017-2026  Kynetics, Inc. and others
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -12,7 +12,9 @@ package org.eclipse.hara.ddiclient.api.actors
 
 import kotlinx.coroutines.Job
 import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest
+import org.eclipse.hara.ddiclient.api.UpdaterException
 import org.eclipse.hara.ddiclient.api.UpdaterRegistry
+import org.eclipse.hara.ddiclient.api.call
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.In.DeploymentFeedback
 import org.eclipse.hara.ddiclient.api.actors.ConnectionManager.Companion.Message.Out.DeploymentInfo
 import org.eclipse.hara.ddiclient.api.MessageListener
@@ -135,8 +137,14 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     private suspend fun startUpdateProcedure(msg: DeploymentInfo) {
         LOG.info("START UPDATING!!!")
         notificationManager.send(MessageListener.Message.State.Updating)
-        val updaters = registry.allUpdatersWithSwModulesOrderedForPriority(msg.info.deployment.chunks)
         val details = mutableListOf("Details:")
+        val updaters = try {
+            registry.allUpdatersWithSwModulesOrderedForPriority(msg.info.deployment.chunks)
+        } catch (e: UpdaterException) {
+            details.add(e.message!!)
+            updateFailed(msg.info.id, Progress(0, 0), details)
+            return
+        }
         val updaterError = update(updaters, msg, details)
 
         when{
@@ -150,10 +158,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
 
             updaterError.isNotEmpty() -> {
                 LOG.warn("update ${updaterError[0].first} failed!")
-                parent!!.send(DeploymentManager.Companion.Message.UpdateFailed)
-                sendFeedback(msg.info.id, closed, Progress(updaters.size, updaterError[0].first),
-                    failure, *details.toTypedArray())
-                notificationManager.sendMessageToChannelIfOpen(MessageListener.Message.Event.UpdateFinished(successApply = false, details = details))
+                updateFailed(msg.info.id, Progress(updaters.size, updaterError[0].first), details)
             }
 
             else -> {
@@ -174,22 +179,34 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         return updaters
                 .mapIndexed { index, u -> index to u }
                 .dropWhile { (index, it) ->
-                    val updateResult = it.updater.apply(it.softwareModules.map { swModule ->
+                    val modules = it.softwareModules.map { swModule ->
                         convert(swModule, pathResolver.fromArtifact(message.info.id))
-                    }.toSet(), object : Updater.Messenger {
+                    }.toSet()
+                    val messenger = object : Updater.Messenger {
                         override fun sendMessageToServer(vararg msg: String) {
                             runBlocking {
                                 sendFeedback(message.info.id, proceeding,
                                     Progress(updaters.size, index), none, *msg)
                             }
                         }
-                    })
+                    }
+                    val updateResult = try {
+                        it.updater.call("apply") { this.apply(modules, messenger) }
+                    } catch (e: UpdaterException) {
+                        Updater.UpdateResult(false, listOf(e.message!!))
+                    }
                     if (updateResult.details.isNotEmpty()) {
                         details.add("Feedback updater named ${it.updater.javaClass.simpleName}")
                         details.addAll(updateResult.details)
                     }
                     updateResult.success
                 }
+    }
+
+    private suspend fun updateFailed(id: String, progress: Progress, details: List<String>) {
+        parent!!.send(DeploymentManager.Companion.Message.UpdateFailed)
+        sendFeedback(id, closed, progress, failure, *details.toTypedArray())
+        notificationManager.sendMessageToChannelIfOpen(MessageListener.Message.Event.UpdateFinished(successApply = false, details = details))
     }
 
     private suspend fun sendFeedback(

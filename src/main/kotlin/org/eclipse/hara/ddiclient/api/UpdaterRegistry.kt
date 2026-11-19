@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017-2024  Kynetics, Inc.
+ * Copyright © 2017-2026  Kynetics, Inc. and others
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -11,20 +11,24 @@
 package org.eclipse.hara.ddiclient.api
 
 import org.eclipse.hara.ddi.api.model.DeploymentBaseResponse
+import org.slf4j.LoggerFactory
+import kotlin.coroutines.cancellation.CancellationException
 
 class UpdaterRegistry(private vararg val updaters: Updater) {
 
-    fun allRequiredArtifactsFor(chunks: Set<DeploymentBaseResponse.Deployment.Chunks>): Set<Updater.Hashes> =
-            updaters.flatMap { u ->
-                u.requiredSoftwareModulesAndPriority(chunks.map { convert(it) }.toSet())
-                        .swModules.flatMap { it.hashes } }.toSet()
+    fun allRequiredArtifactsFor(chunks: Set<DeploymentBaseResponse.Deployment.Chunks>): Set<Updater.Hashes> {
+        val swModules = chunks.map { convert(it) }.toSet()
+        return updaters.flatMap { u ->
+            u.call("requiredSoftwareModulesAndPriority") { requiredSoftwareModulesAndPriority(swModules) }
+                    .swModules.flatMap { it.hashes } }.toSet()
+    }
 
     fun allUpdatersWithSwModulesOrderedForPriority(chunks: Set<DeploymentBaseResponse.Deployment.Chunks>): Set<UpdaterWithSwModule> {
 
         val swModules = chunks.map { convert(it) }.toSet()
 
         return updaters.map { u ->
-            val appl = u.requiredSoftwareModulesAndPriority(swModules)
+            val appl = u.call("requiredSoftwareModulesAndPriority") { requiredSoftwareModulesAndPriority(swModules) }
             UpdaterWithSwModule(appl.priority, u, appl.swModules.map { swm ->
                 swModules.find {
                     with(swm) {
@@ -37,9 +41,15 @@ class UpdaterRegistry(private vararg val updaters: Updater) {
         }.toSortedSet(Comparator { p1, p2 -> p1.priority.compareTo(p2.priority) })
     }
 
+    // An updater that fails to answer is treated as not cancellable
     fun currentUpdateIsCancellable(): Boolean {
-        return updaters.map { it.updateIsCancellable() }
-                .reduce { acc, value -> acc && value }
+        return updaters.map { u ->
+            try {
+                u.call("updateIsCancellable") { updateIsCancellable() }
+            } catch (e: UpdaterException) {
+                false
+            }
+        }.reduce { acc, value -> acc && value }
     }
 
     data class UpdaterWithSwModule(val priority: Int, val updater: Updater, val softwareModules: Set<Updater.SwModule>)
@@ -65,3 +75,29 @@ class UpdaterRegistry(private vararg val updaters: Updater) {
                             artfct.hashes.md5),
                     artfct.size)
 }
+
+/**
+ * Thrown in place of any error raised by [Updater] code, so that the actor calling it can fail
+ * the current action instead of exiting and leaving the client stuck.
+ */
+internal class UpdaterException(updater: Updater, method: String, cause: Throwable) :
+    Exception("${updater.javaClass.name}.$method failed: ${cause.javaClass.name}: ${cause.message}", cause)
+
+private val LOG = LoggerFactory.getLogger(UpdaterRegistry::class.java)
+
+/**
+ * Runs [block] on an updater, wrapping what it throws in an [UpdaterException].
+ * Cancellation and JVM errors (out of memory, stack overflow) are rethrown unchanged.
+ */
+internal fun <T> Updater.call(method: String, block: Updater.() -> T): T =
+    try {
+        block()
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: VirtualMachineError) {
+        throw e
+    } catch (t: Throwable) {
+        val e = UpdaterException(this, method, t)
+        LOG.error(e.message, t)
+        throw e
+    }
