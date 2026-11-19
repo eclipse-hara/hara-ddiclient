@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017-2024  Kynetics, Inc.
+ * Copyright © 2017-2026  Kynetics, Inc. and others
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -39,6 +39,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.eclipse.hara.ddi.api.model.CancelFeedbackRequest
 import org.eclipse.hara.ddiclient.api.DeploymentPermitProvider
+import org.eclipse.hara.ddiclient.api.UpdaterException
 import org.eclipse.hara.ddiclient.api.actors.FileDownloader.Companion.md5
 
 @OptIn(ObsoleteCoroutinesApi::class, ExperimentalCoroutinesApi::class)
@@ -57,7 +58,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     private fun beforeStartReceive(): Receive = { msg ->
         when (msg) {
 
-            is DeploymentInfo -> {
+            is DeploymentInfo -> failDownloadOnUpdaterError(msg.info.id) {
                 checkAndHandleFilesAlreadyDownloaded(msg) {
 
                     when {
@@ -185,7 +186,9 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 val message = "Authorization granted for downloading files"
                 LOG.info(message)
                 feedback(state.deplBaseResp.id, proceeding, Progress(0, 0), none, message)
-                startDownloadProcedure(DeploymentInfo(state.deplBaseResp))
+                failDownloadOnUpdaterError(state.deplBaseResp.id) {
+                    startDownloadProcedure(DeploymentInfo(state.deplBaseResp))
+                }
             }
 
             is ConnectionManager.Companion.Message.Out.DeploymentCancelInfo -> {
@@ -248,6 +251,20 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                 feedback(state.deplBaseResp.id, proceeding, progress, none, message)
                 onDownloadSucceeded(state.deplBaseResp.id, progress, none, "Successfully downloaded all files", newState)
             }
+        }
+    }
+
+    // An updater error while choosing the files to download closes the action as a failed download
+    private suspend fun failDownloadOnUpdaterError(id: String, block: suspend () -> Unit) {
+        try {
+            block()
+        } catch (e: UpdaterException) {
+            val message = "Failed to select the files to download: ${e.message}"
+            feedback(id, closed, Progress(0, 0), failure, message)
+            notificationManager.send(
+                MessageListener.Message.Event.UpdateFinished(successApply = false,
+                    details = listOf(message)))
+            parent!!.send(DownloadFailed(listOf(message)))
         }
     }
 

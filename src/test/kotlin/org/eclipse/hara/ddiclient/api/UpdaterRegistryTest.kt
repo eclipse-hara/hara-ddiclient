@@ -13,8 +13,11 @@ package org.eclipse.hara.ddiclient.api
 import org.eclipse.hara.ddi.api.model.DeploymentBaseResponse.Deployment.Chunks
 import org.testng.Assert.assertEquals
 import org.testng.Assert.assertFalse
+import org.testng.Assert.assertThrows
 import org.testng.Assert.assertTrue
+import org.testng.Assert.expectThrows
 import org.testng.annotations.Test
+import kotlin.coroutines.cancellation.CancellationException
 
 class UpdaterRegistryTest {
 
@@ -62,6 +65,64 @@ class UpdaterRegistryTest {
 
         assertTrue(UpdaterRegistry(cancellable).currentUpdateIsCancellable())
         assertFalse(UpdaterRegistry(cancellable, notCancellable).currentUpdateIsCancellable())
+    }
+
+    @Test
+    fun anErrorChoosingModulesIsWrappedInUpdaterException() {
+        val registry = UpdaterRegistry(TypeUpdater("os", priority = 1), FailingUpdater(IllegalStateException("boom")))
+
+        val e = expectThrows(UpdaterException::class.java) { registry.allUpdatersWithSwModulesOrderedForPriority(chunks) }
+        assertThrows(UpdaterException::class.java) { registry.allRequiredArtifactsFor(chunks) }
+
+        assertTrue(e.cause is IllegalStateException)
+        assertEquals(e.message, "${FailingUpdater::class.java.name}.requiredSoftwareModulesAndPriority failed: " +
+                "java.lang.IllegalStateException: boom")
+    }
+
+    @Test
+    fun linkageErrorsAreWrappedToo() {
+        val registry = UpdaterRegistry(FailingUpdater(NoClassDefFoundError("org/example/Missing")))
+
+        val e = expectThrows(UpdaterException::class.java) { registry.allRequiredArtifactsFor(chunks) }
+
+        assertTrue(e.cause is NoClassDefFoundError)
+    }
+
+    @Test
+    fun cancellationIsNotWrapped() {
+        val registry = UpdaterRegistry(FailingUpdater(CancellationException("stopped")))
+
+        assertThrows(CancellationException::class.java) { registry.allRequiredArtifactsFor(chunks) }
+    }
+
+    @Test
+    fun anUpdaterThatFailsToAnswerMakesTheUpdateNotCancellable() {
+        assertFalse(UpdaterRegistry(TypeUpdater("os", priority = 1), FailingUpdater(RuntimeException())).currentUpdateIsCancellable())
+    }
+
+    @Test
+    fun anErrorInApplyIsWrappedInUpdaterException() {
+        val updater = FailingUpdater(RuntimeException("apply failed"))
+        val messenger = object : Updater.Messenger {
+            override fun sendMessageToServer(vararg msg: String) {}
+        }
+
+        val e = expectThrows(UpdaterException::class.java) {
+            updater.call("apply") { apply(emptySet(), messenger) }
+        }
+
+        assertEquals(e.message, "${FailingUpdater::class.java.name}.apply failed: java.lang.RuntimeException: apply failed")
+    }
+
+    private class FailingUpdater(private val error: Throwable) : Updater {
+
+        override fun requiredSoftwareModulesAndPriority(swModules: Set<Updater.SwModule>): Updater.SwModsApplication =
+            throw error
+
+        override fun updateIsCancellable(): Boolean = throw error
+
+        override fun apply(modules: Set<Updater.SwModuleWithPath>, messenger: Updater.Messenger): Updater.UpdateResult =
+            throw error
     }
 
     private class TypeUpdater(
