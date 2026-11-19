@@ -63,9 +63,14 @@ class FakeDdiServer : AutoCloseable {
     val feedback: List<Feedback>
         get() = synchronized(received) { received.toList() }
 
+    // Taken once: MockWebServer.url() waits for the server's lock, which shutdown() holds while
+    // requests are still being answered
+    private val serverUrl: String
+
     init {
         server.dispatcher = DdiDispatcher()
         server.start()
+        serverUrl = server.url("/").toString().removeSuffix("/")
     }
 
     fun deploy(vararg deployments: Deployment) {
@@ -93,7 +98,7 @@ class FakeDdiServer : AutoCloseable {
     ): HaraClient {
         val client = HaraClientDefaultImpl()
         client.init(
-            HaraClientData(TENANT, CONTROLLER_ID, server.url("/").toString(), gatewayToken = "token"),
+            HaraClientData(TENANT, CONTROLLER_ID, "$serverUrl/", gatewayToken = "token"),
             directoryForArtifactsProvider,
             configDataProvider,
             softDeploymentPermitProvider,
@@ -111,6 +116,17 @@ class FakeDdiServer : AutoCloseable {
         closedAction(actionId).get(timeoutSeconds, TimeUnit.SECONDS)
     } catch (e: TimeoutException) {
         throw AssertionError("Action $actionId was never closed. Polls: ${polls.get()}, feedback: $feedback", e)
+    }
+
+    /** Waits until the client has polled the server [count] times since it started. */
+    fun awaitPolls(count: Int, timeoutSeconds: Long = 15) {
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSeconds)
+        while (polls.get() < count) {
+            if (System.nanoTime() > deadline) {
+                throw AssertionError("The client polled ${polls.get()} times, not $count. Feedback: $feedback")
+            }
+            Thread.sleep(POLL_CHECK_MILLIS)
+        }
     }
 
     override fun close() {
@@ -170,7 +186,7 @@ class FakeDdiServer : AutoCloseable {
 
         private fun controllerBase(deployment: Deployment?): String {
             val links = deployment?.let {
-                """"deploymentBase":{"href":"${server.url("$CONTROLLER/deploymentBase/${it.id}")}?c=-1"}"""
+                """"deploymentBase":{"href":"$serverUrl$CONTROLLER/deploymentBase/${it.id}?c=-1"}"""
             } ?: ""
             return """{"config":{"polling":{"sleep":"$POLLING_SLEEP"}},"_links":{$links}}"""
         }
@@ -178,7 +194,7 @@ class FakeDdiServer : AutoCloseable {
         private fun deploymentBase(deployment: Deployment): String {
             val artifact = deployment.artifact
             val bytes = artifact.content.toByteArray()
-            val url = server.url("$ARTIFACTS${deployment.id}/${artifact.filename}")
+            val url = "$serverUrl$ARTIFACTS${deployment.id}/${artifact.filename}"
             return """
                 {"id":"${deployment.id}",
                  "deployment":{"download":"${deployment.download}","update":"${deployment.update}",
@@ -203,6 +219,7 @@ class FakeDdiServer : AutoCloseable {
         private const val CONTROLLER = "/$TENANT/controller/v1/$CONTROLLER_ID"
         private const val ARTIFACTS = "/artifacts/"
         private const val POLLING_SLEEP = "00:00:01"
+        private const val POLL_CHECK_MILLIS = 50L
 
         /** An updater whose [Updater.apply] runs [apply]. */
         fun updater(apply: (Set<Updater.SwModuleWithPath>) -> Updater.UpdateResult): Updater = TestUpdater(apply)
