@@ -103,6 +103,11 @@ class HaraClientUpdaterErrorTest {
                 override fun downloadAllowed(): Deferred<Boolean> = permit
             })
         server.awaitPolls(4)
+        // Then the deployment stops changing. Two polls later no answer that offers it is still on
+        // its way to the client: one read after the action is closed would make the client run
+        // the action again, a separate issue
+        server.deploymentsUnchanged = true
+        server.awaitPolls(server.polls + 2)
         permit.complete(true)
 
         assertFailedThenNextInstalled("Failed to select the files to download: " +
