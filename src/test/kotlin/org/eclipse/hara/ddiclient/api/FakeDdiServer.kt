@@ -16,6 +16,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import java.io.File
+import java.net.HttpURLConnection
 import java.nio.file.Files
 import java.security.MessageDigest
 import java.util.concurrent.CompletableFuture
@@ -53,11 +54,23 @@ class FakeDdiServer : AutoCloseable {
     private val queue = mutableListOf<Deployment>()
     private val closed = ConcurrentHashMap<String, CompletableFuture<Feedback>>()
     private val received = mutableListOf<Feedback>()
-    private val polls = AtomicInteger()
+    private val pollCount = AtomicInteger()
     private val clients = mutableListOf<HaraClient>()
 
     /** Where the clients started by [startClient] download, unless told otherwise; deleted by [close]. */
     val artifactsDir: File = Files.createTempDirectory("hara-fake-ddi").toFile()
+
+    /** How many times the client has polled the server so far. */
+    val polls: Int
+        get() = pollCount.get()
+
+    /**
+     * False (the default): every deployment answer is new to the client, so it gets the
+     * deployment again on every poll. True: like hawkBit while a deployment doesn't change, the
+     * answer carries an ETag, and a request that sends it back gets 304 Not Modified.
+     */
+    @Volatile
+    var deploymentsUnchanged = false
 
     /** Every deployment feedback received so far, in order. */
     val feedback: List<Feedback>
@@ -115,15 +128,15 @@ class FakeDdiServer : AutoCloseable {
     fun awaitClosed(actionId: String, timeoutSeconds: Long = 15): Feedback = try {
         closedAction(actionId).get(timeoutSeconds, TimeUnit.SECONDS)
     } catch (e: TimeoutException) {
-        throw AssertionError("Action $actionId was never closed. Polls: ${polls.get()}, feedback: $feedback", e)
+        throw AssertionError("Action $actionId was never closed. Polls: $polls, feedback: $feedback", e)
     }
 
     /** Waits until the client has polled the server [count] times since it started. */
     fun awaitPolls(count: Int, timeoutSeconds: Long = 15) {
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSeconds)
-        while (polls.get() < count) {
+        while (polls < count) {
             if (System.nanoTime() > deadline) {
-                throw AssertionError("The client polled ${polls.get()} times, not $count. Feedback: $feedback")
+                throw AssertionError("The client polled $polls times, not $count. Feedback: $feedback")
             }
             Thread.sleep(POLL_CHECK_MILLIS)
         }
@@ -146,12 +159,12 @@ class FakeDdiServer : AutoCloseable {
             val deployment = deployments[path.removePrefix("$CONTROLLER/deploymentBase/")]
             return when {
                 path == CONTROLLER -> {
-                    polls.incrementAndGet()
+                    pollCount.incrementAndGet()
                     json(controllerBase(current()))
                 }
                 path == "$CONTROLLER/configData" -> MockResponse()
                 path.startsWith("$CONTROLLER/deploymentBase/") && path.endsWith("/feedback") -> onFeedback(path, request)
-                deployment != null -> json(deploymentBase(deployment))
+                deployment != null -> deploymentAnswer(deployment, request)
                 path.startsWith(ARTIFACTS) -> artifact(path.removePrefix(ARTIFACTS))
                 else -> MockResponse().setResponseCode(404)
             }
@@ -206,6 +219,18 @@ class FakeDdiServer : AutoCloseable {
                        "size":${bytes.size},
                        "_links":{"download":{"href":"$url"},"download-http":{"href":"$url"}}}]}]}}
             """
+        }
+
+        private fun deploymentAnswer(deployment: Deployment, request: RecordedRequest): MockResponse {
+            if (!deploymentsUnchanged) {
+                return json(deploymentBase(deployment))
+            }
+            val etag = "\"${deployment.id}\""
+            return if (request.getHeader("If-None-Match") == etag) {
+                MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_MODIFIED)
+            } else {
+                json(deploymentBase(deployment)).setHeader("ETag", etag)
+            }
         }
 
         private fun json(body: String) = MockResponse()
