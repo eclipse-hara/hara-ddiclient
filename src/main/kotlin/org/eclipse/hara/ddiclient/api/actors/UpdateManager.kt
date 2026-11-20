@@ -33,6 +33,7 @@ import kotlinx.coroutines.runBlocking
 import org.eclipse.hara.ddi.api.model.CancelFeedbackRequest
 import org.eclipse.hara.ddi.api.model.DeploymentBaseResponse
 import org.eclipse.hara.ddiclient.api.DeploymentPermitProvider
+import java.util.concurrent.atomic.AtomicBoolean
 
 @OptIn(ObsoleteCoroutinesApi::class)
 class UpdateManager
@@ -45,6 +46,11 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     private val connectionManager = coroutineContext[CMActor]!!.ref
     private val notificationManager = coroutineContext[NMActor]!!.ref
     private var waitingAuthJob: Job? = null
+    private var forcedUpdateJob: Job? = null
+
+    // The deployment message comes back while the update runs (on every poll if the server
+    // sends no ETag): the update of an action starts once
+    private val updateStarted = AtomicBoolean()
 
     private fun beforeStartReceive(): Receive = { msg ->
         when (msg) {
@@ -52,6 +58,9 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             is DeploymentInfo -> {
                 val state = State(deplBaseResp = msg.info)
                 val message = when {
+                    updateStarted.get() || forcedUpdateJob?.isActive == true -> {
+                        "Update already started, deployment message ignored"
+                    }
                     state.isUpdateForced -> {
                         forceUpdateDevice(state)
                     }
@@ -96,11 +105,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     }
 
     private fun forceUpdateDevice(state: State): String {
-        waitingAuthJob = launch {
+        forcedUpdateJob = launch {
             forceRequest.onAuthorizationReceive {
                 startUpdateProcedure(DeploymentInfo(state.deplBaseResp!!))
             }
-            waitingAuthJob = null
         }
         return "Start updating the device"
     }
@@ -135,6 +143,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
     }
 
     private suspend fun startUpdateProcedure(msg: DeploymentInfo) {
+        if (!updateStarted.compareAndSet(false, true)) {
+            LOG.info("Update of action {} already started", msg.info.id)
+            return
+        }
         LOG.info("START UPDATING!!!")
         notificationManager.send(MessageListener.Message.State.Updating)
         val details = mutableListOf("Details:")
