@@ -28,12 +28,15 @@ import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest.Status.Result.Fi
 import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest.Status.Result.Finished.success
 import org.eclipse.hara.ddi.api.model.DeploymentFeedbackRequest.Status.Result.Finished.failure
 import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.eclipse.hara.ddi.api.model.CancelFeedbackRequest
 import org.eclipse.hara.ddi.api.model.DeploymentBaseResponse
 import org.eclipse.hara.ddiclient.api.DeploymentPermitProvider
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.cancellation.CancellationException
 
 @OptIn(ObsoleteCoroutinesApi::class)
 class UpdateManager
@@ -156,6 +159,10 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
             details.add(e.message!!)
             updateFailed(msg.info.id, Progress(0, 0), details)
             return
+        } catch (e: CancellationException) {
+            details.add(cancelledByUpdater("An updater's requiredSoftwareModulesAndPriority", e))
+            updateFailed(msg.info.id, Progress(0, 0), details)
+            return
         }
         val updaterError = update(updaters, msg, details)
 
@@ -183,7 +190,7 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         }
     }
 
-    private fun update(
+    private suspend fun update(
         updaters: Set<UpdaterRegistry.UpdaterWithSwModule>,
         message: DeploymentInfo,
         details: MutableList<String>
@@ -207,6 +214,8 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                         it.updater.call("apply") { this.apply(modules, messenger) }
                     } catch (e: UpdaterException) {
                         Updater.UpdateResult(false, listOf(e.message!!))
+                    } catch (e: CancellationException) {
+                        Updater.UpdateResult(false, listOf(cancelledByUpdater("${it.updater.javaClass.name}.apply", e)))
                     }
                     if (updateResult.details.isNotEmpty()) {
                         details.add("Feedback updater named ${it.updater.javaClass.simpleName}")
@@ -214,6 +223,15 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
                     }
                     updateResult.success
                 }
+    }
+
+    // Updater code is blocking, so the cancellation of this actor can't come out of it: a
+    // CancellationException it throws while the actor is still active is the updater's own (a
+    // timeout in apply) and fails the action. Left to escape, it would end the forced update job
+    // with no feedback, and the action would stay open with its deployment messages ignored
+    private suspend fun cancelledByUpdater(call: String, e: CancellationException): String {
+        currentCoroutineContext().ensureActive()
+        return "$call cancelled: ${e.javaClass.name}: ${e.message}".also { LOG.error(it, e) }
     }
 
     private suspend fun updateFailed(id: String, progress: Progress, details: List<String>) {

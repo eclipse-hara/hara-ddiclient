@@ -12,6 +12,9 @@ package org.eclipse.hara.ddiclient.api
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.eclipse.hara.ddiclient.api.FakeDdiServer.Artifact
 import org.eclipse.hara.ddiclient.api.FakeDdiServer.Deployment
 import org.testng.Assert.assertEquals
@@ -85,6 +88,26 @@ class HaraClientUpdaterErrorTest {
     }
 
     @Test
+    fun aTimeoutInApplyFailsTheAction() {
+        // A CancellationException of the updater's own, not a cancellation of the client
+        server.startClient(updaters = listOf(UpdaterThatThrowsOnce("apply", error = ::timeout)))
+
+        assertFailedThenNextInstalled("${UpdaterThatThrowsOnce::class.java.name}.apply cancelled: " +
+                "kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 10 ms")
+    }
+
+    @Test
+    fun aTimeoutChoosingTheModulesToUpdateFailsTheAction() {
+        val updating = AtomicBoolean()
+        server.startClient(
+            updaters = listOf(UpdaterThatThrowsOnce("requiredSoftwareModulesAndPriority", error = ::timeout) { updating.get() }),
+            forceDeploymentPermitProvider = updatePermitThatSets(updating))
+
+        assertFailedThenNextInstalled("An updater's requiredSoftwareModulesAndPriority cancelled: " +
+                "kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 10 ms")
+    }
+
+    @Test
     fun anErrorChoosingTheFilesToDownloadIsReportedOnce() {
         // The deployment keeps coming back while the forced download permit is held: those
         // repeated messages must not report the failure again once the permit is granted
@@ -137,6 +160,7 @@ class HaraClientUpdaterErrorTest {
 
     private class UpdaterThatThrowsOnce(
         private val method: String,
+        private val error: () -> Throwable = { IllegalStateException("boom") },
         private val throwNow: () -> Boolean = { true },
     ) : Updater {
 
@@ -154,7 +178,7 @@ class HaraClientUpdaterErrorTest {
 
         private fun throwOnce(calledMethod: String) {
             if (calledMethod == method && throwNow() && thrown.compareAndSet(false, true)) {
-                throw IllegalStateException("boom")
+                throw error()
             }
         }
     }
@@ -188,5 +212,11 @@ class HaraClientUpdaterErrorTest {
 
     companion object {
         private const val FIRST_ARTIFACT = "image.bin"
+
+        // Throws the TimeoutCancellationException of a timeout inside the updater
+        private fun timeout(): Nothing {
+            runBlocking { withTimeout(10) { delay(Long.MAX_VALUE) } }
+            error("The timeout did not expire")
+        }
     }
 }
