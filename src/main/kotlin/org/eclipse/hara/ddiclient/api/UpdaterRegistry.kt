@@ -80,8 +80,10 @@ class UpdaterRegistry(private vararg val updaters: Updater) {
  * Thrown in place of any error raised by [Updater] code, so that the actor calling it can fail
  * the current action instead of exiting and leaving the client stuck.
  */
-internal class UpdaterException(updater: Updater, method: String, cause: Throwable) :
-    Exception("${updater.javaClass.name}.$method failed: ${cause.javaClass.name}: ${cause.message}", cause)
+internal class UpdaterException(message: String, cause: Throwable) : Exception(message, cause) {
+    constructor(updater: Updater, method: String, cause: Throwable) :
+        this("${updater.javaClass.name}.$method failed: ${cause.javaClass.name}: ${cause.message}", cause)
+}
 
 private val LOG = LoggerFactory.getLogger(UpdaterRegistry::class.java)
 
