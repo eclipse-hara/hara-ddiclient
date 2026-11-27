@@ -97,6 +97,15 @@ class HaraClientUpdaterErrorTest {
     }
 
     @Test
+    fun aTimeoutChoosingTheFilesToDownloadFailsTheAction() {
+        server.startClient(updaters = listOf(UpdaterThatThrowsOnce("requiredSoftwareModulesAndPriority", error = ::timeout)))
+
+        assertFailedThenNextInstalled("Failed to select the files to download: " +
+                "An updater's requiredSoftwareModulesAndPriority cancelled: " +
+                "kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 10 ms")
+    }
+
+    @Test
     fun aTimeoutChoosingTheModulesToUpdateFailsTheAction() {
         val updating = AtomicBoolean()
         server.startClient(

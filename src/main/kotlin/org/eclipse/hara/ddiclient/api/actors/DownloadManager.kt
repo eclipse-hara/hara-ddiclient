@@ -34,6 +34,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -41,6 +43,7 @@ import org.eclipse.hara.ddi.api.model.CancelFeedbackRequest
 import org.eclipse.hara.ddiclient.api.DeploymentPermitProvider
 import org.eclipse.hara.ddiclient.api.UpdaterException
 import org.eclipse.hara.ddiclient.api.actors.FileDownloader.Companion.md5
+import kotlin.coroutines.cancellation.CancellationException
 
 @OptIn(ObsoleteCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 class DownloadManager
@@ -294,9 +297,21 @@ private constructor(scope: ActorScope) : AbstractActor(scope) {
         connectionManager.send(DeploymentFeedback(deplFdbkReq))
     }
 
-    private fun md5OfFilesToBeDownloaded(dbr: DeploymentBaseResponse): Set<String> = when (dbr.deployment.download) {
-        attempt, forced -> registry.allRequiredArtifactsFor(dbr.deployment.chunks).map { it.md5 }.toSet()
+    private suspend fun md5OfFilesToBeDownloaded(dbr: DeploymentBaseResponse): Set<String> = when (dbr.deployment.download) {
+        attempt, forced -> requiredArtifacts(dbr).map { it.md5 }.toSet()
         else -> emptySet()
+    }
+
+    // Updater code is blocking, so the cancellation of this actor can't come out of it: a
+    // CancellationException it throws while the actor is still active is the updater's own (a
+    // timeout in its code) and fails the download. Left to escape, it would end this actor with
+    // no feedback, and the action would stay open
+    private suspend fun requiredArtifacts(dbr: DeploymentBaseResponse) = try {
+        registry.allRequiredArtifactsFor(dbr.deployment.chunks)
+    } catch (e: CancellationException) {
+        currentCoroutineContext().ensureActive()
+        throw UpdaterException("An updater's requiredSoftwareModulesAndPriority cancelled: " +
+                "${e.javaClass.name}: ${e.message}", e).also { LOG.error(it.message, e) }
     }
 
     private fun createDownloadsManagers(dbr: DeploymentBaseResponse, md5s: Set<String>): Map<String, Download> {
